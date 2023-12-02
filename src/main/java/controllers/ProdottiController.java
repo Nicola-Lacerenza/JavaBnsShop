@@ -1,15 +1,24 @@
 package controllers;
 
 import models.Prodotti;
+import models.tables.ProdottiTable;
 
 import java.util.Map;
+import java.util.Optional;
 
 public class ProdottiController implements Controllers<Prodotti> {
-
+    private ProdottiTable tabella;
+    public ProdottiController(){
+        this.tabella= new ProdottiTable();
+    }
 
     @Override
-    public Prodotti insertObject(Map<String, String> request) {
-        return null;
+    public Optional<Prodotti> insertObject(Map<String, String> request) {
+        Prodotti prodotto = new Prodotti(0,1,1,1,1,1);
+        if (this.tabella.insertElement(prodotto)){
+            return Optional.of(prodotto);
+        }
+        return Optional.empty();
     }
 
     @Override

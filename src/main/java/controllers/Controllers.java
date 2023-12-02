@@ -1,9 +1,10 @@
 package controllers;
 
 import java.util.Map;
+import java.util.Optional;
 
 public interface Controllers<E> {
-    E insertObject(Map<String,String> request);
+    Optional<E> insertObject(Map<String,String> request);
 
     boolean updateObject(Map<String,String> request);
 
