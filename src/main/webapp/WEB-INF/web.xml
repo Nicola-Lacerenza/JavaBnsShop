@@ -3,4 +3,11 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
          version="5.0">
+    <servlet>
+        <servlet-name>ProdottiServlet</servlet-name>
+    </servlet>         
+    <servlet-mapping>
+        <servlet-name>ProdottiServlet</servlet-name>
+        <url-pattern>/ProdottiServlet</url-pattern>
+    </servlet-mapping>
 </web-app>

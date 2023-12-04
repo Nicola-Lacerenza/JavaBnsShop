@@ -10,6 +10,7 @@ public class Colore {
 
     private String hex;
 
+    //costruttore di classe
     public Colore(int idColore, String nome, String rgb, String hex) {
         this.idColore = idColore;
         this.nome = nome;
@@ -17,6 +18,7 @@ public class Colore {
         this.hex = hex;
     }
 
+    //interfacciare il database conm l'applicazione
     public int getIdColore() {
         return idColore;
     }

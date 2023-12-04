@@ -14,7 +14,12 @@ public class ProdottiController implements Controllers<Prodotti> {
 
     @Override
     public Optional<Prodotti> insertObject(Map<String, String> request) {
-        Prodotti prodotto = new Prodotti(0,1,1,1,1,1);
+        int idModello = Integer.parseInt(request.get("id_modello"));
+        int idTaglia = Integer.parseInt(request.get("id_taglia"));
+        double prezzo = Double.parseDouble(request.get("prezzo"));
+        int quantita = Integer.parseInt(request.get("quantita"));
+        int statopubblicazione = Integer.parseInt(request.get("statopubblicazione"));
+        Prodotti prodotto = new Prodotti(0,idModello,idTaglia,prezzo,quantita,statopubblicazione);
         if (this.tabella.insertElement(prodotto)){
             return Optional.of(prodotto);
         }

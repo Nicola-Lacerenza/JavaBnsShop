@@ -7,6 +7,7 @@ import java.sql.*;
 
 public class Database {
 
+    // Metodi per interagire con il Database
     private static final String DATABASE_NAME="mydb";
     private static final String DATABASE_USERNAME="root";
     private static final String DATABASE_PASSWORD="0000";
@@ -16,18 +17,20 @@ public class Database {
     private Database(){}
 
     public static boolean insertElement(Map<String,String> fields,String tableName ){
-        String query="INSERT INTO PRODOTTI(id_modello,id_taglia,prezzo,quantita,statopubblicazione) VALUES('1','1','1','1','1')";
+        int idModello = Integer.parseInt(fields.get("id_modello"));
+        int idTaglia = Integer.parseInt(fields.get("id_taglia"));
+        double prezzo = Double.parseDouble(fields.get("prezzo"));
+        int quantita = Integer.parseInt(fields.get("quantita"));
+        int statopubblicazione = Integer.parseInt(fields.get("statopubblicazione"));
+        String query="INSERT INTO "+tableName+"(id_modello,id_taglia,prezzo,quantita,statopubblicazione) VALUES('"+idModello+"','"+idTaglia+"','"+prezzo+"','"+quantita+"','"+statopubblicazione+"')";
         boolean output=true;
         Connection connection = null;
         Statement statement = null;
         try{
             connection=DriverManager.getConnection(DATABASE_URL,DATABASE_USERNAME,DATABASE_PASSWORD);
             statement=connection.createStatement();
-            if (statement.execute(query)){
-                System.out.println("Inserimento effettuato");
-            }else{
-                System.out.println("Errore");
-            }
+            statement.execute(query);
+            output=true;
         }catch(SQLException exception){
             output = false;
         }finally {
