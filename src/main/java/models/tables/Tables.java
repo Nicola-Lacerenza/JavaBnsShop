@@ -6,11 +6,11 @@ public interface Tables <E extends Oggetti<E>> {
 
     boolean  insertElement(E oggetto);
 
-    boolean updateElement(E oggetto,String id);
+    boolean updateElement(E oggetto,int id);
 
-    boolean deleteElement(String id);
+    boolean deleteElement(int id);
 
-    boolean getElement(String id);
+    boolean getElement(int id);
 
     boolean getAllElements();
 }

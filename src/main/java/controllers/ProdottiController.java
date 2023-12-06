@@ -14,8 +14,9 @@ public class ProdottiController implements Controllers<Prodotti> {
 
     @Override
     public Optional<Prodotti> insertObject(Map<String, String> request) {
-        int idModello = Integer.parseInt(request.get("id_modello"));
-        int idTaglia = Integer.parseInt(request.get("id_taglia"));
+        int idProdotto = Integer.parseInt(request.get("idprodotto"));
+        int idModello = Integer.parseInt(request.get("idmodello"));
+        int idTaglia = Integer.parseInt(request.get("idtaglia"));
         double prezzo = Double.parseDouble(request.get("prezzo"));
         int quantita = Integer.parseInt(request.get("quantita"));
         int statopubblicazione = Integer.parseInt(request.get("statopubblicazione"));
@@ -28,7 +29,14 @@ public class ProdottiController implements Controllers<Prodotti> {
 
     @Override
     public boolean updateObject(Map<String, String> request) {
-        return false;
+        int idProdotto = Integer.parseInt(request.get("idprodotto"));
+        int idModello = Integer.parseInt(request.get("idmodello"));
+        int idTaglia = Integer.parseInt(request.get("idtaglia"));
+        double prezzo = Double.parseDouble(request.get("prezzo"));
+        int quantita = Integer.parseInt(request.get("quantita"));
+        int statopubblicazione = Integer.parseInt(request.get("statopubblicazione"));
+        Prodotti prodotto = new Prodotti(idProdotto,idModello,idTaglia,prezzo,quantita,statopubblicazione);
+        return this.tabella.updateElement(prodotto,idProdotto);
     }
 
     @Override
