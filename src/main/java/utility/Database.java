@@ -12,7 +12,7 @@ import java.util.Optional;
 public class Database {
 
     // Metodi per interagire con il Database
-    private static final String DATABASE_NAME="mydb";
+    private static final String DATABASE_NAME="mydb" ;
     private static final String DATABASE_USERNAME="root";
     private static final String DATABASE_PASSWORD="0000";
     private static final String DATABASE_URL="jdbc:mysql://127.0.0.1:3306/" + DATABASE_NAME;
