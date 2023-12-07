@@ -4,7 +4,9 @@ import models.Prodotti;
 import utility.Database;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class ProdottiTable implements Tables <Prodotti> {
 
@@ -34,16 +36,16 @@ public class ProdottiTable implements Tables <Prodotti> {
 
     @Override
     public boolean deleteElement(int id) {
-        return false;
+        return Database.deleteElement(id,"PRODOTTI");
     }
 
     @Override
-    public boolean getElement(int id) {
-        return false;
+    public Optional<Prodotti> getElement(int id) {
+        return Database.getElement(id,"PRODOTTI");
     }
 
     @Override
-    public boolean getAllElements() {
-        return false;
+    public List<Prodotti> getAllElements() {
+        return Database.getAllElements("PRODOTTI");
     }
 }

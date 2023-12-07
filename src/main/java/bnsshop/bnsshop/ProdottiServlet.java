@@ -24,9 +24,51 @@ public class ProdottiServlet extends HttpServlet{
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException,IOException{
-        response.getWriter().println("Hello world!");
-        response.getWriter().flush();
-        response.getWriter().close();
+        int idProdotto;
+        try{
+            idProdotto = Integer.parseInt((String) request.getAttribute("idprodotto"));
+        }catch(NumberFormatException exception){
+            idProdotto=-1;
+        }
+        Optional<Prodotti> prodotto=null;
+        List<Prodotti> prodotti=null;
+
+        if (idProdotto!=-1){
+            prodotto = this.controller.getObject(idProdotto);
+        }else{
+            prodotti = this.controller.getAllObjects();
+        }
+
+        if (prodotto!=null || prodotti!=null){
+            if (prodotto!=null){
+                PrintWriter writer= response.getWriter();
+                response.setContentLength(prodotto.get().toString().length());
+                response.setContentType("application/json");
+                response.setStatus(200);
+                writer.println(prodotto.get().toString());
+                writer.flush();
+                writer.close();
+            }else{
+                PrintWriter writer= response.getWriter();
+                response.setContentLength(prodotti.toString().length());
+                response.setContentType("application/json");
+                response.setStatus(200);
+                writer.println(prodotti.toString());
+                writer.flush();
+                writer.close();
+            }
+        }else{
+            String message = "Internal server error";
+            JSONObject error = new JSONObject();
+            error.put("message", message);
+            PrintWriter writer= response.getWriter();
+            response.setContentLength(error.toString().length());
+            response.setContentType("application/json");
+            response.setStatus(500);
+            writer.println(error.toString());
+            writer.flush();
+            writer.close();
+        }
     }
 
     @Override
@@ -122,8 +164,28 @@ public class ProdottiServlet extends HttpServlet{
 
     @Override
     public void doDelete(HttpServletRequest request,HttpServletResponse response) throws ServletException,IOException{
-        response.getWriter().println("Hello world!");
-        response.getWriter().flush();
-        response.getWriter().close();
+        int idProdotto= Integer.parseInt((String) request.getAttribute("idprodotto"));
+        if (this.controller.deleteObject(idProdotto)){
+            String message = "Product deleted Correctly.";
+            PrintWriter writer= response.getWriter();
+            response.setContentLength(message.length());
+            response.setContentType("application/json");
+            response.setStatus(200);
+            writer.println(message);
+            writer.flush();
+            writer.close();
+        }else{
+            String message = "Internal server error";
+            JSONObject error = new JSONObject();
+            error.put("message", message);
+            PrintWriter writer= response.getWriter();
+            response.setContentLength(error.toString().length());
+            response.setContentType("application/json");
+            response.setStatus(500);
+            writer.println(error.toString());
+            writer.flush();
+            writer.close();
+        }
     }
+
 }

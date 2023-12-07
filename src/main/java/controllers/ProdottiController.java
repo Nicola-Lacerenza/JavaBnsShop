@@ -3,6 +3,7 @@ package controllers;
 import models.Prodotti;
 import models.tables.ProdottiTable;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -40,17 +41,17 @@ public class ProdottiController implements Controllers<Prodotti> {
     }
 
     @Override
-    public boolean deleteObject(Map<String, String> request) {
-        return false;
+    public boolean deleteObject(int objectid) {
+        return this.tabella.deleteElement(objectid);
     }
 
     @Override
-    public String getObject(Map<String, String> request) {
-        return null;
+    public Optional<Prodotti> getObject(int objectid) {
+        return this.tabella.getElement(objectid);
     }
 
     @Override
-    public String getAllObjects(Map<String, String> request) {
-        return null;
+    public List<Prodotti> getAllObjects() {
+        return this.tabella.getAllElements();
     }
 }

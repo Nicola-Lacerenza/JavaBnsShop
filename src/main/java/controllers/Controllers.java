@@ -1,5 +1,6 @@
 package controllers;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -8,11 +9,11 @@ public interface Controllers<E> {
 
     boolean updateObject(Map<String,String> request);
 
-    boolean deleteObject(Map<String,String> request);
+    boolean deleteObject(int objectid);
 
-    String  getObject(Map<String,String> request);
+    Optional<E>  getObject(int objectid);
 
-    String getAllObjects(Map<String,String> request);
+    List<E> getAllObjects();
 
 
 

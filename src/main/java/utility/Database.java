@@ -1,9 +1,13 @@
 package utility;
 
 import com.google.protobuf.ByteString;
+import models.Prodotti;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.sql.*;
+import java.util.Optional;
 
 public class Database {
 
@@ -84,6 +88,121 @@ public class Database {
                     connection.close();
                 } catch (SQLException e) {
                     output= false;
+                }
+            }
+        }
+        return output;
+    }
+
+    public static boolean deleteElement(int id, String tablename) {
+        String query="DELETE FROM "+tablename+" WHERE idprodotto='"+id+"'";
+        boolean output=true;
+        Connection connection = null;
+        Statement statement = null;
+        try{
+            connection=DriverManager.getConnection(DATABASE_URL,DATABASE_USERNAME,DATABASE_PASSWORD);
+            statement=connection.createStatement();
+            statement.execute(query);
+            output=true;
+        }catch(SQLException exception){
+            output = false;
+        }finally {
+            if (statement != null) {
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    output = false;
+                }
+            }
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    output= false;
+                }
+            }
+        }
+        return output;
+    }
+
+
+    public static Optional<Prodotti> getElement(int id, String tablename) {
+        String query="SELECT * FROM "+tablename+" WHERE idprodotto='"+id+"'";
+        Optional<Prodotti> output=Optional.empty();
+        Connection connection = null;
+        Statement statement = null;
+        ResultSet results = null;
+        try{
+            connection=DriverManager.getConnection(DATABASE_URL,DATABASE_USERNAME,DATABASE_PASSWORD);
+            statement=connection.createStatement();
+            results=statement.executeQuery(query);
+            while (results.next()){
+                int idProdotto = results.getInt("idprodotto");
+                int idModello = results.getInt("idmodello");
+                int idTaglia = results.getInt("idtaglia");
+                double prezzo = results.getDouble("prezzo");
+                int quantita = results.getInt("quantita");
+                int statopubblicazione = results.getInt("statopubblicazione");
+                Prodotti prodotto = new Prodotti(idProdotto,idModello,idTaglia,prezzo,quantita,statopubblicazione);
+                output=Optional.of(prodotto);
+            }
+        }catch(SQLException exception){
+            output=Optional.empty();
+        }finally {
+            if (statement != null) {
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    output=Optional.empty();
+                }
+            }
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    output=Optional.empty();
+                }
+            }
+        }
+        return output;
+    }
+
+    public static List<Prodotti> getAllElements(String tablename) {
+        String query="SELECT * FROM " + tablename;
+        List<Prodotti> output= new ArrayList<>();
+        Connection connection = null;
+        Statement statement = null;
+        ResultSet results = null;
+
+        try{
+            connection=DriverManager.getConnection(DATABASE_URL,DATABASE_USERNAME,DATABASE_PASSWORD);
+            statement=connection.createStatement();
+            results=statement.executeQuery(query);
+            while (results.next()){
+                int idProdotto = results.getInt("idprodotto");
+                int idModello = results.getInt("idmodello");
+                int idTaglia = results.getInt("idtaglia");
+                double prezzo = results.getDouble("prezzo");
+                int quantita = results.getInt("quantita");
+                int statopubblicazione = results.getInt("statopubblicazione");
+                Prodotti prodotto = new Prodotti(idProdotto,idModello,idTaglia,prezzo,quantita,statopubblicazione);
+                output.add(prodotto);
+            }
+        }catch(SQLException exception){
+            output.clear();
+        }finally {
+            if (statement != null) {
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    output.clear();
+                }
+            }
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    output.clear();
                 }
             }
         }

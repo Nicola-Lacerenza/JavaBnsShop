@@ -2,6 +2,9 @@ package models.tables;
 
 import models.Oggetti;
 
+import java.util.List;
+import java.util.Optional;
+
 public interface Tables <E extends Oggetti<E>> {
 
     boolean  insertElement(E oggetto);
@@ -10,7 +13,7 @@ public interface Tables <E extends Oggetti<E>> {
 
     boolean deleteElement(int id);
 
-    boolean getElement(int id);
+    Optional<E> getElement(int id);
 
-    boolean getAllElements();
+    List<E> getAllElements();
 }
