@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class BrandController implements Controllers<Brand>{
+public class BrandController implements Controllers<Brand> {
     private BrandTable tabella;
     public BrandController(){
         this.tabella= new BrandTable();
