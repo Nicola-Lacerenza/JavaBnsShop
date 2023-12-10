@@ -1,6 +1,6 @@
 package models;
 
-public class Categoria {
+public class Categoria implements Oggetti<Categoria> {
     private int idCategoria;
 
     private String nomeCategoria;

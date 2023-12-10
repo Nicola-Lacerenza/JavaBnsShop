@@ -1,6 +1,6 @@
 package models;
 
-public class Brand {
+public class Brand implements Oggetti<Brand> {
 
     private int idBrand;
 
