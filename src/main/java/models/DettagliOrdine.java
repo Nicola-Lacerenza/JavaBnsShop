@@ -1,4 +1,4 @@
 package models;
 
-public class DettagliOrdine {
+public class DettagliOrdine implements Oggetti<DettagliOrdine> {
 }

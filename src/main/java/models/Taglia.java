@@ -1,6 +1,6 @@
 package models;
 
-public class Taglia {
+public class Taglia implements Oggetti<Taglia>{
 
     private int idTaglia;
 

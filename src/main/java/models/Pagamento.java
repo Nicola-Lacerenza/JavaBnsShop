@@ -1,4 +1,4 @@
 package models;
 
-public class Pagamento {
+public class Pagamento implements Oggetti<Pagamento>{
 }

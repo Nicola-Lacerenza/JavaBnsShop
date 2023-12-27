@@ -1,6 +1,6 @@
 package models;
 
-public class Immagini {
+public class Immagini implements Oggetti<Immagini>{
 
     private int idImmagini;
 

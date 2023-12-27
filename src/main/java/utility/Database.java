@@ -1,6 +1,7 @@
 package utility;
 
 import com.google.protobuf.ByteString;
+import models.Oggetti;
 import models.Prodotti;
 
 import java.util.ArrayList;
@@ -126,9 +127,9 @@ public class Database {
     }
 
 
-    public static Optional<Prodotti> getElement(int id, String tablename) {
+    public static <E extends Oggetti<E>> Optional<E> getElement(int id, String tablename) {
         String query="SELECT * FROM "+tablename+" WHERE idprodotto='"+id+"'";
-        Optional<Prodotti> output=Optional.empty();
+        Optional<E> output=Optional.empty();
         Connection connection = null;
         Statement statement = null;
         ResultSet results = null;
@@ -137,14 +138,18 @@ public class Database {
             statement=connection.createStatement();
             results=statement.executeQuery(query);
             while (results.next()){
-                int idProdotto = results.getInt("idprodotto");
-                int idModello = results.getInt("idmodello");
-                int idTaglia = results.getInt("idtaglia");
-                double prezzo = results.getDouble("prezzo");
-                int quantita = results.getInt("quantita");
-                int statopubblicazione = results.getInt("statopubblicazione");
-                Prodotti prodotto = new Prodotti(idProdotto,idModello,idTaglia,prezzo,quantita,statopubblicazione);
-                output=Optional.of(prodotto);
+                E object= null;
+                if (tablename.contains("prodotti")){
+                    int idProdotto = results.getInt("idprodotto");
+                    int idModello = results.getInt("idmodello");
+                    int idTaglia = results.getInt("idtaglia");
+                    double prezzo = results.getDouble("prezzo");
+                    int quantita = results.getInt("quantita");
+                    int statopubblicazione = results.getInt("statopubblicazione");
+                    object = (E) new Prodotti(idProdotto,idModello,idTaglia,prezzo,quantita,statopubblicazione);
+                }
+                // Per ogni tabella creare l'object
+                output=Optional.of(object);
             }
         }catch(SQLException exception){
             output=Optional.empty();
@@ -167,9 +172,9 @@ public class Database {
         return output;
     }
 
-    public static List<Prodotti> getAllElements(String tablename) {
+    public static <E extends Oggetti<E>> List<E> getAllElements(String tablename) {
         String query="SELECT * FROM " + tablename;
-        List<Prodotti> output= new ArrayList<>();
+        List<E> output= new ArrayList<>();
         Connection connection = null;
         Statement statement = null;
         ResultSet results = null;
@@ -186,7 +191,7 @@ public class Database {
                 int quantita = results.getInt("quantita");
                 int statopubblicazione = results.getInt("statopubblicazione");
                 Prodotti prodotto = new Prodotti(idProdotto,idModello,idTaglia,prezzo,quantita,statopubblicazione);
-                output.add(prodotto);
+                output.add((E)prodotto);
             }
         }catch(SQLException exception){
             output.clear();

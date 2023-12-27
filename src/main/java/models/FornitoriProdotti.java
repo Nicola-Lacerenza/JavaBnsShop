@@ -2,7 +2,7 @@ package models;
 
 import java.util.Calendar;
 
-public class FornitoriProdotti {
+public class FornitoriProdotti implements Oggetti<FornitoriProdotti> {
 
     private int idFornitore;
 

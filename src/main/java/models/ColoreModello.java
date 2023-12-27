@@ -1,6 +1,6 @@
 package models;
 
-public class ColoreModello {
+public class ColoreModello implements Oggetti<ColoreModello> {
 
   private int idColore;
 

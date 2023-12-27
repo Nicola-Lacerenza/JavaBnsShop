@@ -1,4 +1,7 @@
 package models;
 
-public class CodiceSconto {
+import models.tables.Tables;
+
+public class CodiceSconto implements Oggetti<CodiceSconto> {
+
 }

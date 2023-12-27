@@ -1,4 +1,4 @@
 package models;
 
-public class Indirizzo {
+public class Indirizzo implements Oggetti<Indirizzo> {
 }

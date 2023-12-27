@@ -5,9 +5,66 @@
          version="5.0">
     <servlet>
         <servlet-name>ProdottiServlet</servlet-name>
+        <servlet-class>bnsshop.bnsshop.ProdottiServlet</servlet-class>
     </servlet>         
     <servlet-mapping>
         <servlet-name>ProdottiServlet</servlet-name>
         <url-pattern>/ProdottiServlet</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>LoginServlet</servlet-name>
+        <servlet-class>bnsshop.bnsshop.AuthServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>LoginServlet</servlet-name>
+        <url-pattern>/LoginServlet</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>BrandServlet</servlet-name>
+        <servlet-class>bnsshop.bnsshop.BrandServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>BrandServlet</servlet-name>
+        <url-pattern>/BrandServlet</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>CategoriaServlet</servlet-name>
+        <servlet-class>bnsshop.bnsshop.CategoriaServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CategoriaServlet</servlet-name>
+        <url-pattern>/CategoriaServlet</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>ColoreModelloServlet</servlet-name>
+        <servlet-class>bnsshop.bnsshop.ColoreModelloServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ColoreModelloServlet</servlet-name>
+        <url-pattern>/ColoreModelloServlet</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>ColoreServlet</servlet-name>
+        <servlet-class>bnsshop.bnsshop.ColoreServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ColoreServlet</servlet-name>
+        <url-pattern>/ColoreServlet</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>FornitoriProdottiServlet</servlet-name>
+        <servlet-class>bnsshop.bnsshop.FornitoriProdottiServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>FornitoriProdottiServlet</servlet-name>
+        <url-pattern>/FornitoriProdottiServlet</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>FornitoriServlet</servlet-name>
+        <servlet-class>bnsshop.bnsshop.FornitoriServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>FornitoriServlet</servlet-name>
+        <url-pattern>/FornitoriServlet</url-pattern>
     </servlet-mapping>
 </web-app>

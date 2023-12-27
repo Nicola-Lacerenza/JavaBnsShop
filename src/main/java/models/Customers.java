@@ -1,4 +1,4 @@
 package models;
 
-public class Customers {
+public class Customers implements Oggetti<Customers> {
 }
