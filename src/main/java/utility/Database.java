@@ -22,12 +22,23 @@ public class Database {
     private Database(){}
 
     public static boolean insertElement(Map<String,String> fields,String tableName ){
-        int idProdotto = Integer.parseInt(fields.get("idprodotto"));
-        int idModello = Integer.parseInt(fields.get("idmodello"));
-        int idTaglia = Integer.parseInt(fields.get("idtaglia"));
-        double prezzo = Double.parseDouble(fields.get("prezzo"));
-        int quantita = Integer.parseInt(fields.get("quantita"));
-        int statopubblicazione = Integer.parseInt(fields.get("statopubblicazione"));
+        List<String> nomecampi = new ArrayList<>();
+        List<String> valoreCampi = new ArrayList<>();
+        if (tableName.contains("prodotti")){
+            nomecampi.add("idmodello");
+            nomecampi.add("idtaglia");
+            nomecampi.add("prezzo");
+            nomecampi.add("quantita");
+            nomecampi.add("statopubblicazione");
+            valoreCampi.add(fields.get("idmodello"));
+            valoreCampi.add(fields.get("idtaglia"));
+            valoreCampi.add(fields.get("prezzo"));
+            valoreCampi.add(fields.get("quantita"));
+            valoreCampi.add(fields.get("statopubblicazione"));
+
+        }
+        String nomi = nomecampi.stream()
+                .map((element) =>)
         String query="INSERT INTO "+tableName+"(idprodotto,idmodello,idtaglia,prezzo,quantita,statopubblicazione) VALUES('"+idProdotto+"','"+idModello+"','"+idTaglia+"','"+prezzo+"','"+quantita+"','"+statopubblicazione+"')";
         boolean output=true;
         Connection connection = null;
@@ -139,6 +150,7 @@ public class Database {
             results=statement.executeQuery(query);
             while (results.next()){
                 E object= null;
+                //Table Prodotti
                 if (tablename.contains("prodotti")){
                     int idProdotto = results.getInt("idprodotto");
                     int idModello = results.getInt("idmodello");
@@ -148,7 +160,6 @@ public class Database {
                     int statopubblicazione = results.getInt("statopubblicazione");
                     object = (E) new Prodotti(idProdotto,idModello,idTaglia,prezzo,quantita,statopubblicazione);
                 }
-                // Per ogni tabella creare l'object
                 output=Optional.of(object);
             }
         }catch(SQLException exception){

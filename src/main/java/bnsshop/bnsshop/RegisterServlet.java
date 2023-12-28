@@ -1,20 +1,21 @@
 package bnsshop.bnsshop;
 
-import controllers.BrandController;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.json.JSONObject;
+import utility.Criptografia;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
-@WebServlet(name = "LoginServlet", value = "/LoginServlet")
-public class AuthServlet extends HttpServlet{
+@WebServlet(name = "RegisterServlet", value = "/RegisterServlet")
+public class RegisterServlet extends HttpServlet{
 
     @Override
     public void init() throws ServletException{
@@ -40,13 +41,16 @@ public class AuthServlet extends HttpServlet{
         }
         String json=builder.toString();
         JSONObject object = new JSONObject(json);
-        String userId= object.getString("userId");
+        String nome= object.getString("nome");
+        String cognome= object.getString("cognome");
+        String dataNascita= object.getString("data_nascita");
+        String luogoNascita= object.getString("luogo_nascita");
+        String sesso= object.getString("sesso");
+        String indirizzoEmail= object.getString("email");
+        String telefono= object.getString("telefono");
         String password= object.getString("password");
+        String passwordHashed= Criptografia.get_SHA_512_SecurePassword(password,"");
 
-        //response.addHeader("Access-Control-Allow-Origin", "http://localhost:4200/" );
-        //response.addHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, HEAD" );
-        //response.addHeader("Access-Control-Allow-Headers", "X-PINGOTHER" );
-        //response.addHeader("Access-Control-Max-Age", "1728000" );
         String message = "prova";
         JSONObject json1 = new JSONObject();
         json1.put("message",message);
