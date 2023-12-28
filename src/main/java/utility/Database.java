@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.sql.*;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class Database {
 
@@ -35,11 +36,42 @@ public class Database {
             valoreCampi.add(fields.get("prezzo"));
             valoreCampi.add(fields.get("quantita"));
             valoreCampi.add(fields.get("statopubblicazione"));
-
+        }
+        if (tableName.contains("brand")){
+            nomecampi.add("nome");
+            nomecampi.add("descrizione");
+            valoreCampi.add(fields.get("nome"));
+            valoreCampi.add(fields.get("descrizione"));
+        }
+        if (tableName.contains("categoria")){
+            nomecampi.add("nomecategoria");
+            valoreCampi.add(fields.get("nomecategoria"));
+        }
+        if (tableName.contains("utenti")){
+            nomecampi.add("nome");
+            nomecampi.add("cognome");
+            nomecampi.add("data_nascita");
+            nomecampi.add("luogo_nascita");
+            nomecampi.add("sesso");
+            nomecampi.add("email");
+            nomecampi.add("telefono");
+            nomecampi.add("password");
+            valoreCampi.add(fields.get("nome"));
+            valoreCampi.add(fields.get("cognome"));
+            valoreCampi.add(fields.get("data_nascita"));
+            valoreCampi.add(fields.get("luogo_nascita"));
+            valoreCampi.add(fields.get("sesso"));
+            valoreCampi.add(fields.get("email"));
+            valoreCampi.add(fields.get("telofono"));
+            valoreCampi.add(fields.get("password"));
         }
         String nomi = nomecampi.stream()
-                .map((element) =>)
-        String query="INSERT INTO "+tableName+"(idprodotto,idmodello,idtaglia,prezzo,quantita,statopubblicazione) VALUES('"+idProdotto+"','"+idModello+"','"+idTaglia+"','"+prezzo+"','"+quantita+"','"+statopubblicazione+"')";
+                .collect(Collectors.joining(","));
+        String valori = valoreCampi.stream()
+                .map(s -> "'"+s+"'")
+                .collect(Collectors.joining(","));
+        String query="INSERT INTO "+tableName+"("+nomi+") VALUES("+valori+")";
+        System.out.println(query);
         boolean output=true;
         Connection connection = null;
         Statement statement = null;
@@ -50,19 +82,21 @@ public class Database {
             output=true;
         }catch(SQLException exception){
             output = false;
+            System.out.println("Errore1");
         }finally {
-            if (statement != null) {
+            /*if (statement != null) {
                 try {
                     statement.close();
                 } catch (SQLException e) {
                     output = false;
                 }
-            }
+            }*/
             if (connection != null) {
                 try {
                     connection.close();
                 } catch (SQLException e) {
                     output= false;
+                    System.out.println("Errore2");
                 }
             }
         }
@@ -81,9 +115,13 @@ public class Database {
         Connection connection = null;
         Statement statement = null;
         try{
+            System.out.println("test0");
             connection=DriverManager.getConnection(DATABASE_URL,DATABASE_USERNAME,DATABASE_PASSWORD);
+            System.out.println("test1");
             statement=connection.createStatement();
+            System.out.println("test2");
             statement.execute(query);
+            System.out.println("test3");
             output=true;
         }catch(SQLException exception){
             output = false;
