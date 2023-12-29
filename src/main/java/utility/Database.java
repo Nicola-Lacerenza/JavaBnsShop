@@ -1,14 +1,14 @@
 package utility;
 
 import com.google.protobuf.ByteString;
-import models.Oggetti;
-import models.Prodotti;
+import models.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import javax.xml.crypto.Data;
+import java.awt.*;
+import java.sql.Date;
+import java.util.*;
 import java.sql.*;
-import java.util.Optional;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class Database {
@@ -25,6 +25,72 @@ public class Database {
     public static boolean insertElement(Map<String,String> fields,String tableName ){
         List<String> nomecampi = new ArrayList<>();
         List<String> valoreCampi = new ArrayList<>();
+        if (tableName.contains("brand")){
+            nomecampi.add("nome");
+            nomecampi.add("descrizione");
+            valoreCampi.add(fields.get("nome"));
+            valoreCampi.add(fields.get("descrizione"));
+        }
+
+        if (tableName.contains("categoria")){
+            nomecampi.add("nomecategoria");
+            valoreCampi.add(fields.get("nomecategoria"));
+        }
+
+        if (tableName.contains("colore")){
+            nomecampi.add("nome");
+            nomecampi.add("rgb");
+            nomecampi.add("hex");
+            valoreCampi.add(fields.get("nome"));
+            valoreCampi.add(fields.get("rgb"));
+            valoreCampi.add(fields.get("hex"));
+        }
+
+        if (tableName.contains("colore_has_modello")){
+            nomecampi.add("idcolore");
+            nomecampi.add("idmodello");
+            valoreCampi.add(fields.get("idcolore"));
+            valoreCampi.add(fields.get("idmodello"));
+        }
+
+        if (tableName.contains("fornitori")){
+            nomecampi.add("nome");
+            nomecampi.add("cognome");
+            valoreCampi.add(fields.get("nome"));
+            valoreCampi.add(fields.get("cognome"));
+        }
+
+        if (tableName.contains("fornitori_has_prodotti")){
+            nomecampi.add("idprodotti");
+            nomecampi.add("idfornitore");
+            nomecampi.add("data");
+            nomecampi.add("importo");
+            nomecampi.add("descrizione");
+            valoreCampi.add(fields.get("idprodotti"));
+            valoreCampi.add(fields.get("idfornitore"));
+            valoreCampi.add(fields.get("data"));
+            valoreCampi.add(fields.get("importo"));
+            valoreCampi.add(fields.get("descrizione"));
+        }
+
+        if (tableName.contains("immagini")){
+            nomecampi.add("idprodotti");
+            nomecampi.add("url");
+            valoreCampi.add(fields.get("idprodotti"));
+            valoreCampi.add(fields.get("url"));
+        }
+
+        if (tableName.contains("modello")){
+            nomecampi.add("idcategoria");
+            nomecampi.add("idbrand");
+            nomecampi.add("nome");
+            nomecampi.add("descrizione");
+            valoreCampi.add(fields.get("idcategoria"));
+            valoreCampi.add(fields.get("idbrand"));
+            valoreCampi.add(fields.get("nome"));
+            valoreCampi.add(fields.get("descrizione"));
+        }
+
         if (tableName.contains("prodotti")){
             nomecampi.add("idmodello");
             nomecampi.add("idtaglia");
@@ -37,16 +103,12 @@ public class Database {
             valoreCampi.add(fields.get("quantita"));
             valoreCampi.add(fields.get("statopubblicazione"));
         }
-        if (tableName.contains("brand")){
-            nomecampi.add("nome");
-            nomecampi.add("descrizione");
-            valoreCampi.add(fields.get("nome"));
-            valoreCampi.add(fields.get("descrizione"));
+
+        if (tableName.contains("taglia")){
+            nomecampi.add("taglia");
+            valoreCampi.add(fields.get("taglia"));
         }
-        if (tableName.contains("categoria")){
-            nomecampi.add("nomecategoria");
-            valoreCampi.add(fields.get("nomecategoria"));
-        }
+
         if (tableName.contains("utenti")){
             nomecampi.add("nome");
             nomecampi.add("cognome");
@@ -145,7 +207,7 @@ public class Database {
     }
 
     public static boolean deleteElement(int id, String tablename) {
-        String query="DELETE FROM "+tablename+" WHERE idprodotto='"+id+"'";
+        String query="DELETE FROM "+tablename+" WHERE id='"+id+"'";
         boolean output=true;
         Connection connection = null;
         Statement statement = null;
@@ -177,7 +239,7 @@ public class Database {
 
 
     public static <E extends Oggetti<E>> Optional<E> getElement(int id, String tablename) {
-        String query="SELECT * FROM "+tablename+" WHERE idprodotto='"+id+"'";
+        String query="SELECT * FROM "+tablename+" WHERE id='"+id+"'";
         Optional<E> output=Optional.empty();
         Connection connection = null;
         Statement statement = null;
@@ -188,15 +250,72 @@ public class Database {
             results=statement.executeQuery(query);
             while (results.next()){
                 E object= null;
-                //Table Prodotti
+
+                if (tablename.contains("brand")){
+                    String nome = results.getString("nome");
+                    String descrizione = results.getString("descrizione");
+                    object = (E) new Brand(id,nome,descrizione);
+                }
+
+                if (tablename.contains("categoria")){
+                    String nomecategoria = results.getString("nomecategoria");
+                    object = (E) new Categoria(id,nomecategoria);
+                }
+
+                if (tablename.contains("colore")){
+                    String nome = results.getString("nome");
+                    String rgb = results.getString("rgb");
+                    String hex = results.getString("hex");
+                    object = (E) new Colore(id,nome,rgb,hex);
+                }
+
+                if (tablename.contains("colore_has_modello")){
+                    int idcolore = results.getInt("idcolore");
+                    int idmodello = results.getInt("idmodello");
+                    object = (E) new ColoreModello(idcolore,idmodello);
+                }
+
+                if (tablename.contains("fornitori")){
+                    String nome = results.getString("nome");
+                    String cognome = results.getString("cognome");
+                    object = (E) new Fornitori(id,nome,cognome);
+                }
+
+                if (tablename.contains("fornitori_has_prodotti")){
+                    int idprodotti = results.getInt("idprodotti");
+                    int idfornitore = results.getInt("idfornitore");
+                    Data data = (Data) results.getDate("data");
+                    int importo = results.getInt("importo");
+                    String descrizione = results.getString("descrizione");
+                    object = (E) new FornitoriProdotti(idprodotti,idfornitore, (Calendar) data,importo,descrizione);
+                }
+
+                if (tablename.contains("immagini")){
+                    int idprodotti = results.getInt("idprodotti");
+                    String url = results.getString("url");
+                    object = (E) new Immagini(id,idprodotti,url);
+                }
+
+                if (tablename.contains("modello")){
+                    int idcategoria = results.getInt("idcategoria");
+                    int idbrand = results.getInt("idbrand");
+                    String nome = results.getString("nome");
+                    String descrizione = results.getString("descrizione");
+                    object = (E) new Modello(id,idcategoria,idbrand,nome,descrizione);
+                }
+
                 if (tablename.contains("prodotti")){
-                    int idProdotto = results.getInt("idprodotto");
                     int idModello = results.getInt("idmodello");
                     int idTaglia = results.getInt("idtaglia");
                     double prezzo = results.getDouble("prezzo");
                     int quantita = results.getInt("quantita");
                     int statopubblicazione = results.getInt("statopubblicazione");
-                    object = (E) new Prodotti(idProdotto,idModello,idTaglia,prezzo,quantita,statopubblicazione);
+                    object = (E) new Prodotti(id,idModello,idTaglia,prezzo,quantita,statopubblicazione);
+                }
+
+                if (tablename.contains("taglia")){
+                    String taglia = results.getString("taglia");
+                    object = (E) new Taglia(id,taglia);
                 }
                 output=Optional.of(object);
             }
