@@ -20,6 +20,14 @@
         <url-pattern>/LoginServlet</url-pattern>
     </servlet-mapping>
     <servlet>
+        <servlet-name>RegisterServlet</servlet-name>
+        <servlet-class>bnsshop.bnsshop.RegisterServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>RegisterServlet</servlet-name>
+        <url-pattern>/RegisterServlet</url-pattern>
+    </servlet-mapping>
+    <servlet>
         <servlet-name>BrandServlet</servlet-name>
         <servlet-class>bnsshop.bnsshop.BrandServlet</servlet-class>
     </servlet>
@@ -67,7 +75,7 @@
         <servlet-name>FornitoriServlet</servlet-name>
         <url-pattern>/FornitoriServlet</url-pattern>
     </servlet-mapping>
-    <filter>
+    <!-- <filter>
         <filter-name>CorsFilter</filter-name>
         <filter-class>com.thetransactioncompany.cors.CORSFilter</filter-class>
         <init-param>
@@ -96,5 +104,5 @@
     <filter-mapping>
         <filter-name>CorsFilter</filter-name>
         <url-pattern>/*</url-pattern>
-    </filter-mapping>
+    </filter-mapping> -->
 </web-app>

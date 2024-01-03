@@ -1,6 +1,8 @@
 package controllers;
 
 import com.sun.net.httpserver.Request;
+import netscape.javascript.JSObject;
+import org.json.JSONObject;
 import utility.Database;
 
 import java.util.List;
@@ -13,12 +15,15 @@ public class UtentiController implements Controllers<String> {
     }
 
     @Override
-    public Optional<String> insertObject(Map<String, String> request) {
+    public Optional<String> insertObject(Map<String, String> request) { return Optional.empty();}
+
+    public Optional<String> insertObject(JSONObject request) {
         if (Database.insertElement(request,"utenti")){
             return Optional.of("Utente registrato correttamente");
         }
         return Optional.empty();
     }
+
 
     @Override
     public boolean updateObject(Map<String, String> request) {

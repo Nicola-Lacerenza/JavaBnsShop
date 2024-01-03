@@ -22,7 +22,7 @@ public class Database {
 
     private Database(){}
 
-    public static boolean insertElement(Map<String,String> fields,String tableName ){
+    public static boolean insertElement(Map<String,String> fields,String tableName){
         List<String> nomecampi = new ArrayList<>();
         List<String> valoreCampi = new ArrayList<>();
         if (tableName.contains("brand")){
@@ -146,13 +146,13 @@ public class Database {
             output = false;
             System.out.println("Errore1");
         }finally {
-            /*if (statement != null) {
+            if (statement != null) {
                 try {
                     statement.close();
                 } catch (SQLException e) {
                     output = false;
                 }
-            }*/
+            }
             if (connection != null) {
                 try {
                     connection.close();

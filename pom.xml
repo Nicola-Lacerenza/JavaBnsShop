@@ -51,11 +51,11 @@
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.thetransactioncompany/cors-filter -->
-        <dependency>
+        <!--<dependency>
             <groupId>com.thetransactioncompany</groupId>
             <artifactId>cors-filter</artifactId>
             <version>3.0</version>
-        </dependency>
+        </dependency> -->
     </dependencies>
 
     <build>

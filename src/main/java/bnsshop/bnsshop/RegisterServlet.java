@@ -53,7 +53,7 @@ public class RegisterServlet extends HttpServlet{
         String telefono= object.getString("telefono");
         String password= object.getString("password");
         String passwordHashed= Criptografia.get_SHA_512_SecurePassword(password,"");
-        Map<String,String> request1 = new HashMap<>();
+        /*Map<String,String> request1 = new HashMap<>();
         request1.put("nome",nome);
         request1.put("cognome",cognome);
         request1.put("data_nascita",dataNascita);
@@ -61,8 +61,9 @@ public class RegisterServlet extends HttpServlet{
         request1.put("sesso",sesso);
         request1.put("email",email);
         request1.put("telefono",telefono);
-        request1.put("password",passwordHashed);
-        Optional<String> output = controller.insertObject(request1);
+        request1.put("password",passwordHashed);*/
+        Optional<String> output = controller.insertObject(object);
+
         if (output.isPresent()) {
             String message = output.get();
             JSONObject json1 = new JSONObject();
@@ -79,6 +80,12 @@ public class RegisterServlet extends HttpServlet{
             JSONObject json1 = new JSONObject();
             json1.put("message", message);
             PrintWriter writer = response.getWriter();
+
+            response.addHeader("Access-Control-Allow-Origin","*");
+            response.addHeader("Access-Control-Allow-Methods","POST,GET,PUT,DELETE,HEAD,OPTIONS,TRACE");
+            response.addHeader("Access-Control-Allow-Headers","X-CUSTOM,Content-Length,Content-Type");
+            response.addHeader("Access-Control-Max-Age","86400");
+
             response.setContentLength(json1.toString().length());
             response.setContentType("application/json");
             response.setStatus(500);
@@ -96,4 +103,12 @@ public class RegisterServlet extends HttpServlet{
     public void doDelete(HttpServletRequest request,HttpServletResponse response) throws ServletException,IOException{
     }
 
+    @Override
+    public void doOptions(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        response.addHeader("Access-Control-Allow-Origin","*");
+        response.addHeader("Access-Control-Allow-Methods","POST,GET,PUT,DELETE,HEAD,OPTIONS,TRACE");
+        response.addHeader("Access-Control-Allow-Headers","X-CUSTOM,Content-Length,Content-Type");
+        response.addHeader("Access-Control-Max-Age","86400");
+        response.setStatus(HttpServletResponse.SC_ACCEPTED);
+    }
 }
