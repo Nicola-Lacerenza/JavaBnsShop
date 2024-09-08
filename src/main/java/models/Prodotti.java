@@ -1,5 +1,8 @@
 package models;
 
+import java.sql.ResultSet;
+import java.sql.Statement;
+
 public class Prodotti implements Oggetti<Prodotti>{
     private int idProdotto;
     private int idModello;
@@ -15,6 +18,9 @@ public class Prodotti implements Oggetti<Prodotti>{
         this.prezzo = prezzo;
         this.quantita = quantita;
         this.statoPubblicazione = statoPubblicazione;
+    }
+    public Prodotti(){
+        this(0,0,0,0,0,0);
     }
 
     public int getIdProdotto() {
@@ -39,5 +45,15 @@ public class Prodotti implements Oggetti<Prodotti>{
 
     public int getStatoPubblicazione() {
         return statoPubblicazione;
+    }
+
+    @Override
+    public Prodotti createObject() {
+        return null;
+    }
+
+    @Override
+    public Prodotti convertDBToJava(ResultSet rs) {
+        return null;
     }
 }

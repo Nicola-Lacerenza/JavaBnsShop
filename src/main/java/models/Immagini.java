@@ -1,5 +1,8 @@
 package models;
 
+import java.sql.ResultSet;
+import java.sql.Statement;
+
 public class Immagini implements Oggetti<Immagini>{
 
     private int idImmagini;
@@ -13,7 +16,9 @@ public class Immagini implements Oggetti<Immagini>{
         this.idProdotti = idProdotti;
         this.url = url;
     }
-
+    public Immagini(){
+        this(0,0,"");
+    }
     public int getIdImmagini() {
         return idImmagini;
     }
@@ -24,5 +29,15 @@ public class Immagini implements Oggetti<Immagini>{
 
     public String getUrl() {
         return url;
+    }
+
+    @Override
+    public Immagini createObject() {
+        return null;
+    }
+
+    @Override
+    public Immagini convertDBToJava(ResultSet rs) {
+        return null;
     }
 }

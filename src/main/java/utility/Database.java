@@ -22,143 +22,41 @@ public class Database {
 
     private Database(){}
 
-    public static boolean insertElement(Map<String,String> fields,String tableName){
-        List<String> nomecampi = new ArrayList<>();
-        List<String> valoreCampi = new ArrayList<>();
-        if (tableName.contains("brand")){
-            nomecampi.add("nome");
-            nomecampi.add("descrizione");
-            valoreCampi.add(fields.get("nome"));
-            valoreCampi.add(fields.get("descrizione"));
-        }
-
-        if (tableName.contains("categoria")){
-            nomecampi.add("nomecategoria");
-            valoreCampi.add(fields.get("nomecategoria"));
-        }
-
-        if (tableName.contains("colore")){
-            nomecampi.add("nome");
-            nomecampi.add("rgb");
-            nomecampi.add("hex");
-            valoreCampi.add(fields.get("nome"));
-            valoreCampi.add(fields.get("rgb"));
-            valoreCampi.add(fields.get("hex"));
-        }
-
-        if (tableName.contains("colore_has_modello")){
-            nomecampi.add("idcolore");
-            nomecampi.add("idmodello");
-            valoreCampi.add(fields.get("idcolore"));
-            valoreCampi.add(fields.get("idmodello"));
-        }
-
-        if (tableName.contains("fornitori")){
-            nomecampi.add("nome");
-            nomecampi.add("cognome");
-            valoreCampi.add(fields.get("nome"));
-            valoreCampi.add(fields.get("cognome"));
-        }
-
-        if (tableName.contains("fornitori_has_prodotti")){
-            nomecampi.add("idprodotti");
-            nomecampi.add("idfornitore");
-            nomecampi.add("data");
-            nomecampi.add("importo");
-            nomecampi.add("descrizione");
-            valoreCampi.add(fields.get("idprodotti"));
-            valoreCampi.add(fields.get("idfornitore"));
-            valoreCampi.add(fields.get("data"));
-            valoreCampi.add(fields.get("importo"));
-            valoreCampi.add(fields.get("descrizione"));
-        }
-
-        if (tableName.contains("immagini")){
-            nomecampi.add("idprodotti");
-            nomecampi.add("url");
-            valoreCampi.add(fields.get("idprodotti"));
-            valoreCampi.add(fields.get("url"));
-        }
-
-        if (tableName.contains("modello")){
-            nomecampi.add("idcategoria");
-            nomecampi.add("idbrand");
-            nomecampi.add("nome");
-            nomecampi.add("descrizione");
-            valoreCampi.add(fields.get("idcategoria"));
-            valoreCampi.add(fields.get("idbrand"));
-            valoreCampi.add(fields.get("nome"));
-            valoreCampi.add(fields.get("descrizione"));
-        }
-
-        if (tableName.contains("prodotti")){
-            nomecampi.add("idmodello");
-            nomecampi.add("idtaglia");
-            nomecampi.add("prezzo");
-            nomecampi.add("quantita");
-            nomecampi.add("statopubblicazione");
-            valoreCampi.add(fields.get("idmodello"));
-            valoreCampi.add(fields.get("idtaglia"));
-            valoreCampi.add(fields.get("prezzo"));
-            valoreCampi.add(fields.get("quantita"));
-            valoreCampi.add(fields.get("statopubblicazione"));
-        }
-
-        if (tableName.contains("taglia")){
-            nomecampi.add("taglia");
-            valoreCampi.add(fields.get("taglia"));
-        }
-
-        if (tableName.contains("utenti")){
-            nomecampi.add("nome");
-            nomecampi.add("cognome");
-            nomecampi.add("data_nascita");
-            nomecampi.add("luogo_nascita");
-            nomecampi.add("sesso");
-            nomecampi.add("email");
-            nomecampi.add("telefono");
-            nomecampi.add("password");
-            valoreCampi.add(fields.get("nome"));
-            valoreCampi.add(fields.get("cognome"));
-            valoreCampi.add(fields.get("data_nascita"));
-            valoreCampi.add(fields.get("luogo_nascita"));
-            valoreCampi.add(fields.get("sesso"));
-            valoreCampi.add(fields.get("email"));
-            valoreCampi.add(fields.get("telofono"));
-            valoreCampi.add(fields.get("password"));
-        }
-        String nomi = nomecampi.stream()
+    public static <T extends Oggetti<T>> T insertElement(Map<String,String> fields,String tableName,T model){
+        String nomi = fields.keySet().stream()
                 .collect(Collectors.joining(","));
-        String valori = valoreCampi.stream()
+        String valori = fields.values().stream()
                 .map(s -> "'"+s+"'")
                 .collect(Collectors.joining(","));
         String query="INSERT INTO "+tableName+"("+nomi+") VALUES("+valori+")";
         System.out.println(query);
-        boolean output=true;
+        T output;
+        T object=model.createObject();
         Connection connection = null;
         Statement statement = null;
         try{
             connection=DriverManager.getConnection(DATABASE_URL,DATABASE_USERNAME,DATABASE_PASSWORD);
             statement=connection.createStatement();
-            statement.execute(query);
-            output=true;
+            ResultSet rs = statement.executeQuery(query);
+            output=object.convertDBToJava(rs);
         }catch(SQLException exception){
-            output = false;
+            output = null;
             System.out.println("Errore1");
         }finally {
             if (statement != null) {
                 try {
                     statement.close();
                 } catch (SQLException e) {
-                    output = false;
+                    //Questo non é un errore è un warning
+                    e.printStackTrace();
                 }
             }
             if (connection != null) {
                 try {
                     connection.close();
                 } catch (SQLException e) {
-                    output= false;
-                    System.out.println("Errore2");
+                    //Questo non é un errore è un warning
+                    e.printStackTrace();
                 }
             }
         }

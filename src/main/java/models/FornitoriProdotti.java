@@ -1,5 +1,7 @@
 package models;
 
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.Calendar;
 
 public class FornitoriProdotti implements Oggetti<FornitoriProdotti> {
@@ -21,6 +23,9 @@ public class FornitoriProdotti implements Oggetti<FornitoriProdotti> {
         this.importo = importo;
         this.descrizione = descrizione;
     }
+    public FornitoriProdotti(){
+        this(0,0,Calendar.getInstance(),0,"");
+    }
 
     public int getIdFornitore() {
         return idFornitore;
@@ -40,5 +45,15 @@ public class FornitoriProdotti implements Oggetti<FornitoriProdotti> {
 
     public String getDescrizione() {
         return descrizione;
+    }
+
+    @Override
+    public FornitoriProdotti createObject() {
+        return null;
+    }
+
+    @Override
+    public FornitoriProdotti convertDBToJava(ResultSet rs) {
+        return null;
     }
 }

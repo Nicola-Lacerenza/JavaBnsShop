@@ -6,6 +6,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import models.Utenti;
 import org.json.JSONObject;
 import utility.Criptografia;
 
@@ -53,7 +54,7 @@ public class RegisterServlet extends HttpServlet{
         String telefono= object.getString("telefono");
         String password= object.getString("password");
         String passwordHashed= Criptografia.get_SHA_512_SecurePassword(password,"");
-        /*Map<String,String> request1 = new HashMap<>();
+        Map<String,String> request1 = new HashMap<>();
         request1.put("nome",nome);
         request1.put("cognome",cognome);
         request1.put("data_nascita",dataNascita);
@@ -61,11 +62,11 @@ public class RegisterServlet extends HttpServlet{
         request1.put("sesso",sesso);
         request1.put("email",email);
         request1.put("telefono",telefono);
-        request1.put("password",passwordHashed);*/
-        Optional<String> output = controller.insertObject(object);
+        request1.put("password",passwordHashed);
+        Optional<Utenti> output = controller.insertObject(request1);
 
         if (output.isPresent()) {
-            String message = output.get();
+            String message = output.get().toString();
             JSONObject json1 = new JSONObject();
             json1.put("message", message);
             PrintWriter writer = response.getWriter();

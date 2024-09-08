@@ -1,6 +1,10 @@
 package models;
 
-public interface Oggetti <E> {
-//indirizzare tutti gli oggetti
+import java.sql.ResultSet;
 
+public interface Oggetti <E> {
+
+    E createObject();
+
+    E convertDBToJava(ResultSet rs);
 }
