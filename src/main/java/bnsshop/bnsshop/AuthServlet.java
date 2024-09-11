@@ -44,6 +44,7 @@ public class AuthServlet extends HttpServlet{
         for (String line:rows){
             builder.append(line);
         }
+
         String json=builder.toString();
 
         // Converte la stringa JSON in un oggetto JSONObject
