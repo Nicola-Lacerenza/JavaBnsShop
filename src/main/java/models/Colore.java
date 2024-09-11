@@ -1,6 +1,7 @@
 package models;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 
 public class Colore implements Oggetti<Colore> {
@@ -43,11 +44,20 @@ public class Colore implements Oggetti<Colore> {
 
     @Override
     public Colore createObject() {
-        return null;
+        return new Colore();
     }
 
     @Override
     public Colore convertDBToJava(ResultSet rs) {
-        return null;
+        try{
+            int id1 = rs.getInt("idColore");
+            String nome = rs.getString("nome");
+            String rgb = rs.getString("rgb");
+            String hex = rs.getString("hex");
+            return new Colore(id1,nome,rgb,hex);
+        }catch (SQLException e){
+            e.printStackTrace();
+            return null;
+        }
     }
 }

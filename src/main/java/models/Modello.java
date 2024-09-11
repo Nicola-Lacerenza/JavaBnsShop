@@ -1,6 +1,7 @@
 package models;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 
 public class Modello implements Oggetti<Modello> {
@@ -49,11 +50,21 @@ public class Modello implements Oggetti<Modello> {
 
     @Override
     public Modello createObject() {
-        return null;
+        return new Modello();
     }
 
     @Override
     public Modello convertDBToJava(ResultSet rs) {
-        return null;
+        try{
+            int idModello = rs.getInt("idModello");
+            int idBrand = rs.getInt("idBrand");
+            int idCategoria = rs.getInt("idCategoria");
+            String nome = rs.getString("nome");
+            String descrizione = rs.getString("descrizione");
+            return new Modello(idModello, idBrand, idCategoria, nome, descrizione);
+        }catch (SQLException e){
+            e.printStackTrace();
+            return null;
+        }
     }
 }

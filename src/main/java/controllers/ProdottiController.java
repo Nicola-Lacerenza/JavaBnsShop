@@ -1,6 +1,7 @@
 package controllers;
 
 import models.Prodotti;
+import utility.Database;
 
 
 import java.util.List;
@@ -15,7 +16,11 @@ public class ProdottiController implements Controllers<Prodotti> {
 
     @Override
     public Optional<Prodotti> insertObject(Map<String, String> request) {
-        return Optional.empty();
+        Prodotti pC = Database.insertElement(request,"prodotti",new Prodotti());
+        if (pC==null){
+            return Optional.empty();
+        }
+        return Optional.of(pC);
     }
 
     @Override

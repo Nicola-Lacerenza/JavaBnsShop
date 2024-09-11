@@ -1,6 +1,7 @@
 package models;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 
 public class DettagliOrdine implements Oggetti<DettagliOrdine> {
@@ -51,11 +52,22 @@ public class DettagliOrdine implements Oggetti<DettagliOrdine> {
 
     @Override
     public DettagliOrdine createObject() {
-        return null;
+        return new DettagliOrdine();
     }
 
     @Override
     public DettagliOrdine convertDBToJava(ResultSet rs) {
-        return null;
+        try{
+            int idProdotti = rs.getInt("idProdotti");
+            int idOrdine = rs.getInt("idOrdine");
+            int quantita = rs.getInt("quantita");
+            int codiceSconto = rs.getInt("codiceSconto");
+            String spedizione = rs.getString("spedizione");
+            String dettagliOrdine = rs.getString("dettagliOrdine");
+            return new DettagliOrdine(idProdotti,idOrdine,quantita,codiceSconto,spedizione,dettagliOrdine);
+        }catch (SQLException e){
+            e.printStackTrace();
+            return null;
+        }
     }
 }

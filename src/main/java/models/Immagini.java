@@ -1,7 +1,9 @@
 package models;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Date;
 
 public class Immagini implements Oggetti<Immagini>{
 
@@ -33,11 +35,19 @@ public class Immagini implements Oggetti<Immagini>{
 
     @Override
     public Immagini createObject() {
-        return null;
+        return new Immagini();
     }
 
     @Override
     public Immagini convertDBToJava(ResultSet rs) {
-        return null;
+        try{
+            int idImmagini = rs.getInt("idImmagini");
+            int idProdotti = rs.getInt("idProdotti");
+            String url = rs.getString("url");
+            return new Immagini(idImmagini,idProdotti,url);
+        }catch (SQLException e){
+            e.printStackTrace();
+            return null;
+        }
     }
 }

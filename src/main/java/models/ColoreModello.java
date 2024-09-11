@@ -1,6 +1,7 @@
 package models;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Calendar;
 
@@ -35,6 +36,13 @@ public class ColoreModello implements Oggetti<ColoreModello> {
 
   @Override
   public ColoreModello convertDBToJava(ResultSet rs) {
-    return null;
+    try{
+      int idColore = rs.getInt("idColore");
+      int idModello = rs.getInt("idModello");
+      return new ColoreModello(idColore, idModello);
+    }catch (SQLException e){
+      e.printStackTrace();
+      return null;
+    }
   }
 }

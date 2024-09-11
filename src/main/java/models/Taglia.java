@@ -1,6 +1,7 @@
 package models;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 
 public class Taglia implements Oggetti<Taglia>{
@@ -28,11 +29,18 @@ public class Taglia implements Oggetti<Taglia>{
 
     @Override
     public Taglia createObject() {
-        return null;
+        return new Taglia();
     }
 
     @Override
     public Taglia convertDBToJava(ResultSet rs) {
-        return null;
+        try{
+            int idTaglia = rs.getInt("idTaglia");
+            String taglia = rs.getString("taglia");
+            return new Taglia(idTaglia, taglia);
+        }catch (SQLException e){
+            e.printStackTrace();
+            return null;
+        }
     }
 }

@@ -1,6 +1,7 @@
 package controllers;
 
 import models.Taglia;
+import utility.Database;
 
 
 import java.util.List;
@@ -15,7 +16,11 @@ public class TagliaController implements Controllers<Taglia> {
 
     @Override
     public Optional<Taglia> insertObject(Map<String, String> request) {
-        return Optional.empty();
+        Taglia t = Database.insertElement(request,"taglia",new Taglia());
+        if (t==null){
+            return Optional.empty();
+        }
+        return Optional.of(t);
     }
 
     @Override

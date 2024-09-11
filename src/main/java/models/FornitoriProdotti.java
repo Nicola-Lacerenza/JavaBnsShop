@@ -1,8 +1,11 @@
 package models;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
 public class FornitoriProdotti implements Oggetti<FornitoriProdotti> {
 
@@ -49,11 +52,22 @@ public class FornitoriProdotti implements Oggetti<FornitoriProdotti> {
 
     @Override
     public FornitoriProdotti createObject() {
-        return null;
+        return new FornitoriProdotti();
     }
 
     @Override
     public FornitoriProdotti convertDBToJava(ResultSet rs) {
-        return null;
+        try{
+            int idFornitore = rs.getInt("idFornitore");
+            int idProdotti = rs.getInt("idProdotti");
+            Calendar data = new GregorianCalendar();
+            data.setTime(rs.getDate("data"));
+            int importo = rs.getInt("importo");
+            String descrizione = rs.getString("descrizione");
+            return new FornitoriProdotti(idFornitore,idProdotti,data,importo,descrizione);
+        }catch (SQLException e){
+            e.printStackTrace();
+            return null;
+        }
     }
 }

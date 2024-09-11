@@ -1,6 +1,8 @@
 package controllers;
 
 import models.Fornitori;
+import models.FornitoriProdotti;
+import utility.Database;
 
 
 import java.util.List;
@@ -14,7 +16,11 @@ public class FornitoriController implements Controllers<Fornitori> {
 
     @Override
     public Optional<Fornitori> insertObject(Map<String, String> request) {
-        return Optional.empty();
+        Fornitori f = Database.insertElement(request,"fornitori",new Fornitori());
+        if (f==null){
+            return Optional.empty();
+        }
+        return Optional.of(f);
     }
 
     @Override

@@ -2,8 +2,10 @@ package models;
 
 import java.sql.Date;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 public class Ordine implements Oggetti<Ordine>{
 
@@ -53,11 +55,23 @@ public class Ordine implements Oggetti<Ordine>{
 
     @Override
     public Ordine createObject() {
-        return null;
+        return new Ordine();
     }
 
     @Override
     public Ordine convertDBToJava(ResultSet rs) {
-        return null;
+        try{
+            int id1 = rs.getInt("id");
+            int idCustomers = rs.getInt("idCustomers");
+            int idPagamento = rs.getInt("idPagamento");
+            int idIndirizzo = rs.getInt("idIndirizzo");
+            String statoOrdine = rs.getString("statoOrdine");
+            Calendar dataOrdine = new GregorianCalendar();
+            dataOrdine.setTime(rs.getDate("dataOrdine"));
+            return new Ordine(id1,idCustomers,idPagamento,idIndirizzo,statoOrdine,dataOrdine);
+        }catch (SQLException e){
+            e.printStackTrace();
+            return null;
+        }
     }
 }

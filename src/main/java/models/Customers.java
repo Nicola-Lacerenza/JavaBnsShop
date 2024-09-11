@@ -1,6 +1,7 @@
 package models;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 
 public class Customers implements Oggetti<Customers> {
@@ -44,11 +45,21 @@ public class Customers implements Oggetti<Customers> {
 
     @Override
     public Customers createObject() {
-        return null;
+        return new Customers();
     }
 
     @Override
     public Customers convertDBToJava(ResultSet rs) {
-        return null;
+        try{
+            int id1 = rs.getInt("id");
+            String nome = rs.getString("nome");
+            String cognome = rs.getString("cognome");
+            String email = rs.getString("email");
+            int telefono = rs.getInt("telefono");
+            return new Customers(id1,nome,cognome,email,telefono);
+        }catch (SQLException e){
+            e.printStackTrace();
+            return null;
+        }
     }
 }

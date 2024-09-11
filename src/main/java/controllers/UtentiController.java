@@ -26,12 +26,28 @@ public class UtentiController implements Controllers<Utenti> {
 
     @Override
     public boolean updateObject(Map<String, String> request) {
-        return false;
+        // Estrai l'ID dalla richiesta
+        int id = Integer.parseInt(request.get("id"));
+
+        // Chiama il metodo della classe Database per aggiornare l'elemento
+        boolean isUpdated = Database.updateElement(id,request, "utenti");
+
+        // Restituisci il risultato dell'operazione di aggiornamento
+        return isUpdated;
     }
 
     @Override
     public boolean deleteObject(int objectid) {
-        return false;
+        // Controlla se l'ID è valido
+        if (objectid <= 0) {
+            return false;
+        }
+
+        // Chiama il metodo della classe Database per eliminare l'elemento
+        boolean isDeleted = Database.deleteElement(objectid,"utenti");
+
+        // Restituisci il risultato dell'operazione di eliminazione
+        return isDeleted;
     }
 
     @Override

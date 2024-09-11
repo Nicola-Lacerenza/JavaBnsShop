@@ -1,6 +1,8 @@
 package controllers;
 
 import models.Colore;
+import models.ColoreModello;
+import utility.Database;
 
 
 import java.util.List;
@@ -14,7 +16,11 @@ public class ColoreController implements Controllers<Colore> {
 
     @Override
     public Optional<Colore> insertObject(Map<String, String> request) {
-        return Optional.empty();
+        Colore c = Database.insertElement(request,"colore",new Colore());
+        if (c==null){
+            return Optional.empty();
+        }
+        return Optional.of(c);
     }
 
     @Override

@@ -1,8 +1,9 @@
 package models;
 
 import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.SQLException;
 import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 public class Brand implements Oggetti<Brand> {
 
@@ -37,11 +38,19 @@ public class Brand implements Oggetti<Brand> {
 
     @Override
     public Brand createObject() {
-        return null;
+        return new Brand();
     }
 
     @Override
     public Brand convertDBToJava(ResultSet rs) {
-        return null;
+        try{
+            int id1 = rs.getInt("id");
+            String nome = rs.getString("nome");
+            String descrizione = rs.getString("descrizione");
+            return new Brand(id1,nome,descrizione);
+        }catch (SQLException e){
+            e.printStackTrace();
+            return null;
+        }
     }
 }

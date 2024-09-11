@@ -1,7 +1,9 @@
 package models;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Calendar;
 
 public class Prodotti implements Oggetti<Prodotti>{
     private int idProdotto;
@@ -49,11 +51,22 @@ public class Prodotti implements Oggetti<Prodotti>{
 
     @Override
     public Prodotti createObject() {
-        return null;
+        return new Prodotti();
     }
 
     @Override
     public Prodotti convertDBToJava(ResultSet rs) {
-        return null;
+        try{
+            int idProdotto = rs.getInt("idProdotto");
+            int idModello = rs.getInt("idModello");
+            int idTaglia = rs.getInt("idTaglia");
+            double prezzo = rs.getDouble("prezzo");
+            int quantita = rs.getInt("quantita");
+            int statoPubblicazione = rs.getInt("statoPubblicazione");
+            return new Prodotti(idProdotto,idModello,idTaglia, prezzo, quantita, statoPubblicazione);
+        }catch (SQLException e){
+            e.printStackTrace();
+            return null;
+        }
     }
 }

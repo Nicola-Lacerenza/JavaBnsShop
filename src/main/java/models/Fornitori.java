@@ -1,6 +1,7 @@
 package models;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Calendar;
 
@@ -34,11 +35,19 @@ public class Fornitori implements Oggetti<Fornitori>{
 
     @Override
     public Fornitori createObject() {
-        return null;
+        return new Fornitori();
     }
 
     @Override
     public Fornitori convertDBToJava(ResultSet rs) {
-        return null;
+        try{
+            int idFornitore = rs.getInt("idFornitore");
+            String nome = rs.getString("nome");
+            String cognome = rs.getString("cognome");
+            return new Fornitori(idFornitore,nome,cognome);
+        }catch (SQLException e){
+            e.printStackTrace();
+            return null;
+        }
     }
 }

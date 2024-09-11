@@ -29,19 +29,20 @@ public class Database {
                 .map(s -> "'"+s+"'")
                 .collect(Collectors.joining(","));
         String query="INSERT INTO "+tableName+"("+nomi+") VALUES("+valori+")";
-        System.out.println(query);
+        System.out.println(query+"12");
         T output;
         T object=model.createObject();
         Connection connection = null;
         Statement statement = null;
         try{
             connection=DriverManager.getConnection(DATABASE_URL,DATABASE_USERNAME,DATABASE_PASSWORD);
+            System.out.println(connection);
             statement=connection.createStatement();
             ResultSet rs = statement.executeQuery(query);
             output=object.convertDBToJava(rs);
         }catch(SQLException exception){
             output = null;
-            System.out.println("Errore1");
+            System.out.println("Errore12");
         }finally {
             if (statement != null) {
                 try {
@@ -63,7 +64,7 @@ public class Database {
         return output;
     }
 
-    public static boolean updateElement(Map<String, String> fields, String tablename) {
+    public static boolean updateElement(int id,Map<String, String> fields, String tablename) {
         int idProdotto = Integer.parseInt(fields.get("idprodotto"));
         int idModello = Integer.parseInt(fields.get("idmodello"));
         int idTaglia = Integer.parseInt(fields.get("idtaglia"));
