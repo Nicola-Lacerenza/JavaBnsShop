@@ -5,7 +5,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 public class DettagliOrdine implements Oggetti<DettagliOrdine> {
-
     private int idProdotti;
     private int idOrdine;
     private int quantita;
