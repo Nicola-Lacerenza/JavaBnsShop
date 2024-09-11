@@ -6,7 +6,6 @@ import java.sql.Statement;
 import java.util.Calendar;
 
 public class Fornitori implements Oggetti<Fornitori>{
-
     private int idFornitore;
 
     private String nome;
