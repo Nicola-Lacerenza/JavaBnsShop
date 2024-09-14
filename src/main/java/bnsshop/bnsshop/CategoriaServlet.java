@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import models.Categoria;
 import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -91,13 +90,13 @@ public class CategoriaServlet extends HttpServlet{
         Map<String,String> data= new HashMap<>();
         data.put("idcategoria","" + object.getInt("idCategoria"));
         data.put("nomecategoria","" + object.getString("nomecategoria"));
-        Optional<Categoria> categoria = controller.insertObject(data);
-        if (categoria.isPresent()){
+        if (controller.insertObject(data)){
+            String categoria = "\"Categoria creata correttamente.\"";
             PrintWriter writer= response.getWriter();
-            response.setContentLength(categoria.get().toString().length());
+            response.setContentLength(categoria.toString().length());
             response.setContentType("application/json");
             response.setStatus(201);
-            writer.println(categoria.get().toString());
+            writer.println(categoria.toString());
             writer.flush();
             writer.close();
         }else{

@@ -2,8 +2,6 @@ package controllers;
 
 import models.Taglia;
 import utility.Database;
-
-
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -15,12 +13,8 @@ public class TagliaController implements Controllers<Taglia> {
     }
 
     @Override
-    public Optional<Taglia> insertObject(Map<String, String> request) {
-        Taglia t = Database.insertElement(request,"taglia",new Taglia());
-        if (t==null){
-            return Optional.empty();
-        }
-        return Optional.of(t);
+    public boolean insertObject(Map<String, String> request) {
+        return Database.insertElement(request,"taglia");
     }
 
     @Override

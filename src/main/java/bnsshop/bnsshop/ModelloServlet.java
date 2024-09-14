@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import models.Modello;
 import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -94,13 +93,13 @@ public class ModelloServlet extends HttpServlet{
         data.put("idcategoria","" + object.getInt("idCategoria"));
         data.put("nome","" + object.getString("nome"));
         data.put("descrizione","" + object.getString("descrizione"));
-        Optional<Modello> modello = controller.insertObject(data);
-        if (modello.isPresent()){
+        if (controller.insertObject(data)){
+            String modello = "\"modello creato correttamente.\"";
             PrintWriter writer= response.getWriter();
-            response.setContentLength(modello.get().toString().length());
+            response.setContentLength(modello.toString().length());
             response.setContentType("application/json");
             response.setStatus(201);
-            writer.println(modello.get().toString());
+            writer.println(modello.toString());
             writer.flush();
             writer.close();
         }else{

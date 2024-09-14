@@ -2,14 +2,11 @@ package models;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Calendar;
+import java.util.Optional;
 
 public class ColoreModello implements Oggetti<ColoreModello> {
-
-  private int idColore;
-
-  private int idModello;
+  private final int idColore;
+  private final int idModello;
 
   public ColoreModello(int idColore, int idModello) {
     this.idColore = idColore;
@@ -35,14 +32,14 @@ public class ColoreModello implements Oggetti<ColoreModello> {
   }
 
   @Override
-  public ColoreModello convertDBToJava(ResultSet rs) {
+  public Optional<ColoreModello> convertDBToJava(ResultSet rs) {
     try{
-      int idColore = rs.getInt("idColore");
-      int idModello = rs.getInt("idModello");
-      return new ColoreModello(idColore, idModello);
+      int idColore = rs.getInt("id_colore");
+      int idModello = rs.getInt("id_modello");
+      return Optional.of(new ColoreModello(idColore, idModello));
     }catch (SQLException e){
       e.printStackTrace();
-      return null;
+      return Optional.empty();
     }
   }
 }

@@ -1,7 +1,6 @@
 package bnsshop.bnsshop;
 
 import controllers.BrandController;
-import controllers.ProdottiController;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -9,7 +8,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import models.Brand;
 import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -93,13 +91,13 @@ public class BrandServlet extends HttpServlet{
         data.put("idbrand","" + object.getInt("idBrand"));
         data.put("nome","" + object.getString("nome"));
         data.put("descrizione","" + object.getString("descrizione"));
-        Optional<Brand> brand = controller.insertObject(data);
-        if (brand.isPresent()){
+        if (controller.insertObject(data)){
             PrintWriter writer= response.getWriter();
-            response.setContentLength(brand.get().toString().length());
+            String brand = "\"Brand creato correttamente.\"";
+            response.setContentLength(brand.toString().length());
             response.setContentType("application/json");
             response.setStatus(201);
-            writer.println(brand.get().toString());
+            writer.println(brand.toString());
             writer.flush();
             writer.close();
         }else{

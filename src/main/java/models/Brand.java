@@ -2,19 +2,15 @@ package models;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
+import java.util.Optional;
 
-public class Brand implements Oggetti<Brand> {
+public class Brand implements Oggetti<Brand>{
+    private final int id;
+    private final String nome;
+    private final String descrizione;
 
-    private int idBrand;
-
-    private String nome;
-
-    private String descrizione;
-
-    public Brand(int idBrand, String nome, String descrizione) {
-        this.idBrand = idBrand;
+    public Brand(int id, String nome, String descrizione) {
+        this.id = id;
         this.nome = nome;
         this.descrizione = descrizione;
     }
@@ -23,9 +19,8 @@ public class Brand implements Oggetti<Brand> {
         this(0,"","");
     }
 
-
-    public int getIdBrand() {
-        return idBrand;
+    public int getId() {
+        return id;
     }
 
     public String getNome() {
@@ -42,15 +37,15 @@ public class Brand implements Oggetti<Brand> {
     }
 
     @Override
-    public Brand convertDBToJava(ResultSet rs) {
+    public Optional<Brand> convertDBToJava(ResultSet rs) {
         try{
             int id1 = rs.getInt("id");
-            String nome = rs.getString("nome");
-            String descrizione = rs.getString("descrizione");
-            return new Brand(id1,nome,descrizione);
+            String nome1 = rs.getString("nome");
+            String descrizione1 = rs.getString("descrizione");
+            return Optional.of(new Brand(id1,nome1,descrizione1));
         }catch (SQLException e){
             e.printStackTrace();
-            return null;
+            return Optional.empty();
         }
     }
 }

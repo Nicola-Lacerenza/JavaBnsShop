@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import models.ColoreModello;
 import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -92,13 +91,13 @@ public class ColoreModelloServlet extends HttpServlet{
         Map<String,String> data= new HashMap<>();
         data.put("idcolore","" + object.getInt("idColore"));
         data.put("idmodello","" + object.getInt("idModello"));
-        Optional<ColoreModello> coloremodello = controller.insertObject(data);
-        if (coloremodello.isPresent()){
+        if (controller.insertObject(data)){
+            String coloremodello = "Relazione tra colore e modello creata correttamente.";
             PrintWriter writer= response.getWriter();
-            response.setContentLength(coloremodello.get().toString().length());
+            response.setContentLength(coloremodello.toString().length());
             response.setContentType("application/json");
             response.setStatus(201);
-            writer.println(coloremodello.get().toString());
+            writer.println(coloremodello.toString());
             writer.flush();
             writer.close();
         }else{

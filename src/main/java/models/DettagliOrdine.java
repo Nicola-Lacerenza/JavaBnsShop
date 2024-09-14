@@ -2,27 +2,25 @@ package models;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.Optional;
 
 public class DettagliOrdine implements Oggetti<DettagliOrdine> {
-    private int idProdotti;
-    private int idOrdine;
-    private int quantita;
-    private int codiceSconto;
-    private String spedizione;
-    private String dettagliOrdine;
+    private final int idProdotti;
+    private final int idOrdine;
+    private final int quantita;
+    private final int codiceSconto;
+    private final String spedizione;
 
-    public DettagliOrdine(int idProdotti, int idOrdine, int quantita, int codiceSconto, String spedizione, String dettagliOrdine) {
+    public DettagliOrdine(int idProdotti, int idOrdine, int quantita, int codiceSconto, String spedizione) {
         this.idProdotti = idProdotti;
         this.idOrdine = idOrdine;
         this.quantita = quantita;
         this.codiceSconto = codiceSconto;
         this.spedizione = spedizione;
-        this.dettagliOrdine = dettagliOrdine;
     }
 
     public DettagliOrdine(){
-        this(0,0,0,0,"","");
+        this(0,0,0,0,"");
     }
 
     public int getIdProdotti() {
@@ -45,28 +43,23 @@ public class DettagliOrdine implements Oggetti<DettagliOrdine> {
         return spedizione;
     }
 
-    public String getDettagliOrdine() {
-        return dettagliOrdine;
-    }
-
     @Override
     public DettagliOrdine createObject() {
         return new DettagliOrdine();
     }
 
     @Override
-    public DettagliOrdine convertDBToJava(ResultSet rs) {
+    public Optional<DettagliOrdine> convertDBToJava(ResultSet rs) {
         try{
-            int idProdotti = rs.getInt("idProdotti");
-            int idOrdine = rs.getInt("idOrdine");
+            int idProdotti = rs.getInt("id_prodotti");
+            int idOrdine = rs.getInt("id_ordine");
             int quantita = rs.getInt("quantita");
-            int codiceSconto = rs.getInt("codiceSconto");
+            int codiceSconto = rs.getInt("codice_sconto");
             String spedizione = rs.getString("spedizione");
-            String dettagliOrdine = rs.getString("dettagliOrdine");
-            return new DettagliOrdine(idProdotti,idOrdine,quantita,codiceSconto,spedizione,dettagliOrdine);
+            return Optional.of(new DettagliOrdine(idProdotti,idOrdine,quantita,codiceSconto,spedizione));
         }catch (SQLException e){
             e.printStackTrace();
-            return null;
+            return Optional.empty();
         }
     }
 }

@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.annotation.WebServlet;
 import models.Prodotti;
 import org.json.JSONObject;
-
 import java.io.*;
 import java.util.*;
 
@@ -93,13 +92,13 @@ public class ProdottiServlet extends HttpServlet{
         data.put("prezzo","" + object.getDouble("prezzo"));
         data.put("quantita","" + object.getInt("quantita"));
         data.put("statopubblicazione","" + object.getInt("statopubblicazione"));
-        Optional<Prodotti> prodotto = controller.insertObject(data);
-        if (prodotto.isPresent()){
+        if (controller.insertObject(data)){
+            String prodotto = "\"Prodotto creato correttamente.\"";
             PrintWriter writer= response.getWriter();
-            response.setContentLength(prodotto.get().toString().length());
+            response.setContentLength(prodotto.toString().length());
             response.setContentType("application/json");
             response.setStatus(201);
-            writer.println(prodotto.get().toString());
+            writer.println(prodotto.toString());
             writer.flush();
             writer.close();
         }else{

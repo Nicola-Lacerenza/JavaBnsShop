@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public interface Controllers<E> {
-    Optional<E> insertObject(Map<String,String> request);
+    boolean insertObject(Map<String,String> request);
 
     boolean updateObject(Map<String,String> request);
 

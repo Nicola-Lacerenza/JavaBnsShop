@@ -2,22 +2,17 @@ package models;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.Optional;
 
 public class Modello implements Oggetti<Modello> {
+    private final int id;
+    private final int idBrand;
+    private final int idCategoria;
+    private final String nome;
+    private final String descrizione;
 
-    private int idModello;
-
-    private int idBrand;
-
-    private int idCategoria;
-
-    private String nome;
-
-    private String descrizione;
-
-    public Modello(int idModello, int idBrand, int idCategoria, String nome, String descrizione) {
-        this.idModello = idModello;
+    public Modello(int id, int idBrand, int idCategoria, String nome, String descrizione) {
+        this.id = id;
         this.idBrand = idBrand;
         this.idCategoria = idCategoria;
         this.nome = nome;
@@ -28,8 +23,8 @@ public class Modello implements Oggetti<Modello> {
         this(0,0,0,"","");
     }
 
-    public int getIdModello() {
-        return idModello;
+    public int getId() {
+        return id;
     }
 
     public int getIdBrand() {
@@ -54,17 +49,17 @@ public class Modello implements Oggetti<Modello> {
     }
 
     @Override
-    public Modello convertDBToJava(ResultSet rs) {
+    public Optional<Modello> convertDBToJava(ResultSet rs) {
         try{
-            int idModello = rs.getInt("idModello");
-            int idBrand = rs.getInt("idBrand");
-            int idCategoria = rs.getInt("idCategoria");
+            int idModello = rs.getInt("id");
+            int idBrand = rs.getInt("idbrand");
+            int idCategoria = rs.getInt("idcategoria");
             String nome = rs.getString("nome");
             String descrizione = rs.getString("descrizione");
-            return new Modello(idModello, idBrand, idCategoria, nome, descrizione);
+            return Optional.of(new Modello(idModello, idBrand, idCategoria, nome, descrizione));
         }catch (SQLException e){
             e.printStackTrace();
-            return null;
+            return Optional.empty();
         }
     }
 }

@@ -1,11 +1,7 @@
 package controllers;
 
 import models.Immagini;
-import models.Modello;
 import utility.Database;
-
-
-import javax.swing.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -17,24 +13,14 @@ public class ImmaginiController implements Controllers<Immagini> {
     }
 
     @Override
-    public Optional<Immagini> insertObject(Map<String, String> request) {
-        Immagini i = Database.insertElement(request,"immagini",new Immagini());
-        if (i==null){
-            return Optional.empty();
-        }
-        return Optional.of(i);
+    public boolean insertObject(Map<String, String> request) {
+        return Database.insertElement(request,"immagini");
     }
 
     @Override
     public boolean updateObject(Map<String, String> request) {
-        // Estrai l'ID dalla richiesta
-        int id = Integer.parseInt(request.get("idImmagini"));
-
-        // Chiama il metodo della classe Database per aggiornare l'elemento
-        boolean isUpdated = Database.updateElement(id,request, "immagini");
-
-        // Restituisci il risultato dell'operazione di aggiornamento
-        return isUpdated;
+        int id = Integer.parseInt(request.get("id"));
+        return Database.updateElement(id,request, "immagini");
     }
 
     @Override

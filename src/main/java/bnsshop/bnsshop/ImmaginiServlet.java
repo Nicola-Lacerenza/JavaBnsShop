@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import models.Immagini;
 import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -92,13 +91,13 @@ public class ImmaginiServlet extends HttpServlet{
         data.put("idimmagini","" + object.getInt("idImmagini"));
         data.put("idprodotti","" + object.getInt("idprodotti"));
         data.put("url","" + object.getString("url"));
-        Optional<Immagini> immagine = controller.insertObject(data);
-        if (immagine.isPresent()){
+        if (controller.insertObject(data)){
+            String immagine = "\"Immagine creata correttamente.\"";
             PrintWriter writer= response.getWriter();
-            response.setContentLength(immagine.get().toString().length());
+            response.setContentLength(immagine.toString().length());
             response.setContentType("application/json");
             response.setStatus(201);
-            writer.println(immagine.get().toString());
+            writer.println(immagine.toString());
             writer.flush();
             writer.close();
         }else{

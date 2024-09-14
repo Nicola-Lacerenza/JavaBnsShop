@@ -1,20 +1,18 @@
 package models;
 
-import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.Optional;
 
 public class Ordine implements Oggetti<Ordine>{
-
-    private int id;
-    private int idCustomers;
-    private int idPagamento;
-    private int idIndirizzo;
-    private String statoOrdine;
-    private Calendar dataOrdine;
+    private final int id;
+    private final int idCustomers;
+    private final int idPagamento;
+    private final int idIndirizzo;
+    private final String statoOrdine;
+    private final Calendar dataOrdine;
 
     public Ordine(int id, int idCustomers, int idPagamento, int idIndirizzo, String statoOrdine, Calendar dataOrdine) {
         this.id = id;
@@ -59,19 +57,19 @@ public class Ordine implements Oggetti<Ordine>{
     }
 
     @Override
-    public Ordine convertDBToJava(ResultSet rs) {
+    public Optional<Ordine> convertDBToJava(ResultSet rs) {
         try{
             int id1 = rs.getInt("id");
-            int idCustomers = rs.getInt("idCustomers");
-            int idPagamento = rs.getInt("idPagamento");
-            int idIndirizzo = rs.getInt("idIndirizzo");
-            String statoOrdine = rs.getString("statoOrdine");
+            int idCustomers = rs.getInt("id_customers");
+            int idPagamento = rs.getInt("id_pagamento");
+            int idIndirizzo = rs.getInt("id_indirizzo");
+            String statoOrdine = rs.getString("stato_ordine");
             Calendar dataOrdine = new GregorianCalendar();
-            dataOrdine.setTime(rs.getDate("dataOrdine"));
-            return new Ordine(id1,idCustomers,idPagamento,idIndirizzo,statoOrdine,dataOrdine);
+            dataOrdine.setTime(rs.getDate("data_ordine"));
+            return Optional.of(new Ordine(id1,idCustomers,idPagamento,idIndirizzo,statoOrdine,dataOrdine));
         }catch (SQLException e){
             e.printStackTrace();
-            return null;
+            return Optional.empty();
         }
     }
 }

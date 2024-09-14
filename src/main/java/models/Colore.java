@@ -2,21 +2,17 @@ package models;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.Optional;
 
 public class Colore implements Oggetti<Colore> {
-
-    private int idColore;
-
-    private String nome;
-
-    private String rgb;
-
-    private String hex;
+    private final int id;
+    private final String nome;
+    private final String rgb;
+    private final String hex;
 
     //costruttore di classe
-    public Colore(int idColore, String nome, String rgb, String hex) {
-        this.idColore = idColore;
+    public Colore(int id, String nome, String rgb, String hex) {
+        this.id = id;
         this.nome = nome;
         this.rgb = rgb;
         this.hex = hex;
@@ -26,8 +22,8 @@ public class Colore implements Oggetti<Colore> {
         this(0,"","","");
     }
     //interfacciare il database conm l'applicazione
-    public int getIdColore() {
-        return idColore;
+    public int getId() {
+        return id;
     }
 
     public String getNome() {
@@ -48,16 +44,16 @@ public class Colore implements Oggetti<Colore> {
     }
 
     @Override
-    public Colore convertDBToJava(ResultSet rs) {
+    public Optional<Colore> convertDBToJava(ResultSet rs) {
         try{
-            int id1 = rs.getInt("idColore");
+            int id1 = rs.getInt("id");
             String nome = rs.getString("nome");
             String rgb = rs.getString("rgb");
             String hex = rs.getString("hex");
-            return new Colore(id1,nome,rgb,hex);
+            return Optional.of(new Colore(id1,nome,rgb,hex));
         }catch (SQLException e){
             e.printStackTrace();
-            return null;
+            return Optional.empty();
         }
     }
 }

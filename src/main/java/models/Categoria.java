@@ -2,16 +2,14 @@ package models;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Calendar;
+import java.util.Optional;
 
 public class Categoria implements Oggetti<Categoria> {
-    private int idCategoria;
+    private final int id;
+    private final String nomeCategoria;
 
-    private String nomeCategoria;
-
-    public Categoria(int idCategoria, String nomeCategoria) {
-        this.idCategoria = idCategoria;
+    public Categoria(int id, String nomeCategoria) {
+        this.id = id;
         this.nomeCategoria = nomeCategoria;
     }
 
@@ -19,9 +17,8 @@ public class Categoria implements Oggetti<Categoria> {
         this(0,"");
     }
 
-
-    public int getIdCategoria() {
-        return idCategoria;
+    public int getId() {
+        return id;
     }
 
     public String getNomeCategoria() {
@@ -34,14 +31,14 @@ public class Categoria implements Oggetti<Categoria> {
     }
 
     @Override
-    public Categoria convertDBToJava(ResultSet rs) {
+    public Optional<Categoria> convertDBToJava(ResultSet rs) {
         try{
-            int id1 = rs.getInt("idCategoria");
-            String nomeCategoria = rs.getString("nomeCategoria");
-            return new Categoria(id1,nomeCategoria);
+            int id1 = rs.getInt("id");
+            String nomeCategoria = rs.getString("nome_categoria");
+            return Optional.of(new Categoria(id1,nomeCategoria));
         }catch (SQLException e){
             e.printStackTrace();
-            return null;
+            return Optional.empty();
         }
     }
 }

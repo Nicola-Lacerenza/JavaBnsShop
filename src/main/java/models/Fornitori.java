@@ -2,18 +2,15 @@ package models;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Calendar;
+import java.util.Optional;
 
 public class Fornitori implements Oggetti<Fornitori>{
-    private int idFornitore;
+    private final int id;
+    private final String nome;
+    private final String cognome;
 
-    private String nome;
-
-    private String cognome;
-
-    public Fornitori(int idFornitore,String nome, String cognome) {
-        this.idFornitore = idFornitore;
+    public Fornitori(int id,String nome, String cognome) {
+        this.id = id;
         this.nome = nome;
         this.cognome = cognome;
     }
@@ -21,13 +18,14 @@ public class Fornitori implements Oggetti<Fornitori>{
         this(0,"","");
     }
 
-    public int getIdFornitore() {
-        return idFornitore;
+    public int getId() {
+        return id;
     }
 
     public String getNome() {
         return nome;
     }
+
     public String getCognome() {
         return cognome;
     }
@@ -38,15 +36,15 @@ public class Fornitori implements Oggetti<Fornitori>{
     }
 
     @Override
-    public Fornitori convertDBToJava(ResultSet rs) {
+    public Optional<Fornitori> convertDBToJava(ResultSet rs) {
         try{
-            int idFornitore = rs.getInt("idFornitore");
+            int idFornitore = rs.getInt("id");
             String nome = rs.getString("nome");
             String cognome = rs.getString("cognome");
-            return new Fornitori(idFornitore,nome,cognome);
+            return Optional.of(new Fornitori(idFornitore,nome,cognome));
         }catch (SQLException e){
             e.printStackTrace();
-            return null;
+            return Optional.empty();
         }
     }
 }

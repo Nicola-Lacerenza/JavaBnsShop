@@ -2,27 +2,23 @@ package models;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Date;
+import java.util.Optional;
 
 public class Immagini implements Oggetti<Immagini>{
+    private final int id;
+    private final int idProdotti;
+    private final String url;
 
-    private int idImmagini;
-
-    private int idProdotti;
-
-    private String url;
-
-    public Immagini(int idImmagini, int idProdotti, String url) {
-        this.idImmagini = idImmagini;
+    public Immagini(int id, int idProdotti, String url) {
+        this.id = id;
         this.idProdotti = idProdotti;
         this.url = url;
     }
     public Immagini(){
         this(0,0,"");
     }
-    public int getIdImmagini() {
-        return idImmagini;
+    public int getId() {
+        return id;
     }
 
     public int getIdProdotti() {
@@ -39,15 +35,15 @@ public class Immagini implements Oggetti<Immagini>{
     }
 
     @Override
-    public Immagini convertDBToJava(ResultSet rs) {
+    public Optional<Immagini> convertDBToJava(ResultSet rs) {
         try{
-            int idImmagini = rs.getInt("idImmagini");
-            int idProdotti = rs.getInt("idProdotti");
+            int idImmagini = rs.getInt("id");
+            int idProdotti = rs.getInt("id_prodotti");
             String url = rs.getString("url");
-            return new Immagini(idImmagini,idProdotti,url);
+            return Optional.of(new Immagini(idImmagini,idProdotti,url));
         }catch (SQLException e){
             e.printStackTrace();
-            return null;
+            return Optional.empty();
         }
     }
 }

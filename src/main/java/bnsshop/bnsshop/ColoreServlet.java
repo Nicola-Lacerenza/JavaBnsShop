@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import models.Colore;
 import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -93,13 +92,13 @@ public class ColoreServlet extends HttpServlet{
         data.put("nome","" + object.getString("nome"));
         data.put("rgb","" + object.getString("rgb"));
         data.put("hex","" + object.getString("hex"));
-        Optional<Colore> colore = controller.insertObject(data);
-        if (colore.isPresent()){
+        if (controller.insertObject(data)){
+            String colore = "\"Colore creato correttamente.\"";
             PrintWriter writer= response.getWriter();
-            response.setContentLength(colore.get().toString().length());
+            response.setContentLength(colore.toString().length());
             response.setContentType("application/json");
             response.setStatus(201);
-            writer.println(colore.get().toString());
+            writer.println(colore.toString());
             writer.flush();
             writer.close();
         }else{

@@ -15,24 +15,14 @@ public class BrandController implements Controllers<Brand> {
     }
 
     @Override
-    public Optional<Brand> insertObject(Map<String, String> request) {
-        Brand b = Database.insertElement(request,"brand",new Brand());
-        if (b==null){
-            return Optional.empty();
-        }
-        return Optional.of(b);
+    public boolean insertObject(Map<String, String> request) {
+        return Database.insertElement(request,"brand");
     }
 
     @Override
     public boolean updateObject(Map<String, String> request) {
-        // Estrai l'ID dalla richiesta
-        int id = Integer.parseInt(request.get("idBrand"));
-
-        // Chiama il metodo della classe Database per aggiornare l'elemento
-        boolean isUpdated = Database.updateElement(id,request, "brand");
-
-        // Restituisci il risultato dell'operazione di aggiornamento
-        return isUpdated;
+        int id = Integer.parseInt(request.get("id"));
+        return Database.updateElement(id,request, "brand");
     }
 
     @Override

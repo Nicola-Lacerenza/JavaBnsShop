@@ -2,16 +2,14 @@ package models;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Calendar;
+import java.util.Optional;
 
-public class CodiceSconto implements Oggetti<CodiceSconto> {
-
-    private int id;
-    private int idProdotti;
-    private int idOrdine;
-    private String codice;
-    private double sconto;
+public class CodiceSconto implements Oggetti<CodiceSconto>{
+    private final int id;
+    private final int idProdotti;
+    private final int idOrdine;
+    private final String codice;
+    private final double sconto;
 
     public CodiceSconto(int id, int idProdotti, int idOrdine, String codice, double sconto) {
         this.id = id;
@@ -51,17 +49,17 @@ public class CodiceSconto implements Oggetti<CodiceSconto> {
     }
 
     @Override
-    public CodiceSconto convertDBToJava(ResultSet rs) {
+    public Optional<CodiceSconto> convertDBToJava(ResultSet rs) {
         try{
             int id1= rs.getInt("id");
-            int idProdotti = rs.getInt("idProdotti");
-            int idOrdine = rs.getInt("idOrdine");
+            int idProdotti = rs.getInt("id_prodotti");
+            int idOrdine = rs.getInt("id_ordine");
             String codice = rs.getString("codice");
             double sconto = rs.getDouble("sconto");
-            return new CodiceSconto(id1,idProdotti,idOrdine,codice,sconto);
+            return Optional.of(new CodiceSconto(id1,idProdotti,idOrdine,codice,sconto));
         }catch (SQLException e){
             e.printStackTrace();
-            return null;
+            return Optional.empty();
         }
     }
 }

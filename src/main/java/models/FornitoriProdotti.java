@@ -2,24 +2,18 @@ package models;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Optional;
 
 public class FornitoriProdotti implements Oggetti<FornitoriProdotti> {
+    private final int idFornitore;
+    private final int idProdotti;
+    private final Calendar data;
+    private final float importo;
+    private final String descrizione;
 
-    private int idFornitore;
-
-    private int idProdotti;
-
-    private Calendar data;
-
-    private int importo;
-
-    private String descrizione;
-
-    public FornitoriProdotti(int idFornitore, int idProdotti, Calendar data, int importo, String descrizione) {
+    public FornitoriProdotti(int idFornitore, int idProdotti, Calendar data,float importo, String descrizione) {
         this.idFornitore = idFornitore;
         this.idProdotti = idProdotti;
         this.data = data;
@@ -42,7 +36,7 @@ public class FornitoriProdotti implements Oggetti<FornitoriProdotti> {
         return data;
     }
 
-    public int getImporto() {
+    public float getImporto() {
         return importo;
     }
 
@@ -56,18 +50,18 @@ public class FornitoriProdotti implements Oggetti<FornitoriProdotti> {
     }
 
     @Override
-    public FornitoriProdotti convertDBToJava(ResultSet rs) {
+    public Optional<FornitoriProdotti> convertDBToJava(ResultSet rs) {
         try{
-            int idFornitore = rs.getInt("idFornitore");
-            int idProdotti = rs.getInt("idProdotti");
+            int idFornitore = rs.getInt("id_fornitore");
+            int idProdotti = rs.getInt("id_prodotti");
             Calendar data = new GregorianCalendar();
             data.setTime(rs.getDate("data"));
-            int importo = rs.getInt("importo");
+            float importo = rs.getFloat("importo");
             String descrizione = rs.getString("descrizione");
-            return new FornitoriProdotti(idFornitore,idProdotti,data,importo,descrizione);
+            return Optional.of(new FornitoriProdotti(idFornitore,idProdotti,data,importo,descrizione));
         }catch (SQLException e){
             e.printStackTrace();
-            return null;
+            return Optional.empty();
         }
     }
 }

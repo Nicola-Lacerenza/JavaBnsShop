@@ -2,16 +2,14 @@ package models;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.Optional;
 
 public class Taglia implements Oggetti<Taglia>{
+    private final int id;
+    private final String taglia;
 
-    private int idTaglia;
-
-    private String taglia;
-
-    public Taglia(int idTaglia, String taglia) {
-        this.idTaglia = idTaglia;
+    public Taglia(int id, String taglia) {
+        this.id = id;
         this.taglia = taglia;
     }
 
@@ -23,8 +21,8 @@ public class Taglia implements Oggetti<Taglia>{
         return taglia;
     }
 
-    public int getIdTaglia() {
-        return idTaglia;
+    public int getId() {
+        return id;
     }
 
     @Override
@@ -33,14 +31,14 @@ public class Taglia implements Oggetti<Taglia>{
     }
 
     @Override
-    public Taglia convertDBToJava(ResultSet rs) {
+    public Optional<Taglia> convertDBToJava(ResultSet rs) {
         try{
-            int idTaglia = rs.getInt("idTaglia");
+            int idTaglia = rs.getInt("id");
             String taglia = rs.getString("taglia");
-            return new Taglia(idTaglia, taglia);
+            return Optional.of(new Taglia(idTaglia, taglia));
         }catch (SQLException e){
             e.printStackTrace();
-            return null;
+            return Optional.empty();
         }
     }
 }

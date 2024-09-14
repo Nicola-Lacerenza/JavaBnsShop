@@ -2,19 +2,18 @@ package models;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Calendar;
+import java.util.Optional;
 
 public class Prodotti implements Oggetti<Prodotti>{
-    private int idProdotto;
-    private int idModello;
-    private int idTaglia;
-    private double prezzo;
-    private int quantita;
-    private int statoPubblicazione;
+    private final int id;
+    private final int idModello;
+    private final int idTaglia;
+    private final double prezzo;
+    private final int quantita;
+    private final int statoPubblicazione;
 
-    public Prodotti(int idProdotto, int idModello, int idTaglia, double prezzo, int quantita, int statoPubblicazione) {
-        this.idProdotto = idProdotto;
+    public Prodotti(int id, int idModello, int idTaglia, double prezzo, int quantita, int statoPubblicazione) {
+        this.id = id;
         this.idModello = idModello;
         this.idTaglia = idTaglia;
         this.prezzo = prezzo;
@@ -25,8 +24,8 @@ public class Prodotti implements Oggetti<Prodotti>{
         this(0,0,0,0,0,0);
     }
 
-    public int getIdProdotto() {
-        return idProdotto;
+    public int getId() {
+        return id;
     }
 
     public int getIdModello() {
@@ -55,18 +54,18 @@ public class Prodotti implements Oggetti<Prodotti>{
     }
 
     @Override
-    public Prodotti convertDBToJava(ResultSet rs) {
+    public Optional<Prodotti> convertDBToJava(ResultSet rs) {
         try{
-            int idProdotto = rs.getInt("idProdotto");
-            int idModello = rs.getInt("idModello");
-            int idTaglia = rs.getInt("idTaglia");
+            int idProdotto = rs.getInt("id");
+            int idModello = rs.getInt("id_modello");
+            int idTaglia = rs.getInt("id_taglia");
             double prezzo = rs.getDouble("prezzo");
             int quantita = rs.getInt("quantita");
-            int statoPubblicazione = rs.getInt("statoPubblicazione");
-            return new Prodotti(idProdotto,idModello,idTaglia, prezzo, quantita, statoPubblicazione);
+            int statoPubblicazione = rs.getInt("stato_pubblicazione");
+            return Optional.of(new Prodotti(idProdotto,idModello,idTaglia, prezzo, quantita, statoPubblicazione));
         }catch (SQLException e){
             e.printStackTrace();
-            return null;
+            return Optional.empty();
         }
     }
 }

@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import models.FornitoriProdotti;
 import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -94,13 +93,13 @@ public class FornitoriProdottiServlet extends HttpServlet{
         data.put("data","" + object.get("data"));
         data.put("impporto","" + object.getInt("impporto"));
         data.put("descrizione","" + object.getString("descrizione"));
-        Optional<FornitoriProdotti> fornitoreprodotto = controller.insertObject(data);
-        if (fornitoreprodotto.isPresent()){
+        if (controller.insertObject(data)){
+            String fornitoreprodotto = "Relazione tra fornitore e prodotto creata correttamente.";
             PrintWriter writer= response.getWriter();
-            response.setContentLength(fornitoreprodotto.get().toString().length());
+            response.setContentLength(fornitoreprodotto.toString().length());
             response.setContentType("application/json");
             response.setStatus(201);
-            writer.println(fornitoreprodotto.get().toString());
+            writer.println(fornitoreprodotto.toString());
             writer.flush();
             writer.close();
         }else{

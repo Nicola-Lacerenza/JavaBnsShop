@@ -1,11 +1,10 @@
 package controllers;
 
 import models.FornitoriProdotti;
-import models.Immagini;
 import utility.Database;
-
-
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public class FornitoriProdottiController implements Controllers<FornitoriProdotti> {
 
@@ -14,12 +13,8 @@ public class FornitoriProdottiController implements Controllers<FornitoriProdott
     }
 
     @Override
-    public Optional<FornitoriProdotti> insertObject(Map<String, String> request) {
-        FornitoriProdotti fP = Database.insertElement(request,"fornitoriProdotti",new FornitoriProdotti());
-        if (fP==null){
-            return Optional.empty();
-        }
-        return Optional.of(fP);
+    public boolean insertObject(Map<String, String> request) {
+        return Database.insertElement(request,"fornitori_has_prodotti");
     }
 
     @Override

@@ -6,7 +6,6 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import models.Utenti;
 import org.json.JSONObject;
 import utility.Crittografia;
 import utility.GestioneServlet;
@@ -67,10 +66,10 @@ public class RegisterServlet extends HttpServlet{
             request1.put("email",email);
             request1.put("telefono",telefono);
             request1.put("password",passwordHashed.get());
-            Optional<Utenti> output = controller.insertObject(request1);
 
-            if (output.isPresent()) {
-                GestioneServlet.inviaRisposta(response,201,output.get().toString(),true);
+            if (controller.insertObject(request1)) {
+                String registrazione = "\"Registrazione effettuata correttamente.\"";
+                GestioneServlet.inviaRisposta(response,201,registrazione,true);
             }else{
                 String message = "\"Errore durante la registrazione.\"";
                 GestioneServlet.inviaRisposta(response,500,message,false);

@@ -2,15 +2,14 @@ package models;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.Optional;
 
 public class Customers implements Oggetti<Customers> {
-
-    private int id;
-    private String nome;
-    private String cognome;
-    private String email;
-    private int telefono;
+    private final int id;
+    private final String nome;
+    private final String cognome;
+    private final String email;
+    private final int telefono;
 
     public Customers(int id, String nome, String cognome, String email, int telefono) {
         this.id = id;
@@ -49,17 +48,17 @@ public class Customers implements Oggetti<Customers> {
     }
 
     @Override
-    public Customers convertDBToJava(ResultSet rs) {
+    public Optional<Customers> convertDBToJava(ResultSet rs) {
         try{
             int id1 = rs.getInt("id");
             String nome = rs.getString("nome");
             String cognome = rs.getString("cognome");
             String email = rs.getString("email");
             int telefono = rs.getInt("telefono");
-            return new Customers(id1,nome,cognome,email,telefono);
+            return Optional.of(new Customers(id1,nome,cognome,email,telefono));
         }catch (SQLException e){
             e.printStackTrace();
-            return null;
+            return Optional.empty();
         }
     }
 }

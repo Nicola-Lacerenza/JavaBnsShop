@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import models.Taglia;
 import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -91,13 +90,13 @@ public class TagliaServlet extends HttpServlet{
         Map<String,String> data= new HashMap<>();
         data.put("idtaglia","" + object.getInt("idTaglia"));
         data.put("taglia","" + object.getString("taglia"));
-        Optional<Taglia> taglia = controller.insertObject(data);
-        if (taglia.isPresent()){
+        if (controller.insertObject(data)){
+            String taglia = "\"Taglia creata correttamente.\"";
             PrintWriter writer= response.getWriter();
-            response.setContentLength(taglia.get().toString().length());
+            response.setContentLength(taglia.toString().length());
             response.setContentType("application/json");
             response.setStatus(201);
-            writer.println(taglia.get().toString());
+            writer.println(taglia.toString());
             writer.flush();
             writer.close();
         }else{
