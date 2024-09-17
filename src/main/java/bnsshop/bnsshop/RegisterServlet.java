@@ -55,19 +55,19 @@ public class RegisterServlet extends HttpServlet{
         String email= object.getString("email");
         String telefono= object.getString("telefono");
         String password= object.getString("password");
-        Optional<String> passwordHashed= Crittografia.get_SHA_512_SecurePassword(password,"");
+        Optional<String> passwordHashed= Crittografia.get_SHA_512_SecurePassword(password,"1234");
         if(passwordHashed.isPresent()){
-            Map<String,String> request1 = new HashMap<>();
-            request1.put("nome",nome);
-            request1.put("cognome",cognome);
-            request1.put("data_nascita",dataNascita);
-            request1.put("luogo_nascita",luogoNascita);
-            request1.put("sesso",sesso);
-            request1.put("email",email);
-            request1.put("telefono",telefono);
-            request1.put("password",passwordHashed.get());
+            Map<Integer,RegisterFields> request0= new HashMap<>();
+            request0.put(0,new RegisterFields("nome",nome));
+            request0.put(1,new RegisterFields("cognome",cognome));
+            request0.put(2,new RegisterFields("data_nascita",dataNascita));
+            request0.put(3,new RegisterFields("luogo_nascita",luogoNascita));
+            request0.put(4,new RegisterFields("sesso",sesso));
+            request0.put(5,new RegisterFields("email",email));
+            request0.put(6,new RegisterFields("telefono",telefono));
+            request0.put(7,new RegisterFields("password",passwordHashed.get()));
 
-            if (controller.insertObject(request1)) {
+            if (controller.insertObject(request0)) {
                 String registrazione = "\"Registrazione effettuata correttamente.\"";
                 GestioneServlet.inviaRisposta(response,201,registrazione,true);
             }else{
@@ -95,5 +95,23 @@ public class RegisterServlet extends HttpServlet{
         response.addHeader("Access-Control-Allow-Headers","X-CUSTOM,Content-Length,Content-Type");
         response.addHeader("Access-Control-Max-Age","86400");
         response.setStatus(HttpServletResponse.SC_ACCEPTED);
+    }
+
+    public static class RegisterFields{
+        private String key;
+        private String value;
+
+        public RegisterFields(String key, String value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        public String getKey() {
+            return key;
+        }
+
+        public String getValue() {
+            return value;
+        }
     }
 }

@@ -1,5 +1,6 @@
 package utility;
 
+import bnsshop.bnsshop.RegisterServlet;
 import models.Oggetti;
 import java.util.LinkedList;
 import java.util.List;
@@ -16,17 +17,28 @@ public class Database{
     //Variabili di servizio per interagire con il database
     private static final String DATABASE_NAME="mydb" ;
     private static final String DATABASE_USERNAME="root";
-    private static final String DATABASE_PASSWORD="0000";
-    private static final String DATABASE_URL="jdbc:mysql://127.0.0.1:3306/" + DATABASE_NAME;
+    private static final String DATABASE_PASSWORD="";
+    private static final String DATABASE_URL="jdbc:mysql://localhost:3306/" + DATABASE_NAME;
 
     private Database(){}
 
-    public static <T extends Oggetti<T>> boolean insertElement(Map<String,String> fields,String tableName){
-        String nomi = fields.keySet().stream()
-                .collect(Collectors.joining(","));
-        String valori = fields.values().stream()
-                .map(s -> "'"+s+"'")
-                .collect(Collectors.joining(","));
+    public static <T extends Oggetti<T>> boolean insertElement(Map<Integer, RegisterServlet.RegisterFields> fields, String tableName){
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        String nomi = "";
+        String valori = "";
+        for (int i = 0;i<fields.size();i++){
+            RegisterServlet.RegisterFields attuale = fields.get(i);
+            nomi+=attuale.getKey();
+            valori+="'" + attuale.getValue()+"'";
+            if (i<(fields.size()-1)){
+                nomi+=",";
+                valori+=",";
+            }
+        }
         String query="INSERT INTO "+tableName+"("+nomi+") VALUES("+valori+")";
         boolean output;
         Connection connection = null;
@@ -153,8 +165,8 @@ public class Database{
             statement=connection.createStatement();
             results=statement.executeQuery(query);
             while (results.next()){
-                E object = model.convertDBToJava(results);
-                output = Optional.of(object);
+                Optional<E> object = model.convertDBToJava(results);
+                output=object;
             }
         }catch(SQLException exception){
             output = Optional.empty();
@@ -199,8 +211,8 @@ public class Database{
             statement=connection.createStatement();
             results=statement.executeQuery(query);
             while (results.next()){
-                E object = model.convertDBToJava(results);
-                output.add(object);
+                Optional<E> object = model.convertDBToJava(results);
+                object.ifPresent(output::add);
             }
         }catch(SQLException exception){
             exception.printStackTrace();

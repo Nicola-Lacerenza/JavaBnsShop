@@ -8,6 +8,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import models.Brand;
 import org.json.JSONObject;
+import utility.GestioneServlet;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -87,31 +89,20 @@ public class BrandServlet extends HttpServlet{
         }
         String json=builder.toString();
         JSONObject object = new JSONObject(json);
-        Map<String,String> data= new HashMap<>();
-        data.put("idbrand","" + object.getInt("idBrand"));
-        data.put("nome","" + object.getString("nome"));
-        data.put("descrizione","" + object.getString("descrizione"));
-        if (controller.insertObject(data)){
-            PrintWriter writer= response.getWriter();
-            String brand = "\"Brand creato correttamente.\"";
-            response.setContentLength(brand.toString().length());
-            response.setContentType("application/json");
-            response.setStatus(201);
-            writer.println(brand.toString());
-            writer.flush();
-            writer.close();
+
+        String nome= object.getString("nome");
+        String descrizione= object.getString("descrizione");
+        Map<Integer, RegisterServlet.RegisterFields> request0= new HashMap<>();
+        request0.put(0,new RegisterServlet.RegisterFields("nome",nome));
+        request0.put(1,new RegisterServlet.RegisterFields("descrizione",descrizione));
+        if (controller.insertObject(request0)) {
+            String registrazione = "\"Registrazione effettuata correttamente.\"";
+            GestioneServlet.inviaRisposta(response,201,registrazione,true);
         }else{
-            String message = "Internal server error";
-            JSONObject error = new JSONObject();
-            error.put("message", message);
-            PrintWriter writer= response.getWriter();
-            response.setContentLength(error.toString().length());
-            response.setContentType("application/json");
-            response.setStatus(500);
-            writer.println(error.toString());
-            writer.flush();
-            writer.close();
+            String message = "\"Errore durante la registrazione.\"";
+            GestioneServlet.inviaRisposta(response,500,message,false);
         }
+
 
     }
 

@@ -16,7 +16,7 @@ import java.util.LinkedList;
 @WebServlet(name = "LoginServlet", value = "/LoginServlet")
 public class AuthServlet extends HttpServlet{
 
-    UtentiController controller;
+    private UtentiController controller;
 
     @Override
     public void init() throws ServletException{

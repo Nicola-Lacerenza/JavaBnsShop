@@ -1,5 +1,6 @@
 package controllers;
 
+import bnsshop.bnsshop.RegisterServlet;
 import models.Utenti;
 import utility.Database;
 import java.util.List;
@@ -12,7 +13,7 @@ public class UtentiController implements Controllers<Utenti> {
     }
 
     @Override
-    public boolean insertObject(Map<String, String> request) {
+    public boolean insertObject(Map<Integer, RegisterServlet.RegisterFields> request) {
         return Database.insertElement(request,"utenti");
     }
 

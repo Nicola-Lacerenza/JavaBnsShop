@@ -1,5 +1,6 @@
 package controllers;
 
+import bnsshop.bnsshop.RegisterServlet;
 import models.Brand;
 import models.Categoria;
 import utility.Database;
@@ -15,7 +16,7 @@ public class BrandController implements Controllers<Brand> {
     }
 
     @Override
-    public boolean insertObject(Map<String, String> request) {
+    public boolean insertObject(Map<Integer, RegisterServlet.RegisterFields> request) {
         return Database.insertElement(request,"brand");
     }
 
