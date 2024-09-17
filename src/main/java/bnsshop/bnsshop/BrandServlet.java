@@ -28,10 +28,15 @@ public class BrandServlet extends HttpServlet{
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException,IOException{
         int idBrand;
-        try{
-            idBrand = Integer.parseInt((String) request.getAttribute("idbrand"));
-        }catch(NumberFormatException exception){
-            idBrand=-1;
+        try {
+            String idString = request.getParameter("id");
+            if (idString != null) {
+                idBrand = Integer.parseInt(idString);
+            } else {
+                idBrand = -1;
+            }
+        } catch (NumberFormatException exception) {
+            idBrand = -1;
         }
         Optional<Brand> brand=null;
         List<Brand> brands=null;
