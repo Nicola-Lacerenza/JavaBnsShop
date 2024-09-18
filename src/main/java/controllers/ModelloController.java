@@ -1,27 +1,26 @@
 package controllers;
 
 import bnsshop.bnsshop.RegisterServlet;
-import models.Brand;
+import models.Modello;
 import utility.Database;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class BrandController implements Controllers<Brand> {
+public class ModelloController implements Controllers<Modello> {
 
-    public BrandController(){
+    public ModelloController(){
+
     }
 
     @Override
     public boolean insertObject(Map<Integer, RegisterServlet.RegisterFields> request) {
-        return Database.insertElement(request,"brand");
+        return Database.insertElement(request,"modello");
     }
 
     @Override
     public boolean updateObject(Map<String, String> request) {
-        int id = Integer.parseInt(request.get("id"));
-        return Database.updateElement(id,request, "brand");
+        return false;
     }
 
     @Override
@@ -30,10 +29,12 @@ public class BrandController implements Controllers<Brand> {
     }
 
     @Override
-    public Optional<Brand> getObject(int objectid) {
+    public Optional<Modello> getObject(int objectid) {
         return Optional.empty();
     }
 
     @Override
-    public List<Brand> getAllObjects() {return new LinkedList<>(); }
+    public List<Modello> getAllObjects() {
+        return null;
+    }
 }
