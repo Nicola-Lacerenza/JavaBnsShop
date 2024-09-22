@@ -155,7 +155,7 @@ public class BrandServlet extends HttpServlet{
 
     @Override
     public void doDelete(HttpServletRequest request,HttpServletResponse response) throws ServletException,IOException{
-        int idBrand= Integer.parseInt((String) request.getAttribute("idbrand"));
+        int idBrand= Integer.parseInt((String) request.getAttribute("id"));
         if (this.controller.deleteObject(idBrand)){
             String message = "Product deleted Correctly.";
             PrintWriter writer= response.getWriter();

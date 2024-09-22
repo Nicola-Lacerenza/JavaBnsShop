@@ -27,7 +27,16 @@ public class BrandController implements Controllers<Brand> {
 
     @Override
     public boolean deleteObject(int objectid) {
-        return false;
+        // Controlla se l'ID è valido
+        if (objectid <= 0) {
+            return false;
+        }
+
+        // Chiama il metodo della classe Database per eliminare l'elemento
+        boolean isDeleted = Database.deleteElement(objectid,"brand");
+
+        // Restituisci il risultato dell'operazione di eliminazione
+        return isDeleted;
     }
 
     @Override
