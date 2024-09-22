@@ -92,6 +92,7 @@ public class TagliaServlet extends HttpServlet{
 
     @Override
     public void doPut(HttpServletRequest request,HttpServletResponse response) throws ServletException,IOException{
+        int id= Integer.parseInt((String) request.getParameter("id"));
         BufferedReader reader=request.getReader();
         String row=reader.readLine();
         List<String> rows = new ArrayList<>();
@@ -105,10 +106,9 @@ public class TagliaServlet extends HttpServlet{
         }
         String json=builder.toString();
         JSONObject object = new JSONObject(json);
-        Map<String,String> data= new HashMap<>();
-        data.put("idtaglia","" + object.getInt("idtaglia"));
-        data.put("taglia","" + object.getString("taglia"));
-        if (controller.updateObject(data)){
+        Map<Integer, RegisterServlet.RegisterFields> data = new HashMap<>();
+        data.put(0,new RegisterServlet.RegisterFields("taglia","" + object.getString("taglia")));
+        if (controller.updateObject(id,data)){
             String message="Product Updated Correctly.";
             PrintWriter writer= response.getWriter();
             response.setContentLength(message.length());

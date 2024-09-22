@@ -1,5 +1,7 @@
 package models;
 
+import org.json.JSONObject;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Calendar;
@@ -71,5 +73,16 @@ public class Ordine implements Oggetti<Ordine>{
             e.printStackTrace();
             return Optional.empty();
         }
+    }
+    @Override
+    public String toString() {
+        JSONObject output = new JSONObject();
+        output.put("id",id);
+        output.put("id_customers",idCustomers);
+        output.put("id_pagamento",idPagamento);
+        output.put("id_indirizzo",idIndirizzo);
+        output.put("stato_ordine",statoOrdine);
+        output.put("data_ordine",dataOrdine);
+        return output.toString(4);
     }
 }

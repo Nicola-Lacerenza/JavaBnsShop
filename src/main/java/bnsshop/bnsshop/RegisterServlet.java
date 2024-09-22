@@ -66,7 +66,6 @@ public class RegisterServlet extends HttpServlet{
             request0.put(5,new RegisterFields("email",email));
             request0.put(6,new RegisterFields("telefono",telefono));
             request0.put(7,new RegisterFields("password",passwordHashed.get()));
-
             if (controller.insertObject(request0)) {
                 String registrazione = "\"Registrazione effettuata correttamente.\"";
                 GestioneServlet.inviaRisposta(response,201,registrazione,true);

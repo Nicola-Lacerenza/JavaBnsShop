@@ -1,6 +1,7 @@
 package controllers;
 
 import bnsshop.bnsshop.RegisterServlet;
+import models.Brand;
 import models.Modello;
 import utility.Database;
 import java.util.List;
@@ -19,22 +20,28 @@ public class ModelloController implements Controllers<Modello> {
     }
 
     @Override
-    public boolean updateObject(Map<String, String> request) {
+    public boolean updateObject(int id,Map<Integer, RegisterServlet.RegisterFields> request) {
         return false;
     }
 
     @Override
     public boolean deleteObject(int objectid) {
-        return false;
+        if (objectid <= 0) {
+            return false;
+        }
+        return Database.deleteElement(objectid,"modello");
     }
 
     @Override
     public Optional<Modello> getObject(int objectid) {
-        return Optional.empty();
+        if (objectid<=0){
+            return Optional.empty();
+        }
+        return Database.getElement(objectid,"modello",new Modello());
     }
 
     @Override
     public List<Modello> getAllObjects() {
-        return null;
+        return Database.getAllElements("modello",new Modello());
     }
 }

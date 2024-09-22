@@ -19,22 +19,28 @@ public class TagliaController implements Controllers<Taglia> {
     }
 
     @Override
-    public boolean updateObject(Map<String, String> request) {
-        return false;
+    public boolean updateObject(int id,Map<Integer, RegisterServlet.RegisterFields> request) {
+        return Database.updateElement(id,request, "taglia");
     }
 
     @Override
     public boolean deleteObject(int objectid) {
-        return false;
+        if (objectid <= 0) {
+            return false;
+        }
+        return Database.deleteElement(objectid,"taglia");
     }
 
     @Override
     public Optional<Taglia> getObject(int objectid) {
-        return Optional.empty();
+        if (objectid<=0){
+            return Optional.empty();
+        }
+        return Database.getElement(objectid,"taglia",new Taglia());
     }
 
     @Override
     public List<Taglia> getAllObjects() {
-        return null;
+        return Database.getAllElements("taglia",new Taglia());
     }
 }

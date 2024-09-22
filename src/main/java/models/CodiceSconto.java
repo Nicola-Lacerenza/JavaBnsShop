@@ -1,5 +1,7 @@
 package models;
 
+import org.json.JSONObject;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
@@ -61,5 +63,15 @@ public class CodiceSconto implements Oggetti<CodiceSconto>{
             e.printStackTrace();
             return Optional.empty();
         }
+    }
+    @Override
+    public String toString() {
+        JSONObject output = new JSONObject();
+        output.put("id",id);
+        output.put("id_prodotti",idProdotti);
+        output.put("id_ordine",idOrdine);
+        output.put("codice",codice);
+        output.put("sconto",sconto);
+        return output.toString(4);
     }
 }

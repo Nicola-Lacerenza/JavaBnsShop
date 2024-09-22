@@ -1,5 +1,7 @@
 package models;
 
+import org.json.JSONObject;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
@@ -67,5 +69,16 @@ public class Indirizzo implements Oggetti<Indirizzo> {
             e.printStackTrace();
             return Optional.empty();
         }
+    }
+    @Override
+    public String toString() {
+        JSONObject output = new JSONObject();
+        output.put("id",id);
+        output.put("citta",citta);
+        output.put("stato",stato);
+        output.put("cap",cap);
+        output.put("indirizzo",indirizzo);
+        output.put("id_customers",idCustomer);
+        return output.toString(4);
     }
 }

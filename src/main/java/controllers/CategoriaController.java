@@ -1,6 +1,7 @@
 package controllers;
 
 import bnsshop.bnsshop.RegisterServlet;
+import models.Brand;
 import models.Categoria;
 import utility.Database;
 import java.util.List;
@@ -9,7 +10,6 @@ import java.util.Optional;
 
 public class CategoriaController implements Controllers<Categoria> {
     public CategoriaController(){
-
     }
 
     @Override
@@ -18,23 +18,29 @@ public class CategoriaController implements Controllers<Categoria> {
     }
 
     @Override
-    public boolean updateObject(Map<String, String> request) {
-        int id = Integer.parseInt(request.get("id"));
+    public boolean updateObject(int id,Map<Integer, RegisterServlet.RegisterFields> request) {
         return Database.updateElement(id,request, "categoria");
     }
 
     @Override
     public boolean deleteObject(int objectid) {
-        return false;
+        if (objectid <= 0) {
+            return false;
+        }
+        return Database.deleteElement(objectid,"categoria");
     }
 
     @Override
     public Optional<Categoria> getObject(int objectid) {
-        return Optional.empty();
+        if (objectid<=0){
+            return Optional.empty();
+        }
+        return Database.getElement(objectid,"categoria",new Categoria());
     }
 
     @Override
     public List<Categoria> getAllObjects() {
-        return null;
+        return Database.getAllElements("categoria",new Categoria());
+
     }
 }

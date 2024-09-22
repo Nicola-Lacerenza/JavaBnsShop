@@ -9,7 +9,7 @@ import java.util.Optional;
 public interface Controllers<E> {
     boolean insertObject(Map<Integer, RegisterServlet.RegisterFields> request);
 
-    boolean updateObject(Map<String,String> request);
+    boolean updateObject(int id,Map<Integer, RegisterServlet.RegisterFields> request);
 
     boolean deleteObject(int objectid);
 

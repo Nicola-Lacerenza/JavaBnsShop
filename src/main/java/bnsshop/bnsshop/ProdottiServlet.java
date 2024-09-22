@@ -8,6 +8,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.annotation.WebServlet;
 import models.Prodotti;
 import org.json.JSONObject;
+import utility.GestioneServlet;
+
 import java.io.*;
 import java.util.*;
 
@@ -23,50 +25,34 @@ public class ProdottiServlet extends HttpServlet{
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException,IOException{
-        int idProdotto;
+        int id;
         try{
-            idProdotto = Integer.parseInt((String) request.getAttribute("idprodotto"));
-        }catch(NumberFormatException exception){
-            idProdotto=-1;
+            String idString = request.getParameter("id");
+            if (idString != null) {
+                id = Integer.parseInt(idString);
+            } else {
+                id = -1;
+            }        }catch(NumberFormatException exception){
+            id=-1;
         }
         Optional<Prodotti> prodotto=null;
         List<Prodotti> prodotti=null;
 
-        if (idProdotto!=-1){
-            prodotto = this.controller.getObject(idProdotto);
+        if (id!=-1){
+            prodotto = this.controller.getObject(id);
         }else{
             prodotti = this.controller.getAllObjects();
         }
 
         if (prodotto!=null || prodotti!=null){
             if (prodotto!=null){
-                PrintWriter writer= response.getWriter();
-                response.setContentLength(prodotto.get().toString().length());
-                response.setContentType("application/json");
-                response.setStatus(200);
-                writer.println(prodotto.get().toString());
-                writer.flush();
-                writer.close();
+                GestioneServlet.inviaRisposta(response,200,prodotto.get().toString(),true);
             }else{
-                PrintWriter writer= response.getWriter();
-                response.setContentLength(prodotti.toString().length());
-                response.setContentType("application/json");
-                response.setStatus(200);
-                writer.println(prodotti.toString());
-                writer.flush();
-                writer.close();
+                GestioneServlet.inviaRisposta(response,200,prodotti.toString(),true);
             }
         }else{
-            String message = "Internal server error";
-            JSONObject error = new JSONObject();
-            error.put("message", message);
-            PrintWriter writer= response.getWriter();
-            response.setContentLength(error.toString().length());
-            response.setContentType("application/json");
-            response.setStatus(500);
-            writer.println(error.toString());
-            writer.flush();
-            writer.close();
+            String message = "\"Internal server error\"";
+            GestioneServlet.inviaRisposta(response,500,message,false);
         }
     }
 
@@ -85,11 +71,29 @@ public class ProdottiServlet extends HttpServlet{
         }
         String json=builder.toString();
         JSONObject object = new JSONObject(json);
-
+        String idModello= object.getString("id_modello");
+        String idTaglia= object.getString("id_taglia");
+        String prezzo= object.getString("prezzo");
+        String quantita= object.getString("quantita");
+        String statoPubblicazione= object.getString("stato_pubblicazione");
+        Map<Integer, RegisterServlet.RegisterFields> request0= new HashMap<>();
+        request0.put(0,new RegisterServlet.RegisterFields("id_modello",idModello));
+        request0.put(1,new RegisterServlet.RegisterFields("id_taglia",idTaglia));
+        request0.put(2,new RegisterServlet.RegisterFields("prezzo",prezzo));
+        request0.put(3,new RegisterServlet.RegisterFields("quantita",quantita));
+        request0.put(4,new RegisterServlet.RegisterFields("stato_pubblicazione",statoPubblicazione));
+        if (controller.insertObject(request0)) {
+            String registrazione = "\"Registrazione effettuata correttamente.\"";
+            GestioneServlet.inviaRisposta(response,201,registrazione,true);
+        }else{
+            String message = "\"Errore durante la registrazione.\"";
+            GestioneServlet.inviaRisposta(response,500,message,false);
+        }
     }
 
     @Override
     public void doPut(HttpServletRequest request,HttpServletResponse response) throws ServletException,IOException{
+        int id= Integer.parseInt((String) request.getParameter("id"));
         BufferedReader reader=request.getReader();
         String row=reader.readLine();
         List<String> rows = new ArrayList<>();
@@ -103,59 +107,30 @@ public class ProdottiServlet extends HttpServlet{
         }
         String json=builder.toString();
         JSONObject object = new JSONObject(json);
-        Map<String,String> data= new HashMap<>();
-        data.put("idprodotto","" + object.getInt("idprodotto"));
-        data.put("idmodello","" + object.getInt("idmodello"));
-        data.put("idtaglia","" + object.getInt("idtaglia"));
-        data.put("prezzo","" + object.getDouble("prezzo"));
-        data.put("quantita","" + object.getInt("quantita"));
-        data.put("statopubblicazione","" + object.getInt("statopubblicazione"));
-        if (controller.updateObject(data)){
-            String message="Product Updated Correctly.";
-            PrintWriter writer= response.getWriter();
-            response.setContentLength(message.length());
-            response.setContentType("application/json");
-            response.setStatus(200);
-            writer.println(message);
-            writer.flush();
-            writer.close();
+        Map<Integer, RegisterServlet.RegisterFields> data = new HashMap<>();
+        data.put(0,new RegisterServlet.RegisterFields("id_modello","" + object.getString("id_modello")));
+        data.put(1,new RegisterServlet.RegisterFields("id_taglia","" + object.getString("id_taglia")));
+        data.put(2,new RegisterServlet.RegisterFields("prezzo","" + object.getString("prezzo")));
+        data.put(3,new RegisterServlet.RegisterFields("quantita","" + object.getString("quantita")));
+        data.put(4,new RegisterServlet.RegisterFields("stato_pubblicazione","" + object.getString("stato_pubblicazione")));
+        if (controller.updateObject(id,data)){
+            String message="\"Product Updated Correctly.\"";
+            GestioneServlet.inviaRisposta(response,200,message,true);
         }else{
-            String message = "Internal server error";
-            JSONObject error = new JSONObject();
-            error.put("message", message);
-            PrintWriter writer= response.getWriter();
-            response.setContentLength(error.toString().length());
-            response.setContentType("application/json");
-            response.setStatus(500);
-            writer.println(error.toString());
-            writer.flush();
-            writer.close();
+            String message = "\"Internal server error\"";
+            GestioneServlet.inviaRisposta(response,500,message,false);
         }
     }
 
     @Override
     public void doDelete(HttpServletRequest request,HttpServletResponse response) throws ServletException,IOException{
-        int idProdotto= Integer.parseInt((String) request.getAttribute("idprodotto"));
-        if (this.controller.deleteObject(idProdotto)){
-            String message = "Product deleted Correctly.";
-            PrintWriter writer= response.getWriter();
-            response.setContentLength(message.length());
-            response.setContentType("application/json");
-            response.setStatus(200);
-            writer.println(message);
-            writer.flush();
-            writer.close();
+        int id= Integer.parseInt((String) request.getAttribute("id"));
+        if (this.controller.deleteObject(id)){
+            String message = "\"Product deleted Correctly.\"";
+            GestioneServlet.inviaRisposta(response,200,message,true);
         }else{
-            String message = "Internal server error";
-            JSONObject error = new JSONObject();
-            error.put("message", message);
-            PrintWriter writer= response.getWriter();
-            response.setContentLength(error.toString().length());
-            response.setContentType("application/json");
-            response.setStatus(500);
-            writer.println(error.toString());
-            writer.flush();
-            writer.close();
+            String message = "\"Internal server error\"";
+            GestioneServlet.inviaRisposta(response,500,message,false);
         }
     }
 

@@ -1,6 +1,7 @@
 package controllers;
 
 import bnsshop.bnsshop.RegisterServlet;
+import models.Brand;
 import models.ColoreModello;
 import utility.Database;
 import java.util.List;
@@ -19,22 +20,28 @@ public class ColoreModelloController implements Controllers<ColoreModello> {
     }
 
     @Override
-    public boolean updateObject(Map<String, String> request) {
-        return false;
+    public boolean updateObject(int id,Map<Integer, RegisterServlet.RegisterFields> request) {
+        return Database.updateElement(id,request, "colore_has_modello");
     }
 
     @Override
     public boolean deleteObject(int objectid) {
-        return false;
+        if (objectid <= 0) {
+            return false;
+        }
+        return Database.deleteElement(objectid,"colore_has_modello");
     }
 
     @Override
     public Optional<ColoreModello> getObject(int objectid) {
-        return Optional.empty();
+        if (objectid<=0){
+            return Optional.empty();
+        }
+        return Database.getElement(objectid,"colore_has_modello",new ColoreModello());
     }
 
     @Override
     public List<ColoreModello> getAllObjects() {
-        return null;
+        return Database.getAllElements("colore_has_modello",new ColoreModello());
     }
 }

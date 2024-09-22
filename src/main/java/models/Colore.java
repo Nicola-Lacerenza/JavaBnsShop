@@ -1,5 +1,7 @@
 package models;
 
+import org.json.JSONObject;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
@@ -55,5 +57,14 @@ public class Colore implements Oggetti<Colore> {
             e.printStackTrace();
             return Optional.empty();
         }
+    }
+    @Override
+    public String toString() {
+        JSONObject output = new JSONObject();
+        output.put("id",id);
+        output.put("nome",nome);
+        output.put("rgb",rgb);
+        output.put("hex",hex);
+        return output.toString(4);
     }
 }

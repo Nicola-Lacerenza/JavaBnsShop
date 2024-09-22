@@ -1,5 +1,7 @@
 package models;
 
+import org.json.JSONObject;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
@@ -37,13 +39,21 @@ public class Immagini implements Oggetti<Immagini>{
     @Override
     public Optional<Immagini> convertDBToJava(ResultSet rs) {
         try{
-            int idImmagini = rs.getInt("id");
+            int id1 = rs.getInt("id");
             int idProdotti = rs.getInt("id_prodotti");
             String url = rs.getString("url");
-            return Optional.of(new Immagini(idImmagini,idProdotti,url));
+            return Optional.of(new Immagini(id1,idProdotti,url));
         }catch (SQLException e){
             e.printStackTrace();
             return Optional.empty();
         }
+    }
+    @Override
+    public String toString() {
+        JSONObject output = new JSONObject();
+        output.put("id",id);
+        output.put("id_prodotti",idProdotti);
+        output.put("url",url);
+        return output.toString(4);
     }
 }

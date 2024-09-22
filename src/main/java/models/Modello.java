@@ -1,5 +1,7 @@
 package models;
 
+import org.json.JSONObject;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
@@ -52,8 +54,8 @@ public class Modello implements Oggetti<Modello> {
     public Optional<Modello> convertDBToJava(ResultSet rs) {
         try{
             int idModello = rs.getInt("id");
-            int idBrand = rs.getInt("idbrand");
-            int idCategoria = rs.getInt("idcategoria");
+            int idBrand = rs.getInt("id_brand");
+            int idCategoria = rs.getInt("id_categoria");
             String nome = rs.getString("nome");
             String descrizione = rs.getString("descrizione");
             return Optional.of(new Modello(idModello, idBrand, idCategoria, nome, descrizione));
@@ -61,5 +63,15 @@ public class Modello implements Oggetti<Modello> {
             e.printStackTrace();
             return Optional.empty();
         }
+    }
+    @Override
+    public String toString() {
+        JSONObject output = new JSONObject();
+        output.put("id",id);
+        output.put("id_brand",idBrand);
+        output.put("id_categoria",idCategoria);
+        output.put("nome",nome);
+        output.put("descrizione",descrizione);
+        return output.toString(4);
     }
 }

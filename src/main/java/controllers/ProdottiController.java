@@ -1,6 +1,7 @@
 package controllers;
 
 import bnsshop.bnsshop.RegisterServlet;
+import models.Brand;
 import models.Prodotti;
 import utility.Database;
 import java.util.List;
@@ -18,22 +19,28 @@ public class ProdottiController implements Controllers<Prodotti> {
     }
 
     @Override
-    public boolean updateObject(Map<String, String> request) {
-        return false;
+    public boolean updateObject(int id,Map<Integer, RegisterServlet.RegisterFields> request) {
+        return Database.updateElement(id,request, "prodotti");
     }
 
     @Override
     public boolean deleteObject(int objectid) {
-        return false;
+        if (objectid <= 0) {
+            return false;
+        }
+        return Database.deleteElement(objectid,"prodotti");
     }
 
     @Override
     public Optional<Prodotti> getObject(int objectid) {
-        return Optional.empty();
+        if (objectid<=0){
+            return Optional.empty();
+        }
+        return Database.getElement(objectid,"prodotti",new Prodotti());
     }
 
     @Override
     public List<Prodotti> getAllObjects() {
-        return null;
+        return Database.getAllElements("prodotti",new Prodotti());
     }
 }

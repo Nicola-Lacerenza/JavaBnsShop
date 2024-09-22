@@ -1,6 +1,7 @@
 package controllers;
 
 import bnsshop.bnsshop.RegisterServlet;
+import models.Brand;
 import models.Utenti;
 import utility.Database;
 import java.util.List;
@@ -18,33 +19,29 @@ public class UtentiController implements Controllers<Utenti> {
     }
 
     @Override
-    public boolean updateObject(Map<String, String> request) {
-        int id = Integer.parseInt(request.get("id"));
+    public boolean updateObject(int id,Map<Integer, RegisterServlet.RegisterFields> request) {
         return Database.updateElement(id,request, "utenti");
     }
 
     @Override
     public boolean deleteObject(int objectid) {
-        // Controlla se l'ID è valido
         if (objectid <= 0) {
             return false;
         }
-
-        // Chiama il metodo della classe Database per eliminare l'elemento
-        boolean isDeleted = Database.deleteElement(objectid,"utenti");
-
-        // Restituisci il risultato dell'operazione di eliminazione
-        return isDeleted;
+        return Database.deleteElement(objectid,"utenti");
     }
 
     @Override
     public Optional<Utenti> getObject(int objectid) {
-        return Optional.empty();
+        if (objectid<=0){
+            return Optional.empty();
+        }
+        return Database.getElement(objectid,"utenti",new Utenti());
     }
 
     @Override
     public List<Utenti> getAllObjects() {
-        return null;
+        return Database.getAllElements("utenti",new Utenti());
     }
 }
 

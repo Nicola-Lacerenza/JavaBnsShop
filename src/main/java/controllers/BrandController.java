@@ -20,30 +20,28 @@ public class BrandController implements Controllers<Brand> {
     }
 
     @Override
-    public boolean updateObject(Map<String, String> request) {
-        int id = Integer.parseInt(request.get("id"));
+    public boolean updateObject(int id,Map<Integer, RegisterServlet.RegisterFields> request) {
         return Database.updateElement(id,request, "brand");
     }
 
     @Override
     public boolean deleteObject(int objectid) {
-        // Controlla se l'ID è valido
         if (objectid <= 0) {
             return false;
         }
-
-        // Chiama il metodo della classe Database per eliminare l'elemento
-        boolean isDeleted = Database.deleteElement(objectid,"brand");
-
-        // Restituisci il risultato dell'operazione di eliminazione
-        return isDeleted;
+        return Database.deleteElement(objectid,"brand");
     }
 
     @Override
     public Optional<Brand> getObject(int objectid) {
-        return Optional.empty();
+        if (objectid<=0){
+            return Optional.empty();
+        }
+        return Database.getElement(objectid,"brand",new Brand());
     }
 
     @Override
-    public List<Brand> getAllObjects() {return new LinkedList<>(); }
+    public List<Brand> getAllObjects() {
+        return Database.getAllElements("brand",new Brand());
+    }
 }

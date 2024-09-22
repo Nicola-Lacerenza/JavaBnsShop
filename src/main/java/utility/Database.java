@@ -72,20 +72,26 @@ public class Database{
         return output;
     }
 
-    public static boolean updateElement(int id,Map<String, String> fields, String tablename){
-        StringBuilder query = new StringBuilder("UPDATE FROM "+tablename+" SET ");
+    public static boolean updateElement(int id,Map<Integer, RegisterServlet.RegisterFields> fields, String tablename){
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        StringBuilder query = new StringBuilder("UPDATE "+tablename+" SET ");
         int actualField = 0;
-        for(String field:fields.keySet()){
-            query.append(field);
+        for(int i=0;i<fields.size();i++){
+            RegisterServlet.RegisterFields field=fields.get(i);
+            query.append(field.getKey());
             query.append("='");
-            query.append(fields.get(field));
+            query.append(field.getValue());
             query.append("'");
             if(actualField < (fields.size()-1)){
                 query.append(",");
             }
             actualField++;
         }
-        query.append("WHERE id='");
+        query.append(" WHERE id='");
         query.append(id);
         query.append("'");
         boolean output;
@@ -121,6 +127,11 @@ public class Database{
     }
 
     public static boolean deleteElement(int id, String tablename) {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
         String query="DELETE FROM "+tablename+" WHERE id='"+id+"'";
         boolean output;
         Connection connection = null;
@@ -155,6 +166,11 @@ public class Database{
 
 
     public static <E extends Oggetti<E>> Optional<E> getElement(int id, String tablename,E model) {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
         String query="SELECT * FROM "+tablename+" WHERE id='"+id+"'";
         Optional<E> output=Optional.empty();
         Connection connection = null;
@@ -200,6 +216,11 @@ public class Database{
     }
 
     public static <E extends Oggetti<E>> List<E> getAllElements(String tablename,E model) {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
         String query="SELECT * FROM " + tablename;
         List<E> output= new LinkedList<>();
         Connection connection = null;

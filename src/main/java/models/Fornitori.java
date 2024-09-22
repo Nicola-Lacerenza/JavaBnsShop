@@ -1,5 +1,7 @@
 package models;
 
+import org.json.JSONObject;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
@@ -46,5 +48,13 @@ public class Fornitori implements Oggetti<Fornitori>{
             e.printStackTrace();
             return Optional.empty();
         }
+    }
+    @Override
+    public String toString() {
+        JSONObject output = new JSONObject();
+        output.put("id",id);
+        output.put("nome",nome);
+        output.put("cognome",cognome);
+        return output.toString(4);
     }
 }

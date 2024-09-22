@@ -8,6 +8,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import models.Colore;
 import org.json.JSONObject;
+import utility.GestioneServlet;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -27,7 +29,12 @@ public class ColoreServlet extends HttpServlet{
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException,IOException{
         int idColore;
         try{
-            idColore = Integer.parseInt((String) request.getAttribute("idcolore"));
+            String idString = request.getParameter("id");
+            if (idString != null) {
+                idColore = Integer.parseInt(idString);
+            } else {
+                idColore = -1;
+            }
         }catch(NumberFormatException exception){
             idColore=-1;
         }
@@ -42,33 +49,13 @@ public class ColoreServlet extends HttpServlet{
 
         if (colore!=null || colori!=null){
             if (colore!=null){
-                PrintWriter writer= response.getWriter();
-                response.setContentLength(colore.get().toString().length());
-                response.setContentType("application/json");
-                response.setStatus(200);
-                writer.println(colore.get().toString());
-                writer.flush();
-                writer.close();
+                GestioneServlet.inviaRisposta(response,200,colore.get().toString(),true);
             }else{
-                PrintWriter writer= response.getWriter();
-                response.setContentLength(colori.toString().length());
-                response.setContentType("application/json");
-                response.setStatus(200);
-                writer.println(colori.toString());
-                writer.flush();
-                writer.close();
+                GestioneServlet.inviaRisposta(response,200,colori.toString(),true);
             }
         }else{
-            String message = "Internal server error";
-            JSONObject error = new JSONObject();
-            error.put("message", message);
-            PrintWriter writer= response.getWriter();
-            response.setContentLength(error.toString().length());
-            response.setContentType("application/json");
-            response.setStatus(500);
-            writer.println(error.toString());
-            writer.flush();
-            writer.close();
+            String message = "\"Internal server error\"";
+            GestioneServlet.inviaRisposta(response,500,message,false);
         }
     }
 
@@ -87,11 +74,25 @@ public class ColoreServlet extends HttpServlet{
         }
         String json=builder.toString();
         JSONObject object = new JSONObject(json);
-
+        String nome= object.getString("nome");
+        String rgb= object.getString("rgb");
+        String hex= object.getString("hex");
+        Map<Integer, RegisterServlet.RegisterFields> request0= new HashMap<>();
+        request0.put(0,new RegisterServlet.RegisterFields("nome",nome));
+        request0.put(1,new RegisterServlet.RegisterFields("rgb",rgb));
+        request0.put(2,new RegisterServlet.RegisterFields("hex",hex));
+        if (controller.insertObject(request0)) {
+            String registrazione = "\"Registrazione effettuata correttamente.\"";
+            GestioneServlet.inviaRisposta(response,201,registrazione,true);
+        }else{
+            String message = "\"Errore durante la registrazione.\"";
+            GestioneServlet.inviaRisposta(response,500,message,false);
+        }
     }
 
     @Override
     public void doPut(HttpServletRequest request,HttpServletResponse response) throws ServletException,IOException{
+        int id= Integer.parseInt((String) request.getParameter("id"));
         BufferedReader reader=request.getReader();
         String row=reader.readLine();
         List<String> rows = new ArrayList<>();
@@ -105,31 +106,16 @@ public class ColoreServlet extends HttpServlet{
         }
         String json=builder.toString();
         JSONObject object = new JSONObject(json);
-        Map<String,String> data= new HashMap<>();
-        data.put("idcolore","" + object.getInt("idcolore"));
-        data.put("nome","" + object.getString("nome"));
-        data.put("rgb","" + object.getString("rgb"));
-        data.put("hex","" + object.getString("hex"));
-        if (controller.updateObject(data)){
-            String message="Product Updated Correctly.";
-            PrintWriter writer= response.getWriter();
-            response.setContentLength(message.length());
-            response.setContentType("application/json");
-            response.setStatus(200);
-            writer.println(message);
-            writer.flush();
-            writer.close();
+        Map<Integer, RegisterServlet.RegisterFields> data = new HashMap<>();
+        data.put(0,new RegisterServlet.RegisterFields("nome","" + object.getString("nome")));
+        data.put(1,new RegisterServlet.RegisterFields("rgb","" + object.getString("rgb")));
+        data.put(2,new RegisterServlet.RegisterFields("hex","" + object.getString("hex")));
+        if (controller.updateObject(id,data)){
+            String message="\"Product Updated Correctly.\"";
+            GestioneServlet.inviaRisposta(response,200,message,true);
         }else{
-            String message = "Internal server error";
-            JSONObject error = new JSONObject();
-            error.put("message", message);
-            PrintWriter writer= response.getWriter();
-            response.setContentLength(error.toString().length());
-            response.setContentType("application/json");
-            response.setStatus(500);
-            writer.println(error.toString());
-            writer.flush();
-            writer.close();
+            String message = "\"Internal server error\"";
+            GestioneServlet.inviaRisposta(response,500,message,false);
         }
     }
 
@@ -137,25 +123,11 @@ public class ColoreServlet extends HttpServlet{
     public void doDelete(HttpServletRequest request,HttpServletResponse response) throws ServletException,IOException{
         int idColore= Integer.parseInt((String) request.getAttribute("idcolore"));
         if (this.controller.deleteObject(idColore)){
-            String message = "Product deleted Correctly.";
-            PrintWriter writer= response.getWriter();
-            response.setContentLength(message.length());
-            response.setContentType("application/json");
-            response.setStatus(200);
-            writer.println(message);
-            writer.flush();
-            writer.close();
+            String message = "\"Product deleted Correctly.\"";
+            GestioneServlet.inviaRisposta(response,200,message,true);
         }else{
-            String message = "Internal server error";
-            JSONObject error = new JSONObject();
-            error.put("message", message);
-            PrintWriter writer= response.getWriter();
-            response.setContentLength(error.toString().length());
-            response.setContentType("application/json");
-            response.setStatus(500);
-            writer.println(error.toString());
-            writer.flush();
-            writer.close();
+            String message = "\"Internal server error\"";
+            GestioneServlet.inviaRisposta(response,500,message,false);
         }
     }
 

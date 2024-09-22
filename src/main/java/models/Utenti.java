@@ -1,5 +1,7 @@
 package models;
 
+import org.json.JSONObject;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Calendar;
@@ -92,5 +94,19 @@ public class Utenti implements Oggetti<Utenti> {
             e.printStackTrace();
             return Optional.empty();
         }
+    }
+    @Override
+    public String toString() {
+        JSONObject output = new JSONObject();
+        output.put("id",id);
+        output.put("nome",nome);
+        output.put("cognome",cognome);
+        output.put("data_nascita",dataNascita);
+        output.put("luogo_nascita",luogoNascita);
+        output.put("sesso",sesso);
+        output.put("email",email);
+        output.put("telefono",telefono);
+        output.put("password",password);
+        return output.toString(4);
     }
 }

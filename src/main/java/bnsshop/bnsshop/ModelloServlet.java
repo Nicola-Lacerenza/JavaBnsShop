@@ -8,6 +8,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import models.Modello;
 import org.json.JSONObject;
+import utility.GestioneServlet;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -25,50 +27,35 @@ public class ModelloServlet extends HttpServlet{
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException,IOException{
-        int idModello;
+        int id;
         try{
-            idModello = Integer.parseInt((String) request.getAttribute("idmodello"));
+            String idString = request.getParameter("id");
+            if (idString != null) {
+                id = Integer.parseInt(idString);
+            } else {
+                id = -1;
+            }
         }catch(NumberFormatException exception){
-            idModello=-1;
+            id=-1;
         }
         Optional<Modello> modello=null;
         List<Modello> modelli=null;
 
-        if (idModello!=-1){
-            modello = this.controller.getObject(idModello);
+        if (id!=-1){
+            modello = this.controller.getObject(id);
         }else{
             modelli = this.controller.getAllObjects();
         }
 
         if (modello!=null || modelli!=null){
             if (modello!=null){
-                PrintWriter writer= response.getWriter();
-                response.setContentLength(modello.get().toString().length());
-                response.setContentType("application/json");
-                response.setStatus(200);
-                writer.println(modello.get().toString());
-                writer.flush();
-                writer.close();
+                GestioneServlet.inviaRisposta(response,200,modello.get().toString(),true);
             }else{
-                PrintWriter writer= response.getWriter();
-                response.setContentLength(modelli.toString().length());
-                response.setContentType("application/json");
-                response.setStatus(200);
-                writer.println(modelli.toString());
-                writer.flush();
-                writer.close();
+                GestioneServlet.inviaRisposta(response,200,modelli.toString(),true);
             }
         }else{
-            String message = "Internal server error";
-            JSONObject error = new JSONObject();
-            error.put("message", message);
-            PrintWriter writer= response.getWriter();
-            response.setContentLength(error.toString().length());
-            response.setContentType("application/json");
-            response.setStatus(500);
-            writer.println(error.toString());
-            writer.flush();
-            writer.close();
+            String message = "\"Internal server error\"";
+            GestioneServlet.inviaRisposta(response,500,message,false);
         }
     }
 
@@ -87,11 +74,27 @@ public class ModelloServlet extends HttpServlet{
         }
         String json=builder.toString();
         JSONObject object = new JSONObject(json);
-
+        String idCategoria= object.getString("id_categoria");
+        String idBrand= object.getString("id_brand");
+        String nome= object.getString("nome");
+        String descrizione= object.getString("descrizione");
+        Map<Integer, RegisterServlet.RegisterFields> request0= new HashMap<>();
+        request0.put(0,new RegisterServlet.RegisterFields("id_categoria",idCategoria));
+        request0.put(1,new RegisterServlet.RegisterFields("id_brand",idBrand));
+        request0.put(2,new RegisterServlet.RegisterFields("nome",nome));
+        request0.put(3,new RegisterServlet.RegisterFields("descrizione",descrizione));
+        if (controller.insertObject(request0)) {
+            String registrazione = "\"Registrazione effettuata correttamente.\"";
+            GestioneServlet.inviaRisposta(response,201,registrazione,true);
+        }else{
+            String message = "\"Errore durante la registrazione.\"";
+            GestioneServlet.inviaRisposta(response,500,message,false);
+        }
     }
 
     @Override
     public void doPut(HttpServletRequest request,HttpServletResponse response) throws ServletException,IOException{
+        int id= Integer.parseInt((String) request.getParameter("id"));
         BufferedReader reader=request.getReader();
         String row=reader.readLine();
         List<String> rows = new ArrayList<>();
@@ -105,32 +108,29 @@ public class ModelloServlet extends HttpServlet{
         }
         String json=builder.toString();
         JSONObject object = new JSONObject(json);
-
+        Map<Integer, RegisterServlet.RegisterFields> data = new HashMap<>();
+        data.put(0,new RegisterServlet.RegisterFields("id_categoria","" + object.getString("id_categoria")));
+        data.put(1,new RegisterServlet.RegisterFields("id_brand","" + object.getString("id_brand")));
+        data.put(2,new RegisterServlet.RegisterFields("nome","" + object.getString("nome")));
+        data.put(3,new RegisterServlet.RegisterFields("descrizione","" + object.getString("descrizione")));
+        if (controller.updateObject(id,data)){
+            String message="\"Product Updated Correctly.\"";
+            GestioneServlet.inviaRisposta(response,200,message,true);
+        }else{
+            String message = "\"Internal server error\"";
+            GestioneServlet.inviaRisposta(response,500,message,false);
+        }
     }
 
     @Override
     public void doDelete(HttpServletRequest request,HttpServletResponse response) throws ServletException,IOException{
-        int idModello= Integer.parseInt((String) request.getAttribute("idmodello"));
-        if (this.controller.deleteObject(idModello)){
-            String message = "Product deleted Correctly.";
-            PrintWriter writer= response.getWriter();
-            response.setContentLength(message.length());
-            response.setContentType("application/json");
-            response.setStatus(200);
-            writer.println(message);
-            writer.flush();
-            writer.close();
+        int id= Integer.parseInt((String) request.getAttribute("idmodello"));
+        if (this.controller.deleteObject(id)){
+            String message = "\"Product deleted Correctly.\"";
+            GestioneServlet.inviaRisposta(response,200,message,true);
         }else{
-            String message = "Internal server error";
-            JSONObject error = new JSONObject();
-            error.put("message", message);
-            PrintWriter writer= response.getWriter();
-            response.setContentLength(error.toString().length());
-            response.setContentType("application/json");
-            response.setStatus(500);
-            writer.println(error.toString());
-            writer.flush();
-            writer.close();
+            String message = "\"Internal server error\"";
+            GestioneServlet.inviaRisposta(response,500,message,false);
         }
     }
 

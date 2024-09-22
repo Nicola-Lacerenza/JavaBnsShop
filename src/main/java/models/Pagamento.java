@@ -1,5 +1,7 @@
 package models;
 
+import org.json.JSONObject;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Calendar;
@@ -71,5 +73,16 @@ public class Pagamento implements Oggetti<Pagamento>{
             e.printStackTrace();
             return Optional.empty();
         }
+    }
+    @Override
+    public String toString() {
+        JSONObject output = new JSONObject();
+        output.put("id",id);
+        output.put("nome_titolare",nomeTitolare);
+        output.put("numero_carta",numeroCarta);
+        output.put("data_scadenza",dataScadenza);
+        output.put("codice_verifica",codiceVerifica);
+        output.put("id_customers",idCustomers);
+        return output.toString(4);
     }
 }

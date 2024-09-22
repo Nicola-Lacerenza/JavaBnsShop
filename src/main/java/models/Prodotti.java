@@ -1,5 +1,7 @@
 package models;
 
+import org.json.JSONObject;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
@@ -67,5 +69,16 @@ public class Prodotti implements Oggetti<Prodotti>{
             e.printStackTrace();
             return Optional.empty();
         }
+    }
+    @Override
+    public String toString() {
+        JSONObject output = new JSONObject();
+        output.put("id",id);
+        output.put("id_modello",idModello);
+        output.put("id_taglia",idTaglia);
+        output.put("prezzo",prezzo);
+        output.put("quantita",quantita);
+        output.put("stato_pubblicazione",statoPubblicazione);
+        return output.toString(4);
     }
 }

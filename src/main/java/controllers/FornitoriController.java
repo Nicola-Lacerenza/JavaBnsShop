@@ -1,6 +1,7 @@
 package controllers;
 
 import bnsshop.bnsshop.RegisterServlet;
+import models.Brand;
 import models.Fornitori;
 import utility.Database;
 import java.util.List;
@@ -18,22 +19,28 @@ public class FornitoriController implements Controllers<Fornitori> {
     }
 
     @Override
-    public boolean updateObject(Map<String, String> request) {
+    public boolean updateObject(int id,Map<Integer, RegisterServlet.RegisterFields> request) {
         return false;
     }
 
     @Override
     public boolean deleteObject(int objectid) {
-        return false;
+        if (objectid <= 0) {
+            return false;
+        }
+        return Database.deleteElement(objectid,"fornitori");
     }
 
     @Override
     public Optional<Fornitori> getObject(int objectid) {
-        return Optional.empty();
+        if (objectid<=0){
+            return Optional.empty();
+        }
+        return Database.getElement(objectid,"fornitori",new Fornitori());
     }
 
     @Override
     public List<Fornitori> getAllObjects() {
-        return null;
+        return Database.getAllElements("fornitori",new Fornitori());
     }
 }
