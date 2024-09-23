@@ -118,8 +118,8 @@ public class ColoreModelloServlet extends HttpServlet{
 
     @Override
     public void doDelete(HttpServletRequest request,HttpServletResponse response) throws ServletException,IOException{
-        int idColoreModello= Integer.parseInt((String) request.getAttribute("id"));
-        if (this.controller.deleteObject(idColoreModello)){
+        int id= Integer.parseInt((String) request.getParameter("id"));
+        if (this.controller.deleteObject(id)){
             String message = "\"Product deleted Correctly.\"";
             GestioneServlet.inviaRisposta(response,200,message,true);
         }else{

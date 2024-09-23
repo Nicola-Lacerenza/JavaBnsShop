@@ -20,7 +20,8 @@ public class FornitoriController implements Controllers<Fornitori> {
 
     @Override
     public boolean updateObject(int id,Map<Integer, RegisterServlet.RegisterFields> request) {
-        return false;
+        return Database.updateElement(id,request, "fornitori");
+
     }
 
     @Override

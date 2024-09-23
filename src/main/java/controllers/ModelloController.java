@@ -21,7 +21,7 @@ public class ModelloController implements Controllers<Modello> {
 
     @Override
     public boolean updateObject(int id,Map<Integer, RegisterServlet.RegisterFields> request) {
-        return false;
+        return Database.updateElement(id,request, "modello");
     }
 
     @Override
