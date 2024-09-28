@@ -43,5 +43,11 @@ public class UtentiController implements Controllers<Utenti> {
     public List<Utenti> getAllObjects() {
         return Database.getAllElements("utenti",new Utenti());
     }
+
+    public boolean checkEmail(String email){
+        String query = "SELECT * FROM utenti WHERE email='"+email+"'";
+        List<Utenti> user = Database.executeGenericQuery("utenti",new Utenti(),query);
+        return !user.isEmpty();
+    }
 }
 

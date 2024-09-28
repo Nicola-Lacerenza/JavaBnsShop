@@ -166,62 +166,26 @@ public class Database{
 
 
     public static <E extends Oggetti<E>> Optional<E> getElement(int id, String tablename,E model) {
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
         String query="SELECT * FROM "+tablename+" WHERE id='"+id+"'";
-        Optional<E> output=Optional.empty();
-        Connection connection = null;
-        Statement statement = null;
-        ResultSet results = null;
-        try{
-            connection=DriverManager.getConnection(DATABASE_URL,DATABASE_USERNAME,DATABASE_PASSWORD);
-            statement=connection.createStatement();
-            results=statement.executeQuery(query);
-            while (results.next()){
-                Optional<E> object = model.convertDBToJava(results);
-                output=object;
-            }
-        }catch(SQLException exception){
-            output = Optional.empty();
-        }finally {
-            if(results != null){
-                try{
-                    results.close();
-                }catch(SQLException exception){
-                    //Questo non é un errore è un warning
-                    exception.printStackTrace();
-                }
-            }
-            if (statement != null) {
-                try {
-                    statement.close();
-                } catch (SQLException exception) {
-                    //Questo non é un errore è un warning
-                    exception.printStackTrace();
-                }
-            }
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException exception) {
-                    //Questo non é un errore è un warning
-                    exception.printStackTrace();
-                }
-            }
+        List<E> list = executeGenericQuery(tablename,model,query);
+        if (list.isEmpty()){
+            return Optional.empty();
         }
-        return output;
+        return Optional.of(list.getFirst());
     }
 
     public static <E extends Oggetti<E>> List<E> getAllElements(String tablename,E model) {
+        String query="SELECT * FROM " + tablename;
+        return executeGenericQuery(tablename,model,query);
+    }
+
+    public static <E extends Oggetti<E>> List<E> executeGenericQuery(String tablename,E model,String query) {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
-        String query="SELECT * FROM " + tablename;
+
         List<E> output= new LinkedList<>();
         Connection connection = null;
         Statement statement = null;

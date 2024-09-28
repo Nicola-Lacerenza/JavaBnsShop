@@ -56,6 +56,11 @@ public class RegisterServlet extends HttpServlet{
         String telefono= object.getString("telefono");
         String password= object.getString("password");
         Optional<String> passwordHashed= Crittografia.get_SHA_512_SecurePassword(password,"1234");
+        if(controller.checkEmail(email)){
+            String registrazione = "\"L'email esiste già.\"";
+            GestioneServlet.inviaRisposta(response,400,registrazione,false);
+            return;
+        }
         if(passwordHashed.isPresent()){
             Map<Integer,RegisterFields> request0= new HashMap<>();
             request0.put(0,new RegisterFields("nome",nome));
