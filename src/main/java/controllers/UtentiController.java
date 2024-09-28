@@ -49,5 +49,9 @@ public class UtentiController implements Controllers<Utenti> {
         List<Utenti> user = Database.executeGenericQuery("utenti",new Utenti(),query);
         return !user.isEmpty();
     }
+
+    public List<Utenti> executeQuery(String query){
+        return Database.executeGenericQuery("utenti",new Utenti(),query);
+    }
 }
 

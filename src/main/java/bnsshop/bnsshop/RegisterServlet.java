@@ -57,7 +57,7 @@ public class RegisterServlet extends HttpServlet{
         String password= object.getString("password");
         Optional<String> passwordHashed= Crittografia.get_SHA_512_SecurePassword(password,"1234");
         if(controller.checkEmail(email)){
-            String registrazione = "\"L'email esiste già.\"";
+            String registrazione = "\"L'email esiste!\"";
             GestioneServlet.inviaRisposta(response,400,registrazione,false);
             return;
         }

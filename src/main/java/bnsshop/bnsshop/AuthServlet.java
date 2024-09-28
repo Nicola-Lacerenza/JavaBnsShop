@@ -6,12 +6,15 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import models.Utenti;
 import org.json.JSONObject;
+import utility.Crittografia;
 import utility.GestioneServlet;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.List;
 import java.util.LinkedList;
+import java.util.Optional;
 
 @WebServlet(name = "LoginServlet", value = "/LoginServlet")
 public class AuthServlet extends HttpServlet{
@@ -46,9 +49,23 @@ public class AuthServlet extends HttpServlet{
         String username= object.getString("username");
         String password= object.getString("password");
 
-        //implementare qui il login vero e proprio
+        String query = "SELECT * FROM utenti WHERE email='"+username+"'";
+        List<Utenti> utenti = controller.executeQuery(query);
+        if (utenti.isEmpty()){
+            GestioneServlet.inviaRisposta(response,404,"\"Utente non trovato!\"",false);
+        }else{
+            Utenti utente = utenti.getFirst();
+            Optional<String> passwordHashed= Crittografia.get_SHA_512_SecurePassword(password,"1234");
+            if (passwordHashed.isPresent()){
+                if (!passwordHashed.get().equals(utente.getPassword())){
+                    GestioneServlet.inviaRisposta(response,400,"\"La password è sbagliata!\"",false);
+                }else{
 
-        GestioneServlet.inviaRisposta(response,501,"\"Funzione non disponibile\"",false);
+                }
+            }else{
+                GestioneServlet.inviaRisposta(response,400,"\"La password è sbagliata!\"",false);
+            }
+        }
     }
 
     @Override
