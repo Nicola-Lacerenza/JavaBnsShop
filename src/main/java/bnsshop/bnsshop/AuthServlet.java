@@ -10,6 +10,8 @@ import models.Utenti;
 import org.json.JSONObject;
 import utility.Crittografia;
 import utility.GestioneServlet;
+import utility.GestioneToken;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.List;
@@ -60,7 +62,8 @@ public class AuthServlet extends HttpServlet{
                 if (!passwordHashed.get().equals(utente.getPassword())){
                     GestioneServlet.inviaRisposta(response,400,"\"La password è sbagliata!\"",false);
                 }else{
-
+                    String token= GestioneToken.createToken(username);
+                    GestioneServlet.inviaRisposta(response,200,"\""+token+"\"",true);
                 }
             }else{
                 GestioneServlet.inviaRisposta(response,400,"\"La password è sbagliata!\"",false);
