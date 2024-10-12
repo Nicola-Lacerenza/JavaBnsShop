@@ -18,8 +18,9 @@ public class Utenti implements Oggetti<Utenti> {
     private final String email;
     private final String telefono;
     private final String password;
+    private final String ruolo;
 
-    public Utenti(int id, String nome, String cognome, Calendar dataNascita, String luogoNascita, String sesso, String email, String telefono, String password) {
+    public Utenti(int id, String nome, String cognome, Calendar dataNascita, String luogoNascita, String sesso, String email, String telefono, String password, String ruolo) {
         this.id = id;
         this.nome = nome;
         this.cognome = cognome;
@@ -29,10 +30,11 @@ public class Utenti implements Oggetti<Utenti> {
         this.email = email;
         this.telefono = telefono;
         this.password = password;
+        this.ruolo = ruolo;
     }
 
     public Utenti(){
-        this(0,"","",Calendar.getInstance(),"","","","","");
+        this(0,"","",Calendar.getInstance(),"","","","","","");
     }
 
     public int getId() {
@@ -71,6 +73,9 @@ public class Utenti implements Oggetti<Utenti> {
         return password;
     }
 
+    public String getRuolo() { return ruolo;}
+
+
     @Override
     public Utenti createObject() {
         return new Utenti();
@@ -89,7 +94,8 @@ public class Utenti implements Oggetti<Utenti> {
             String email1 = rs.getString("email");
             String telefono1 = rs.getString("telefono");
             String password1 = rs.getString("password");
-            return Optional.of(new Utenti(id1,nome1,cognome1,dataNascita1,luogoNascita1,sesso1,email1,telefono1,password1));
+            String ruolo1 = rs.getString("ruolo");
+            return Optional.of(new Utenti(id1,nome1,cognome1,dataNascita1,luogoNascita1,sesso1,email1,telefono1,password1,ruolo1));
         }catch (SQLException e){
             e.printStackTrace();
             return Optional.empty();
@@ -107,6 +113,7 @@ public class Utenti implements Oggetti<Utenti> {
         output.put("email",email);
         output.put("telefono",telefono);
         output.put("password",password);
+        output.put("ruolo",ruolo);
         return output.toString(4);
     }
 }

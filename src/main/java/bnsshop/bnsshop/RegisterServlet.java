@@ -55,6 +55,7 @@ public class RegisterServlet extends HttpServlet{
         String email= object.getString("email");
         String telefono= object.getString("telefono");
         String password= object.getString("password");
+        String ruolo= "Cliente";
         Optional<String> passwordHashed= Crittografia.get_SHA_512_SecurePassword(password,"1234");
         if(controller.checkEmail(email)){
             String registrazione = "\"L'email esiste!\"";
@@ -71,6 +72,7 @@ public class RegisterServlet extends HttpServlet{
             request0.put(5,new RegisterFields("email",email));
             request0.put(6,new RegisterFields("telefono",telefono));
             request0.put(7,new RegisterFields("password",passwordHashed.get()));
+            request0.put(8,new RegisterFields("ruolo",ruolo));
             if (controller.insertObject(request0)) {
                 String registrazione = "\"Registrazione effettuata correttamente.\"";
                 GestioneServlet.inviaRisposta(response,201,registrazione,true);

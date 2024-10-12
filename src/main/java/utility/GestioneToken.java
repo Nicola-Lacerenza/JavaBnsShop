@@ -16,8 +16,6 @@ public class GestioneToken {
     private GestioneToken(){}
 
     public static String createToken(String email) {
-
-
         // Genera una chiave segreta usando la chiave definita
         byte[] apiKeySecretBytes = Base64.getDecoder().decode(SECRET_KEY);
         Key signingKey = new SecretKeySpec(apiKeySecretBytes, SignatureAlgorithm.HS256.getJcaName());
