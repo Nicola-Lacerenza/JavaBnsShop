@@ -1,6 +1,11 @@
 package utility;
 
+import controllers.Controllers;
+import controllers.UtentiController;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import models.Utenti;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 
@@ -20,5 +25,31 @@ public class GestioneServlet{
         writer.println(text);
         writer.flush();
         writer.close();
+    }
+
+    public static String validaToken(HttpServletRequest request,HttpServletResponse response) throws IOException{
+
+        String token = request.getHeader("Authorization");
+        if (token==null){
+            GestioneServlet.inviaRisposta(response,403,"\"Token Non valido\"",false);
+            return "";
+        }
+        String[] auth = token.split(" ");
+        if (auth.length<2){
+            GestioneServlet.inviaRisposta(response,403,"\"Token Incorrect\"",false);
+            return "";
+        }
+        String auth1 = auth[1];
+        String email = GestioneToken.validateToken(auth1);
+        if (email.equals("")){
+            GestioneServlet.inviaRisposta(response,403,"\"Token Incorrect\"",false);
+            return "";
+        }
+        return email;
+    }
+
+    public static boolean controllaRuolo(String email) {
+        UtentiController controller = new UtentiController();
+        return controller.checkAdmin(email);
     }
 }
