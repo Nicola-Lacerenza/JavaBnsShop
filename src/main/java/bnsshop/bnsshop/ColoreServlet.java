@@ -61,6 +61,14 @@ public class ColoreServlet extends HttpServlet{
 
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException,IOException{
+        String email = GestioneServlet.validaToken(request,response);
+        if (email.isEmpty()){
+            return;
+        }
+        if(!GestioneServlet.controllaRuolo(email)){
+            GestioneServlet.inviaRisposta(response,403,"\"Ruolo non corretto!\"",false);
+            return;
+        }
         BufferedReader reader=request.getReader();
         String row=reader.readLine();
         List<String> rows = new ArrayList<>();
@@ -92,6 +100,14 @@ public class ColoreServlet extends HttpServlet{
 
     @Override
     public void doPut(HttpServletRequest request,HttpServletResponse response) throws ServletException,IOException{
+        String email = GestioneServlet.validaToken(request,response);
+        if (email.isEmpty()){
+            return;
+        }
+        if(!GestioneServlet.controllaRuolo(email)){
+            GestioneServlet.inviaRisposta(response,403,"\"Ruolo non corretto!\"",false);
+            return;
+        }
         int id= Integer.parseInt((String) request.getParameter("id"));
         BufferedReader reader=request.getReader();
         String row=reader.readLine();
@@ -121,6 +137,14 @@ public class ColoreServlet extends HttpServlet{
 
     @Override
     public void doDelete(HttpServletRequest request,HttpServletResponse response) throws ServletException,IOException{
+        String email = GestioneServlet.validaToken(request,response);
+        if (email.isEmpty()){
+            return;
+        }
+        if(!GestioneServlet.controllaRuolo(email)){
+            GestioneServlet.inviaRisposta(response,403,"\"Ruolo non corretto!\"",false);
+            return;
+        }
         int id= Integer.parseInt((String) request.getParameter("id"));
         if (this.controller.deleteObject(id)){
             String message = "\"Product deleted Correctly.\"";
