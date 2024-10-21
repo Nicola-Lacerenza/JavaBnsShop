@@ -92,15 +92,17 @@ public class ProdottiServlet extends HttpServlet{
         JSONObject object = new JSONObject(json);
         String idModello= object.getString("id_modello");
         String idTaglia= object.getString("id_taglia");
+        String idImmagini= object.getString("id_immagini");
         String prezzo= object.getString("prezzo");
         String quantita= object.getString("quantita");
         String statoPubblicazione= object.getString("stato_pubblicazione");
         Map<Integer, RegisterServlet.RegisterFields> request0= new HashMap<>();
         request0.put(0,new RegisterServlet.RegisterFields("id_modello",idModello));
         request0.put(1,new RegisterServlet.RegisterFields("id_taglia",idTaglia));
-        request0.put(2,new RegisterServlet.RegisterFields("prezzo",prezzo));
-        request0.put(3,new RegisterServlet.RegisterFields("quantita",quantita));
-        request0.put(4,new RegisterServlet.RegisterFields("stato_pubblicazione",statoPubblicazione));
+        request0.put(2,new RegisterServlet.RegisterFields("id_immagini",idImmagini));
+        request0.put(3,new RegisterServlet.RegisterFields("prezzo",prezzo));
+        request0.put(4,new RegisterServlet.RegisterFields("quantita",quantita));
+        request0.put(5,new RegisterServlet.RegisterFields("stato_pubblicazione",statoPubblicazione));
         if (controller.insertObject(request0)) {
             String registrazione = "\"Registrazione effettuata correttamente.\"";
             GestioneServlet.inviaRisposta(response,201,registrazione,true);
@@ -138,9 +140,10 @@ public class ProdottiServlet extends HttpServlet{
         Map<Integer, RegisterServlet.RegisterFields> data = new HashMap<>();
         data.put(0,new RegisterServlet.RegisterFields("id_modello","" + object.getString("id_modello")));
         data.put(1,new RegisterServlet.RegisterFields("id_taglia","" + object.getString("id_taglia")));
-        data.put(2,new RegisterServlet.RegisterFields("prezzo","" + object.getString("prezzo")));
-        data.put(3,new RegisterServlet.RegisterFields("quantita","" + object.getString("quantita")));
-        data.put(4,new RegisterServlet.RegisterFields("stato_pubblicazione","" + object.getString("stato_pubblicazione")));
+        data.put(2,new RegisterServlet.RegisterFields("id_immagini","" + object.getString("id_immagini")));
+        data.put(3,new RegisterServlet.RegisterFields("prezzo","" + object.getString("prezzo")));
+        data.put(4,new RegisterServlet.RegisterFields("quantita","" + object.getString("quantita")));
+        data.put(5,new RegisterServlet.RegisterFields("stato_pubblicazione","" + object.getString("stato_pubblicazione")));
         if (controller.updateObject(id,data)){
             String message="\"Product Updated Correctly.\"";
             GestioneServlet.inviaRisposta(response,200,message,true);
