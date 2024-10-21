@@ -46,9 +46,9 @@ public class GestioneToken {
     public static String validateToken(String token) {
         final String tokenEmail = getClaims(token).getSubject();
         if (!isTokenExpired(token)){
-            return "";
+            return tokenEmail;
         }
-        return tokenEmail;
+        return "";
     }
 
     // Metodo per controllare se il token è scaduto

@@ -28,6 +28,16 @@ public class RegisterServlet extends HttpServlet{
         controller = new UtentiController();
     }
 
+    // Gestione richiesta preflight (OPTIONS)
+    @Override
+    protected void doOptions(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        response.addHeader("Access-Control-Allow-Origin", "*");
+        response.addHeader("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, OPTIONS");
+        response.addHeader("Access-Control-Allow-Headers", "X-CUSTOM, Content-Type, Content-Length,Authorization");
+        response.addHeader("Access-Control-Max-Age", "86400");
+        response.setStatus(HttpServletResponse.SC_OK);
+    }
+
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException,IOException{
     }
@@ -92,15 +102,6 @@ public class RegisterServlet extends HttpServlet{
 
     @Override
     public void doDelete(HttpServletRequest request,HttpServletResponse response) throws ServletException,IOException{
-    }
-
-    @Override
-    public void doOptions(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.addHeader("Access-Control-Allow-Origin","*");
-        response.addHeader("Access-Control-Allow-Methods","POST,GET,PUT,DELETE,HEAD,OPTIONS,TRACE");
-        response.addHeader("Access-Control-Allow-Headers","X-CUSTOM,Content-Length,Content-Type");
-        response.addHeader("Access-Control-Max-Age","86400");
-        response.setStatus(HttpServletResponse.SC_ACCEPTED);
     }
 
     public static class RegisterFields{

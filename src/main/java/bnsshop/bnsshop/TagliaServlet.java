@@ -25,6 +25,16 @@ public class TagliaServlet extends HttpServlet{
         controller = new TagliaController();
     }
 
+    // Gestione richiesta preflight (OPTIONS)
+    @Override
+    protected void doOptions(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        response.addHeader("Access-Control-Allow-Origin", "*");
+        response.addHeader("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, OPTIONS");
+        response.addHeader("Access-Control-Allow-Headers", "X-CUSTOM, Content-Type, Content-Length,Authorization");
+        response.addHeader("Access-Control-Max-Age", "86400");
+        response.setStatus(HttpServletResponse.SC_OK);
+    }
+
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException,IOException{
         int idTaglia;
@@ -80,7 +90,8 @@ public class TagliaServlet extends HttpServlet{
         if (email.isEmpty()){
             return;
         }
-        if(!GestioneServlet.controllaRuolo(email)){
+        String ruolo = GestioneServlet.controllaRuolo(email);
+        if(!ruolo.equals("admin")){
             GestioneServlet.inviaRisposta(response,403,"\"Ruolo non corretto!\"",false);
             return;
         }
@@ -106,7 +117,8 @@ public class TagliaServlet extends HttpServlet{
         if (email.isEmpty()){
             return;
         }
-        if(!GestioneServlet.controllaRuolo(email)){
+        String ruolo = GestioneServlet.controllaRuolo(email);
+        if(!ruolo.equals("admin")){
             GestioneServlet.inviaRisposta(response,403,"\"Ruolo non corretto!\"",false);
             return;
         }
@@ -155,7 +167,8 @@ public class TagliaServlet extends HttpServlet{
         if (email.isEmpty()){
             return;
         }
-        if(!GestioneServlet.controllaRuolo(email)){
+        String ruolo = GestioneServlet.controllaRuolo(email);
+        if(!ruolo.equals("admin")){
             GestioneServlet.inviaRisposta(response,403,"\"Ruolo non corretto!\"",false);
             return;
         }

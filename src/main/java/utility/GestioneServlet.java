@@ -17,7 +17,7 @@ public class GestioneServlet{
         PrintWriter writer = response.getWriter();
         response.addHeader("Access-Control-Allow-Origin","*");
         response.addHeader("Access-Control-Allow-Methods","POST,GET,PUT,DELETE,HEAD,OPTIONS,TRACE");
-        response.addHeader("Access-Control-Allow-Headers","X-CUSTOM,Content-Length,Content-Type");
+        response.addHeader("Access-Control-Allow-Headers","X-CUSTOM,Content-Length,Content-Type,Authorization");
         response.addHeader("Access-Control-Max-Age","86400");
         response.setContentLength(text.length());
         response.setContentType("application/json");
@@ -48,8 +48,11 @@ public class GestioneServlet{
         return email;
     }
 
-    public static boolean controllaRuolo(String email) {
+    public static String controllaRuolo(String email) {
         UtentiController controller = new UtentiController();
-        return controller.checkAdmin(email);
+        if (controller.checkAdmin(email)){
+            return "admin";
+        }
+        return "cliente";
     }
 }

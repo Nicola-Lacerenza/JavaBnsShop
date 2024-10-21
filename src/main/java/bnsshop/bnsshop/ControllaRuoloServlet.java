@@ -32,13 +32,14 @@ public class ControllaRuoloServlet extends HttpServlet{
     protected void doOptions(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.addHeader("Access-Control-Allow-Origin", "*");
         response.addHeader("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, OPTIONS");
-        response.addHeader("Access-Control-Allow-Headers", "X-CUSTOM, Content-Type, Content-Length");
+        response.addHeader("Access-Control-Allow-Headers", "X-CUSTOM, Content-Type, Content-Length,Authorization");
         response.addHeader("Access-Control-Max-Age", "86400");
         response.setStatus(HttpServletResponse.SC_OK);
     }
 
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException,IOException{
+
         BufferedReader reader=request.getReader();
         String row=reader.readLine();
         List<String> rows = new LinkedList<>();
@@ -58,10 +59,11 @@ public class ControllaRuoloServlet extends HttpServlet{
         if (email.isEmpty()){
             return;
         }
-        if(!GestioneServlet.controllaRuolo(email)){
+        String ruolo = GestioneServlet.controllaRuolo(email);
+        if(!ruolo.equals("admin")){
             GestioneServlet.inviaRisposta(response,403,"\"Ruolo non corretto!\"",false);
         }else{
-            GestioneServlet.inviaRisposta(response,200,"\"Ruolo Corretto\"",true);
+            GestioneServlet.inviaRisposta(response,200,"\""+ruolo+"\"",true);
         }
     }
 }
