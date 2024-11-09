@@ -1,16 +1,21 @@
 package bnsshop.bnsshop;
 
 import controllers.ProdottiController;
+import controllers.TagliaController;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.Part;
 import models.Prodotti;
+import models.Taglia;
 import org.json.JSONObject;
 import utility.GestioneServlet;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 @WebServlet(name = "ProdottiServlet", value = "/ProdottiServlet")
@@ -91,19 +96,42 @@ public class ProdottiServlet extends HttpServlet{
         String json=builder.toString();
         JSONObject object = new JSONObject(json);
         String idModello= object.getString("id_modello");
-        String idTaglia= object.getString("id_taglia");
-        String idImmagini= object.getString("id_immagini");
+        String taglia= object.getString("taglia");
         String prezzo= object.getString("prezzo");
         String quantita= object.getString("quantita");
         String statoPubblicazione= object.getString("stato_pubblicazione");
+        TagliaController tagliaController = new TagliaController();
+        List<Taglia> listTaglia = tagliaController.getAllObjects();
+        List<Integer> taglie = listTaglia.stream().filter(taglia1 -> taglia1.getTaglia().equals(taglia)).map(t -> t.getId()).toList();
+        if (taglie.isEmpty()){
+            String message = "\"Errore durante la registrazione.\"";
+            GestioneServlet.inviaRisposta(response,500,message,false);
+            return;
+        }
+        int idTaglia = taglie.getFirst();
+        List<Prodotti> list = controller.getAllObjects();
+        OptionalInt idProdotto = list.stream().map(prodotto -> prodotto.getId()).mapToInt(Integer::intValue).max();
+        if (idProdotto.isEmpty()){
+            String message = "\"Errore durante la registrazione.\"";
+            GestioneServlet.inviaRisposta(response,500,message,false);
+            return;
+        }
         Map<Integer, RegisterServlet.RegisterFields> request0= new HashMap<>();
-        request0.put(0,new RegisterServlet.RegisterFields("id_modello",idModello));
-        request0.put(1,new RegisterServlet.RegisterFields("id_taglia",idTaglia));
-        request0.put(2,new RegisterServlet.RegisterFields("id_immagini",idImmagini));
-        request0.put(3,new RegisterServlet.RegisterFields("prezzo",prezzo));
-        request0.put(4,new RegisterServlet.RegisterFields("quantita",quantita));
-        request0.put(5,new RegisterServlet.RegisterFields("stato_pubblicazione",statoPubblicazione));
+        request0.put(0,new RegisterServlet.RegisterFields("url","/images/"+(idProdotto.getAsInt()+1)));
+        request0.put(1,new RegisterServlet.RegisterFields("id_prodotti",""+(idProdotto.getAsInt()+1)));
+        request0.put(2,new RegisterServlet.RegisterFields("id_modello",idModello));
+        request0.put(3,new RegisterServlet.RegisterFields("id_taglia",""+idTaglia));
+        request0.put(4,new RegisterServlet.RegisterFields("prezzo",prezzo));
+        request0.put(5,new RegisterServlet.RegisterFields("quantita",quantita));
+        request0.put(6,new RegisterServlet.RegisterFields("stato_pubblicazione",statoPubblicazione));
         if (controller.insertObject(request0)) {
+            // Retrieve the file part from the request
+            Part filePart = request.getPart("images");
+            String fileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
+            // Save the file to the server
+            InputStream inputStream = filePart.getInputStream();
+            Files.copy(inputStream, Paths.get("/images/"+(idProdotto.getAsInt()+1)));
+
             String registrazione = "\"Registrazione effettuata correttamente.\"";
             GestioneServlet.inviaRisposta(response,201,registrazione,true);
         }else{

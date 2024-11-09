@@ -2,15 +2,12 @@ package utility;
 
 import bnsshop.bnsshop.RegisterServlet;
 import models.Oggetti;
+
+import java.sql.*;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.Statement;
-import java.sql.SQLException;
-import java.sql.ResultSet;
 import java.util.stream.Collectors;
 
 public class Database{
@@ -225,6 +222,47 @@ public class Database{
                 } catch (SQLException exception) {
                     //Questo non é un errore è un warning
                     exception.printStackTrace();
+                }
+            }
+        }
+        return output;
+    }
+
+    public static boolean executeQueries(List<String> queries) {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        Connection connection = null;
+        boolean output;
+        try{
+            connection=DriverManager.getConnection(DATABASE_URL,DATABASE_USERNAME,DATABASE_PASSWORD);
+            connection.setAutoCommit(false);
+            List<PreparedStatement> statementList = new LinkedList<>();
+            for (String query:queries){
+                statementList.add(connection.prepareStatement(query));
+                connection.commit();
+            }
+            output=true;
+        }catch (SQLException e){
+            e.printStackTrace();
+            if (connection != null){
+                try {
+                    connection.rollback();
+                }catch (SQLException e1){
+                    e1.printStackTrace();
+                }
+            }
+            output=false;
+        }finally {
+            if (connection!= null){
+                try {
+                    connection.close();
+                } catch (SQLException e2) {
+                    //Connessione non chiusa questo è un warning da gestire
+                    e2.printStackTrace();
                 }
             }
         }

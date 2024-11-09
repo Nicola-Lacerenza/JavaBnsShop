@@ -4,6 +4,8 @@ import bnsshop.bnsshop.RegisterServlet;
 import models.Brand;
 import models.Prodotti;
 import utility.Database;
+
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -15,7 +17,10 @@ public class ProdottiController implements Controllers<Prodotti> {
 
     @Override
     public boolean insertObject(Map<Integer, RegisterServlet.RegisterFields> request) {
-        return Database.insertElement(request,"prodotti");
+        List<String> queries = new LinkedList<>();
+        queries.add("INSERT INTO immagini (url,id_prodotti) VALUES ('"+request.get(0).getValue()+"','"+request.get(1).getValue()+"')");
+        queries.add("INSERT INTO prodotti ()");
+        return Database.executeQueries(queries);
     }
 
     @Override
