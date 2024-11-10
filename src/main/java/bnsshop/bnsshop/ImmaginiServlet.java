@@ -11,7 +11,6 @@ import org.json.JSONObject;
 import utility.GestioneServlet;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.*;
 
 @WebServlet(name = "ImmaginiServlet", value = "/ImmaginiServlet")

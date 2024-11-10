@@ -1,10 +1,10 @@
 package controllers;
 
 import bnsshop.bnsshop.RegisterServlet;
-import models.Brand;
 import models.Prodotti;
 import utility.Database;
 
+import java.sql.*;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -17,12 +17,66 @@ public class ProdottiController implements Controllers<Prodotti> {
 
     @Override
     public boolean insertObject(Map<Integer, RegisterServlet.RegisterFields> request) {
-        List<String> queries = new LinkedList<>();
-        queries.add("INSERT INTO immagini (url) VALUES ('"+request.get(0).getValue()+"',)");
-        queries.add("INSERT INTO prodotti (id_modello,id_taglia,id_immagini,prezzo,quantita,stato_pubblicazione)" +
-                "VALUES ('"+request.get(1).getValue()+"','"+request.get(2).getValue()+"','"+request.get(3).getValue()+"'," +
-                "'"+request.get(4).getValue()+"','"+request.get(5).getValue()+"','"+request.get(6).getValue()+"',");
-        return Database.executeQueries(queries);
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Driver JDBC non trovato", e);
+        }
+
+        Connection connection = null;
+        List<PreparedStatement> statementList = new LinkedList<>();
+
+        boolean output = false;
+        try {
+            // Apertura connessione
+            connection = DriverManager.getConnection(Database.getDatabaseUrl(),Database.getDatabaseUsername(), Database.getDatabasePassword());
+            connection.setAutoCommit(false); // Avvia transazione
+
+            String query1 = "INSERT INTO immagini (url) VALUES ('"+request.get(0).getValue()+"')";
+            PreparedStatement preparedStatement1 = connection.prepareStatement(query1);
+            preparedStatement1.executeUpdate();
+
+            String query2 = "SELECT * FROM immagini WHERE url='"+request.get(0).getValue()+"'";
+            PreparedStatement preparedStatement2 = connection.prepareStatement(query2);
+            ResultSet rs = preparedStatement2.executeQuery();
+
+            int idImmagine = -1;
+            if (rs.next()) {
+                idImmagine = rs.getInt("id");
+            } else {
+                throw new SQLException("No image found for the provided URL");
+            }
+
+            String query3 = "INSERT INTO prodotti (id_modello,id_taglia,id_immagini,prezzo,quantita,stato_pubblicazione)" +
+                    "VALUES ('"+request.get(1).getValue()+"','"+request.get(2).getValue()+"'," + idImmagine +"," +
+                    "'"+request.get(4).getValue()+"','"+request.get(5).getValue()+"','"+request.get(6).getValue()+"')";
+            PreparedStatement preparedStatement3 = connection.prepareStatement(query3);
+            preparedStatement3.executeUpdate();
+
+            connection.commit(); // Commit delle modifiche solo se tutte le query hanno successo
+            output = true;
+        } catch (SQLException e) {
+            // Gestione errori e rollback in caso di fallimento
+            e.printStackTrace();
+            if (connection != null) {
+                try {
+                    connection.rollback();
+                } catch (SQLException rollbackEx) {
+                    rollbackEx.printStackTrace();
+                }
+            }
+            output = false;
+        } finally {
+            // Chiusura connessione e statement
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException closeEx) {
+                    closeEx.printStackTrace();
+                }
+            }
+        }
+        return output;
     }
 
     @Override
@@ -50,4 +104,6 @@ public class ProdottiController implements Controllers<Prodotti> {
     public List<Prodotti> getAllObjects() {
         return Database.getAllElements("prodotti",new Prodotti());
     }
+
+
 }

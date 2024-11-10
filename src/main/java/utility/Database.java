@@ -8,7 +8,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class Database{
     //Variabili di servizio per interagire con il database
@@ -18,6 +17,22 @@ public class Database{
     private static final String DATABASE_URL="jdbc:mysql://localhost:3306/" + DATABASE_NAME;
 
     private Database(){}
+
+    public static String getDatabaseName() {
+        return DATABASE_NAME;
+    }
+
+    public static String getDatabaseUsername() {
+        return DATABASE_USERNAME;
+    }
+
+    public static String getDatabasePassword() {
+        return DATABASE_PASSWORD;
+    }
+
+    public static String getDatabaseUrl() {
+        return DATABASE_URL;
+    }
 
     public static <T extends Oggetti<T>> boolean insertElement(Map<Integer, RegisterServlet.RegisterFields> fields, String tableName){
         try {
@@ -232,40 +247,60 @@ public class Database{
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Driver JDBC non trovato", e);
         }
 
         Connection connection = null;
-        boolean output;
-        try{
-            connection=DriverManager.getConnection(DATABASE_URL,DATABASE_USERNAME,DATABASE_PASSWORD);
-            connection.setAutoCommit(false);
-            List<PreparedStatement> statementList = new LinkedList<>();
-            for (String query:queries){
-                statementList.add(connection.prepareStatement(query));
-                connection.commit();
+        List<PreparedStatement> statementList = new LinkedList<>();
+
+        boolean output = false;
+        try {
+            // Apertura connessione
+            connection = DriverManager.getConnection(DATABASE_URL, DATABASE_USERNAME, DATABASE_PASSWORD);
+            connection.setAutoCommit(false); // Avvia transazione
+
+            // Prepara ed esegue le query
+            for (String query : queries) {
+                PreparedStatement preparedStatement = connection.prepareStatement(query);
+                statementList.add(preparedStatement);
+                preparedStatement.executeUpdate(); // Esegue la query
             }
-            output=true;
-        }catch (SQLException e){
+
+            connection.commit(); // Commit delle modifiche solo se tutte le query hanno successo
+            output = true;
+        } catch (SQLException e) {
+            // Gestione errori e rollback in caso di fallimento
             e.printStackTrace();
-            if (connection != null){
+            if (connection != null) {
                 try {
                     connection.rollback();
-                }catch (SQLException e1){
-                    e1.printStackTrace();
+                } catch (SQLException rollbackEx) {
+                    rollbackEx.printStackTrace();
                 }
             }
-            output=false;
-        }finally {
-            if (connection!= null){
+            output = false;
+        } finally {
+            // Chiusura connessione e statement
+            if (connection != null) {
                 try {
                     connection.close();
-                } catch (SQLException e2) {
-                    //Connessione non chiusa questo è un warning da gestire
-                    e2.printStackTrace();
+                } catch (SQLException closeEx) {
+                    closeEx.printStackTrace();
                 }
             }
         }
+
+        // Chiude tutti i PreparedStatement
+        for (PreparedStatement stmt : statementList) {
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException closeEx) {
+                    closeEx.printStackTrace();
+                }
+            }
+        }
+
         return output;
     }
 }
