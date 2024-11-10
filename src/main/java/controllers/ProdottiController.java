@@ -18,8 +18,10 @@ public class ProdottiController implements Controllers<Prodotti> {
     @Override
     public boolean insertObject(Map<Integer, RegisterServlet.RegisterFields> request) {
         List<String> queries = new LinkedList<>();
-        queries.add("INSERT INTO immagini (url,id_prodotti) VALUES ('"+request.get(0).getValue()+"','"+request.get(1).getValue()+"')");
-        queries.add("INSERT INTO prodotti ()");
+        queries.add("INSERT INTO immagini (url) VALUES ('"+request.get(0).getValue()+"',)");
+        queries.add("INSERT INTO prodotti (id_modello,id_taglia,id_immagini,prezzo,quantita,stato_pubblicazione)" +
+                "VALUES ('"+request.get(1).getValue()+"','"+request.get(2).getValue()+"','"+request.get(3).getValue()+"'," +
+                "'"+request.get(4).getValue()+"','"+request.get(5).getValue()+"','"+request.get(6).getValue()+"',");
         return Database.executeQueries(queries);
     }
 

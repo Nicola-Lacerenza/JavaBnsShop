@@ -91,11 +91,9 @@ public class ImmaginiServlet extends HttpServlet{
         }
         String json=builder.toString();
         JSONObject object = new JSONObject(json);
-        String idProdotti= object.getString("id_prodotti");
         String url= object.getString("url");
         Map<Integer, RegisterServlet.RegisterFields> request0= new HashMap<>();
-        request0.put(0,new RegisterServlet.RegisterFields("id_prodotti",idProdotti));
-        request0.put(1,new RegisterServlet.RegisterFields("url",url));
+        request0.put(0,new RegisterServlet.RegisterFields("url",url));
         if (controller.insertObject(request0)) {
             String registrazione = "\"Registrazione effettuata correttamente.\"";
             GestioneServlet.inviaRisposta(response,201,registrazione,true);
@@ -131,8 +129,7 @@ public class ImmaginiServlet extends HttpServlet{
         String json=builder.toString();
         JSONObject object = new JSONObject(json);
         Map<Integer, RegisterServlet.RegisterFields> data = new HashMap<>();
-        data.put(0,new RegisterServlet.RegisterFields("id_prodotti","" + object.getString("id_prodotti")));
-        data.put(1,new RegisterServlet.RegisterFields("url","" + object.getString("url")));
+        data.put(0,new RegisterServlet.RegisterFields("url","" + object.getString("url")));
         if (controller.updateObject(id,data)){
             String message="\"Product Updated Correctly.\"";
             GestioneServlet.inviaRisposta(response,200,message,true);
