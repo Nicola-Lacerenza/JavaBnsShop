@@ -122,7 +122,7 @@ public class ModelloServlet extends HttpServlet{
         request0.put(1,new RegisterServlet.RegisterFields("id_brand",idBrand));
         request0.put(2,new RegisterServlet.RegisterFields("nome",nome));
         request0.put(3,new RegisterServlet.RegisterFields("descrizione",descrizione));
-        request0.put(4,new RegisterServlet.RegisterFields("colore",colore));
+        request0.put(4,new RegisterServlet.RegisterFields("colore",""+idColore));
         if (controller.insertObject(request0)) {
             String registrazione = "\"Registrazione effettuata correttamente.\"";
             GestioneServlet.inviaRisposta(response,201,registrazione,true);
