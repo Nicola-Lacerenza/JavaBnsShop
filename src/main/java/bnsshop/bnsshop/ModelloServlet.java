@@ -1,12 +1,16 @@
 package bnsshop.bnsshop;
 
+import controllers.ColoreController;
 import controllers.ModelloController;
+import controllers.TagliaController;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import models.Colore;
 import models.Modello;
+import models.Taglia;
 import org.json.JSONObject;
 import utility.GestioneServlet;
 
@@ -95,13 +99,30 @@ public class ModelloServlet extends HttpServlet{
         JSONObject object = new JSONObject(json);
         String idCategoria= object.getString("id_categoria");
         String idBrand= object.getString("id_brand");
+        String colore= object.getString("colore");
         String nome= object.getString("nome");
         String descrizione= object.getString("descrizione");
+
+        //Estrazione ID Colore
+        ColoreController coloreController = new ColoreController();
+        List<Colore> listColore = coloreController.getAllObjects();
+        List<Integer> colori = listColore.stream()
+                .filter(colore1 -> colore1.getNome().equals(String.valueOf(colore)))
+                .map(t -> t.getId())
+                .toList();
+        if (colori.isEmpty()){
+            String message = "\"Errore durante la registrazione.\"";
+            GestioneServlet.inviaRisposta(response,500,message,false);
+            return;
+        }
+        int idColore = colori.getFirst();
+
         Map<Integer, RegisterServlet.RegisterFields> request0= new HashMap<>();
         request0.put(0,new RegisterServlet.RegisterFields("id_categoria",idCategoria));
         request0.put(1,new RegisterServlet.RegisterFields("id_brand",idBrand));
         request0.put(2,new RegisterServlet.RegisterFields("nome",nome));
         request0.put(3,new RegisterServlet.RegisterFields("descrizione",descrizione));
+        request0.put(4,new RegisterServlet.RegisterFields("colore",colore));
         if (controller.insertObject(request0)) {
             String registrazione = "\"Registrazione effettuata correttamente.\"";
             GestioneServlet.inviaRisposta(response,201,registrazione,true);

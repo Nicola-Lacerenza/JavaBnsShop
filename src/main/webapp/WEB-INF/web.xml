@@ -3,9 +3,15 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
          version="5.0">
+
     <servlet>
         <servlet-name>ProdottiServlet</servlet-name>
         <servlet-class>bnsshop.bnsshop.ProdottiServlet</servlet-class>
+        <multipart-config>
+            <max-file-size>10485760</max-file-size> <!-- 10 MB -->
+            <max-request-size>20971520</max-request-size> <!-- 20 MB -->
+            <file-size-threshold>0</file-size-threshold>
+        </multipart-config>
     </servlet>         
     <servlet-mapping>
         <servlet-name>ProdottiServlet</servlet-name>
@@ -75,34 +81,5 @@
         <servlet-name>FornitoriServlet</servlet-name>
         <url-pattern>/FornitoriServlet</url-pattern>
     </servlet-mapping>
-    <!-- <filter>
-        <filter-name>CorsFilter</filter-name>
-        <filter-class>com.thetransactioncompany.cors.CORSFilter</filter-class>
-        <init-param>
-            <param-name>cors.allowed.origins</param-name>
-            <param-value>*</param-value>
-        </init-param>
-        <init-param>
-            <param-name>cors.allowed.methods</param-name>
-            <param-value>GET,POST,HEAD,OPTIONS,PUT</param-value>
-        </init-param>
-        <init-param>
-            <param-name>cors.allowed.headers</param-name>
-            <param-value>Content-Type,X-Requested-With,accept,Origin,Access-
-                Control-Request-Method,Access-Control-Request-Headers</param-value>
-        </init-param>
-        <init-param>
-            <param-name>cors.exposed.headers</param-name>
-            <param-value>Access-Control-Allow-Origin,Access-Control-Allow-
-                Credentials</param-value>
-        </init-param>
-        <init-param>
-            <param-name>cors.preflight.maxage</param-name>
-            <param-value>1800</param-value>
-        </init-param>
-    </filter>
-    <filter-mapping>
-        <filter-name>CorsFilter</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping> -->
+
 </web-app>

@@ -120,17 +120,16 @@ public class ProdottiServlet extends HttpServlet{
         int idTaglia = taglie.getFirst();
 
         // Retrieve the file part from the request
-        Part filePart = request.getPart("images");
-        String fileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
+        //Part filePart = request.getPart("images");
+        //String fileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
         // Save the file to the server
-        InputStream inputStream = filePart.getInputStream();
-        Files.copy(inputStream, Paths.get(fileName));
+        //InputStream inputStream = filePart.getInputStream();
+        //Files.copy(inputStream, Paths.get(fileName));
 
         Map<Integer, RegisterServlet.RegisterFields> request0= new HashMap<>();
         request0.put(0,new RegisterServlet.RegisterFields("url",(url)));
         request0.put(1,new RegisterServlet.RegisterFields("id_modello",idModello));
         request0.put(2,new RegisterServlet.RegisterFields("id_taglia",""+idTaglia));
-        //request0.put(3,new RegisterServlet.RegisterFields("id_immagine",""+idImmagine.getAsInt()+1));
         request0.put(4,new RegisterServlet.RegisterFields("prezzo",""+prezzo));
         request0.put(5,new RegisterServlet.RegisterFields("quantita",""+quantita));
         request0.put(6,new RegisterServlet.RegisterFields("stato_pubblicazione",""+statoPubblicazioneInt));
