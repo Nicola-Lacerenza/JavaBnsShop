@@ -1,33 +1,28 @@
 package bnsshop.bnsshop;
 
-import controllers.ColoreController;
-import controllers.ModelloController;
-import controllers.TagliaController;
+import controllers.ColoreModelloController;
+import controllers.ImmaginiProdottiController;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import models.Colore;
-import models.Modello;
-import models.Taglia;
+import models.ImmaginiProdotti;
 import org.json.JSONObject;
 import utility.GestioneServlet;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.*;
-import java.util.stream.Collectors;
 
-@WebServlet(name = "ModelloServlet", value = "/ModelloServlet")
-public class ModelloServlet extends HttpServlet{
-    ModelloController controller;
+@WebServlet(name = "ImmaginiProdottiServlet", value = "/ImmaginiProdottiServlet")
+public class ImmaginiProdottiServlet extends HttpServlet{
+    ImmaginiProdottiController controller;
 
     @Override
     public void init() throws ServletException{
         super.init();
-        controller = new ModelloController();
+        controller = new ImmaginiProdottiController();
     }
 
     // Gestione richiesta preflight (OPTIONS)
@@ -42,31 +37,31 @@ public class ModelloServlet extends HttpServlet{
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException,IOException{
-        int id;
+        int idImmagineProdotto;
         try{
             String idString = request.getParameter("id");
             if (idString != null) {
-                id = Integer.parseInt(idString);
+                idImmagineProdotto = Integer.parseInt(idString);
             } else {
-                id = -1;
+                idImmagineProdotto = -1;
             }
         }catch(NumberFormatException exception){
-            id=-1;
+            idImmagineProdotto=-1;
         }
-        Optional<Modello> modello=null;
-        List<Modello> modelli=null;
+        Optional<ImmaginiProdotti> immagineProdotto=null;
+        List<ImmaginiProdotti> immagineProdotti=null;
 
-        if (id!=-1){
-            modello = this.controller.getObject(id);
+        if (idImmagineProdotto!=-1){
+            immagineProdotto = this.controller.getObject(idImmagineProdotto);
         }else{
-            modelli = this.controller.getAllObjects();
+            immagineProdotti = this.controller.getAllObjects();
         }
 
-        if (modello!=null || modelli!=null){
-            if (modello!=null){
-                GestioneServlet.inviaRisposta(response,200,modello.get().toString(),true);
+        if (immagineProdotto!=null || immagineProdotti!=null){
+            if (immagineProdotto!=null){
+                GestioneServlet.inviaRisposta(response,200,immagineProdotto.get().toString(),true);
             }else{
-                GestioneServlet.inviaRisposta(response,200,modelli.toString(),true);
+                GestioneServlet.inviaRisposta(response,200,immagineProdotti.toString(),true);
             }
         }else{
             String message = "\"Internal server error\"";
@@ -98,56 +93,11 @@ public class ModelloServlet extends HttpServlet{
         }
         String json=builder.toString();
         JSONObject object = new JSONObject(json);
-        String idCategoria= object.getString("id_categoria");
-        String idBrand= object.getString("id_brand");
-        String colore= object.getString("colore");
-        String nome= object.getString("nome");
-        String descrizione= object.getString("descrizione");
-
-        //Estrazione ID Colore
-        // Estrazione degli ID Colore
-        ColoreController coloreController = new ColoreController();
-        List<Colore> listColore = coloreController.getAllObjects();
-
-        // Se la stringa dei colori contiene più colori separati da una virgola
-        String[] coloriArray = colore.split(",");
-
-        // Lista per contenere gli ID dei colori
-        List<Integer> idColori = new ArrayList<>();
-
-        // Itera su tutti i colori passati nella stringa
-        for (String coloreString : coloriArray) {
-            String coloreTrimmed = coloreString.trim();  // Rimuovi eventuali spazi bianchi
-            List<Integer> coloriTrovati = listColore.stream()
-                    .filter(colore1 -> colore1.getNome().equalsIgnoreCase(coloreTrimmed)) // Usa equalsIgnoreCase per un confronto più robusto
-                    .map(Colore::getId)
-                    .collect(Collectors.toList());
-
-            if (!coloriTrovati.isEmpty()) {
-                idColori.addAll(coloriTrovati); // Aggiungi tutti gli ID trovati
-            } else {
-                // Gestione errore se un colore non viene trovato
-                String message = "\"Errore: Colore " + coloreTrimmed + " non trovato.\"";
-                GestioneServlet.inviaRisposta(response, 500, message, false);
-                return;
-            }
-        }
-
-        if (idColori.isEmpty()) {
-            String message = "\"Errore durante la registrazione: nessun colore valido trovato.\"";
-            GestioneServlet.inviaRisposta(response, 500, message, false);
-            return;
-        }
+        String idImmagine= object.getString("id_immagine");
+        String idProdotto= object.getString("id_prodotto");
         Map<Integer, RegisterServlet.RegisterFields> request0= new HashMap<>();
-        request0.put(0,new RegisterServlet.RegisterFields("id_categoria",idCategoria));
-        request0.put(1,new RegisterServlet.RegisterFields("id_brand",idBrand));
-        request0.put(2,new RegisterServlet.RegisterFields("nome",nome));
-        request0.put(3,new RegisterServlet.RegisterFields("descrizione",descrizione));
-        //request0.put(4,new RegisterServlet.RegisterFields("colore",""+idColore));
-        // Inserisci tutti i colori nella mappa
-        for (int i = 0; i < idColori.size(); i++) {
-            request0.put(4 + i, new RegisterServlet.RegisterFields("colore_" + (i + 1), String.valueOf(idColori.get(i))));
-        }
+        request0.put(0,new RegisterServlet.RegisterFields("id_immagine",idImmagine));
+        request0.put(1,new RegisterServlet.RegisterFields("id_prodotto",idProdotto));
         if (controller.insertObject(request0)) {
             String registrazione = "\"Registrazione effettuata correttamente.\"";
             GestioneServlet.inviaRisposta(response,201,registrazione,true);
@@ -183,10 +133,8 @@ public class ModelloServlet extends HttpServlet{
         String json=builder.toString();
         JSONObject object = new JSONObject(json);
         Map<Integer, RegisterServlet.RegisterFields> data = new HashMap<>();
-        data.put(0,new RegisterServlet.RegisterFields("id_categoria","" + object.getString("id_categoria")));
-        data.put(1,new RegisterServlet.RegisterFields("id_brand","" + object.getString("id_brand")));
-        data.put(2,new RegisterServlet.RegisterFields("nome","" + object.getString("nome")));
-        data.put(3,new RegisterServlet.RegisterFields("descrizione","" + object.getString("descrizione")));
+        data.put(0,new RegisterServlet.RegisterFields("id_immagine","" + object.getString("id_immagine")));
+        data.put(1,new RegisterServlet.RegisterFields("id_prodotto","" + object.getString("id_prodotto")));
         if (controller.updateObject(id,data)){
             String message="\"Product Updated Correctly.\"";
             GestioneServlet.inviaRisposta(response,200,message,true);

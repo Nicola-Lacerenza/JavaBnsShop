@@ -58,6 +58,14 @@
         <url-pattern>/ColoreModelloServlet</url-pattern>
     </servlet-mapping>
     <servlet>
+        <servlet-name>ImmaginiProdottiServlet</servlet-name>
+        <servlet-class>bnsshop.bnsshop.ImmaginiProdottiServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ImmaginiProdottiServlet</servlet-name>
+        <url-pattern>/ImmaginiProdottiServlet</url-pattern>
+    </servlet-mapping>
+    <servlet>
         <servlet-name>ColoreServlet</servlet-name>
         <servlet-class>bnsshop.bnsshop.ColoreServlet</servlet-class>
     </servlet>

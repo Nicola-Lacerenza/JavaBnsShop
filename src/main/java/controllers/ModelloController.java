@@ -37,8 +37,8 @@ public class ModelloController implements Controllers<Modello> {
             String query1 = "INSERT INTO modello (id_categoria,id_brand,nome,descrizione)" +
                     "VALUES ('"+request.get(0).getValue()+"','"+request.get(1).getValue()+"'," +
                     "'"+request.get(2).getValue()+"','"+request.get(3).getValue()+"')";
-            PreparedStatement preparedStatement3 = connection.prepareStatement(query1);
-            preparedStatement3.executeUpdate();
+            PreparedStatement preparedStatement1 = connection.prepareStatement(query1);
+            preparedStatement1.executeUpdate();
 
             String query2 = "SELECT * FROM modello WHERE (id_categoria='"+request.get(0).getValue()+"' " +
                     "&& id_brand='"+request.get(1).getValue()+"'&& nome='"+request.get(2).getValue()+"'&& descrizione='"+request.get(3).getValue()+"')";
@@ -51,10 +51,21 @@ public class ModelloController implements Controllers<Modello> {
             } else {
                 throw new SQLException("No image found for the provided URL");
             }
-            String query3 = "INSERT INTO colore_has_modello (id_colore,id_modello) VALUES ('"+request.get(4).getValue()+"',"+idModello+")";
-            PreparedStatement preparedStatement1 = connection.prepareStatement(query3);
-            preparedStatement1.executeUpdate();
 
+            //Inserisci i colori associati al modello
+            String query3 = "INSERT INTO colore_has_modello (id_colore, id_modello) VALUES (?, ?)";
+            PreparedStatement preparedStatement3 = connection.prepareStatement(query3);
+
+            // Itera su tutti i colori e inseriscili nella tabella `colore_has_modello`
+            for (int i = 4; i < request.size(); i++) {
+                int idColore = Integer.parseInt(request.get(i).getValue());  // Converti in Integer
+                preparedStatement3.setInt(1, idColore);
+                preparedStatement3.setInt(2, idModello);
+                preparedStatement3.addBatch();  // Aggiungi la query alla batch
+            }
+
+            // Esegui tutte le query in batch
+            preparedStatement3.executeBatch();
 
             connection.commit(); // Commit delle modifiche solo se tutte le query hanno successo
             output = true;
