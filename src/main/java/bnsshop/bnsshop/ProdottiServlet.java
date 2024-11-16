@@ -4,6 +4,7 @@ import controllers.ImmaginiController;
 import controllers.ProdottiController;
 import controllers.TagliaController;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,10 +18,14 @@ import utility.GestioneServlet;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @WebServlet(name = "ProdottiServlet", value = "/ProdottiServlet")
+@MultipartConfig(maxFileSize = 16177215)
 public class ProdottiServlet extends HttpServlet{
     ProdottiController controller;
 
@@ -74,75 +79,107 @@ public class ProdottiServlet extends HttpServlet{
     }
 
     @Override
-    public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException,IOException{
-        String email = GestioneServlet.validaToken(request,response);
-        if (email.isEmpty()){
+    public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String email = GestioneServlet.validaToken(request, response);
+        if (email.isEmpty()) {
             return;
         }
+
         String ruolo = GestioneServlet.controllaRuolo(email);
-        if(!ruolo.equals("admin")){
-            GestioneServlet.inviaRisposta(response,403,"\"Ruolo non corretto!\"",false);
+        if (!"admin".equals(ruolo)) {
+            GestioneServlet.inviaRisposta(response, 403, "\"Ruolo non corretto!\"", false);
             return;
         }
-        BufferedReader reader=request.getReader();
-        String row=reader.readLine();
-        List<String> rows = new ArrayList<>();
-        while (row!=null){
-            rows.add(row);
-            row=reader.readLine();
+
+        // Map per memorizzare i dati di input non-file
+        Map<String, String> formData = new HashMap<>();
+
+        // Lista per salvare gli URL dei file caricati
+        List<String> urls = new ArrayList<>();
+
+        // Gestione delle parti della richiesta
+        for (Part part : request.getParts()) {
+            if (part.getContentType() == null) {
+                // Parte non-file (probabilmente un campo di form)
+                String fieldName = part.getName();
+                String fieldValue = new BufferedReader(new InputStreamReader(part.getInputStream()))
+                        .lines().collect(Collectors.joining("\n"));
+                formData.put(fieldName, fieldValue);
+            } else {
+                // Gestione dei file
+                String fileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
+
+                // Specifica la directory completa dove vuoi salvare le immagini
+                String directory = "C:\\Users\\nicol\\Documents\\PROGETTI\\BNS SHOP\\JAVA - INTELLIJ\\images";
+
+                // Assicurati che la directory esista
+                Path dirPath = Paths.get(directory);
+                if (!Files.exists(dirPath)) {
+                    Files.createDirectories(dirPath); // Crea la directory se non esiste
+                }
+
+                // Salva il file nella directory specificata
+                Path filePath = Paths.get(directory, fileName);
+                Files.copy(part.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+                // Aggiungi l'URL del file alla lista
+                String fileUrl = directory + "/" + fileName;  // Path relativo o URL come preferisci gestirlo
+                urls.add(fileUrl);
+
+                // Facoltativo: verifica se il file è stato salvato correttamente
+                if (Files.exists(filePath)) {
+                    System.out.println("File salvato correttamente in: " + filePath.toString());
+                } else {
+                    System.out.println("Errore nel salvataggio del file.");
+                }
+            }
         }
-        StringBuilder builder= new StringBuilder();
-        for (String line:rows){
-            builder.append(line);
-        }
-        String json=builder.toString();
-        JSONObject object = new JSONObject(json);
-        String url = object.getString("images");
-        String idModello= object.getString("id_modello");
-        Integer taglia= object.getInt("taglia");
-        Integer prezzo= object.getInt("prezzo");
-        Integer quantita= object.getInt("quantita");
-        Boolean statoPubblicazione= object.getBoolean("stato_pubblicazione");
+
+        // Recupera i valori dal form
+        String idModello = formData.get("id_modello");
+        Integer taglia = Integer.parseInt(formData.get("taglia"));  // Ottieni il valore come stringa
+        Integer prezzo = Integer.parseInt(formData.get("prezzo"));
+        Integer quantita = Integer.parseInt(formData.get("quantita"));
+        Boolean statoPubblicazione = Boolean.parseBoolean(formData.get("stato_pubblicazione"));
         int statoPubblicazioneInt = statoPubblicazione ? 1 : 0;
 
-        //Estrazione ID Taglia
+        // Estrazione ID Taglia
         TagliaController tagliaController = new TagliaController();
         List<Taglia> listTaglia = tagliaController.getAllObjects();
         List<Integer> taglie = listTaglia.stream()
-                .filter(taglia1 -> taglia1.getTaglia().equals(String.valueOf(taglia)))
-                .map(t -> t.getId())
+                .filter(taglia1 -> taglia1.getTagliaEu().equals(String.valueOf(taglia)))
+                .map(Taglia::getId)
                 .toList();
-        if (taglie.isEmpty()){
-            String message = "\"Errore durante la registrazione.\"";
-            GestioneServlet.inviaRisposta(response,500,message,false);
+
+        if (taglie.isEmpty()) {
+            GestioneServlet.inviaRisposta(response, 500, "\"Errore durante la registrazione.\"", false);
             return;
         }
-        int idTaglia = taglie.getFirst();
+        int idTaglia = taglie.get(0);
 
-        // Retrieve the file part from the request
-        //Part filePart = request.getPart("images");
-        //String fileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
-        // Save the file to the server
-        //InputStream inputStream = filePart.getInputStream();
-        //Files.copy(inputStream, Paths.get(fileName));
+        // Preparazione dei dati per l'inserimento
+        Map<Integer, RegisterServlet.RegisterFields> request0 = new HashMap<>();
+        request0.put(1, new RegisterServlet.RegisterFields("id_modello", idModello));
+        request0.put(2, new RegisterServlet.RegisterFields("id_taglia", "" + idTaglia));
+        request0.put(4, new RegisterServlet.RegisterFields("prezzo", "" + prezzo));
+        request0.put(5, new RegisterServlet.RegisterFields("quantita", "" + quantita));
+        request0.put(6, new RegisterServlet.RegisterFields("stato_pubblicazione", "" + statoPubblicazioneInt));
 
-        Map<Integer, RegisterServlet.RegisterFields> request0= new HashMap<>();
-        request0.put(0,new RegisterServlet.RegisterFields("url",(url)));
-        request0.put(1,new RegisterServlet.RegisterFields("id_modello",idModello));
-        request0.put(2,new RegisterServlet.RegisterFields("id_taglia",""+idTaglia));
-        request0.put(4,new RegisterServlet.RegisterFields("prezzo",""+prezzo));
-        request0.put(5,new RegisterServlet.RegisterFields("quantita",""+quantita));
-        request0.put(6,new RegisterServlet.RegisterFields("stato_pubblicazione",""+statoPubblicazioneInt));
+        // Aggiungi gli URL dei file caricati
+        for (int j = 0; j < urls.size(); j++) {
+            request0.put(j + 7, new RegisterServlet.RegisterFields("url" + j, urls.get(j)));
+        }
+
+        // Inserimento nel database
         if (controller.insertObject(request0)) {
-
-
             String registrazione = "\"Registrazione effettuata correttamente.\"";
-            GestioneServlet.inviaRisposta(response,201,registrazione,true);
-        }else{
+            GestioneServlet.inviaRisposta(response, 201, registrazione, true);
+        } else {
             String message = "\"Errore durante la registrazione.\"";
-            GestioneServlet.inviaRisposta(response,500,message,false);
+            GestioneServlet.inviaRisposta(response, 500, message, false);
         }
     }
+
 
     @Override
     public void doPut(HttpServletRequest request,HttpServletResponse response) throws ServletException,IOException{

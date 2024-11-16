@@ -137,7 +137,9 @@ public class TagliaServlet extends HttpServlet{
         String json=builder.toString();
         JSONObject object = new JSONObject(json);
         Map<Integer, RegisterServlet.RegisterFields> data = new HashMap<>();
-        data.put(0,new RegisterServlet.RegisterFields("taglia","" + object.getString("taglia")));
+        data.put(0,new RegisterServlet.RegisterFields("tagliaEu","" + object.getString("tagliaEu")));
+        data.put(1,new RegisterServlet.RegisterFields("tagliaUk","" + object.getString("tagliaUk")));
+        data.put(2,new RegisterServlet.RegisterFields("tagliaUs","" + object.getString("tagliaUs")));
         if (controller.updateObject(id,data)){
             String message="Product Updated Correctly.";
             PrintWriter writer= response.getWriter();
