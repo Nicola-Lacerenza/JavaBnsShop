@@ -9,21 +9,17 @@ import java.util.Optional;
 public class Prodotti implements Oggetti<Prodotti>{
     private final int id;
     private final int idModello;
-    private final int idTaglia;
     private final double prezzo;
-    private final int quantita;
     private final int statoPubblicazione;
 
-    public Prodotti(int id, int idModello, int idTaglia, double prezzo, int quantita, int statoPubblicazione) {
+    public Prodotti(int id, int idModello, double prezzo, int statoPubblicazione) {
         this.id = id;
         this.idModello = idModello;
-        this.idTaglia = idTaglia;
         this.prezzo = prezzo;
-        this.quantita = quantita;
         this.statoPubblicazione = statoPubblicazione;
     }
     public Prodotti(){
-        this(0,0,0,0,0,0);
+        this(0,0,0,0);
     }
 
     public int getId() {
@@ -34,16 +30,8 @@ public class Prodotti implements Oggetti<Prodotti>{
         return idModello;
     }
 
-    public int getIdTaglia() {
-        return idTaglia;
-    }
-
     public double getPrezzo() {
         return prezzo;
-    }
-
-    public int getQuantita() {
-        return quantita;
     }
 
     public int getStatoPubblicazione() {
@@ -60,11 +48,9 @@ public class Prodotti implements Oggetti<Prodotti>{
         try{
             int idProdotto = rs.getInt("id");
             int idModello = rs.getInt("id_modello");
-            int idTaglia = rs.getInt("id_taglia");
             double prezzo = rs.getDouble("prezzo");
-            int quantita = rs.getInt("quantita");
             int statoPubblicazione = rs.getInt("stato_pubblicazione");
-            return Optional.of(new Prodotti(idProdotto,idModello,idTaglia, prezzo, quantita, statoPubblicazione));
+            return Optional.of(new Prodotti(idProdotto,idModello, prezzo, statoPubblicazione));
         }catch (SQLException e){
             e.printStackTrace();
             return Optional.empty();
@@ -75,9 +61,7 @@ public class Prodotti implements Oggetti<Prodotti>{
         JSONObject output = new JSONObject();
         output.put("id",id);
         output.put("id_modello",idModello);
-        output.put("id_taglia",idTaglia);
         output.put("prezzo",prezzo);
-        output.put("quantita",quantita);
         output.put("stato_pubblicazione",statoPubblicazione);
         return output.toString(4);
     }

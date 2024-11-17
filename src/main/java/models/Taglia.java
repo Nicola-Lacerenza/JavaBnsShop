@@ -44,9 +44,9 @@ public class Taglia implements Oggetti<Taglia>{
     public Optional<Taglia> convertDBToJava(ResultSet rs) {
         try{
             int idTaglia = rs.getInt("id");
-            String tagliaEu = rs.getString("tagliaEu");
-            String tagliaUk = rs.getString("tagliaUk");
-            String tagliaUs = rs.getString("tagliaUs");
+            String tagliaEu = rs.getString("taglia_Eu");
+            String tagliaUk = rs.getString("taglia_Uk");
+            String tagliaUs = rs.getString("taglia_Us");
             return Optional.of(new Taglia(idTaglia, tagliaEu,tagliaUk,tagliaUs));
         }catch (SQLException e){
             e.printStackTrace();

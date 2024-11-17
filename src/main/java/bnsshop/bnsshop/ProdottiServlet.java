@@ -1,6 +1,6 @@
 package bnsshop.bnsshop;
 
-import controllers.ImmaginiController;
+import controllers.ColoreController;
 import controllers.ProdottiController;
 import controllers.TagliaController;
 import jakarta.servlet.ServletException;
@@ -10,7 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.Part;
-import models.Immagini;
+import models.Colore;
 import models.Prodotti;
 import models.Taglia;
 import org.json.JSONObject;
@@ -136,8 +136,12 @@ public class ProdottiServlet extends HttpServlet{
         }
 
         // Recupera i valori dal form
-        String idModello = formData.get("id_modello");
-        Integer taglia = Integer.parseInt(formData.get("taglia"));  // Ottieni il valore come stringa
+        String idCategoria= formData.get("id_categoria");
+        String idBrand= formData.get("id_brand");
+        String colori= formData.get("colori");
+        String nome= formData.get("nome");
+        String descrizione= formData.get("descrizione");
+        Integer taglia = Integer.parseInt(formData.get("taglia"));
         Integer prezzo = Integer.parseInt(formData.get("prezzo"));
         Integer quantita = Integer.parseInt(formData.get("quantita"));
         Boolean statoPubblicazione = Boolean.parseBoolean(formData.get("stato_pubblicazione"));
@@ -157,17 +161,60 @@ public class ProdottiServlet extends HttpServlet{
         }
         int idTaglia = taglie.get(0);
 
+        // Estrazione degli ID Colore
+        ColoreController coloreController = new ColoreController();
+        List<Colore> listColore = coloreController.getAllObjects();
+
+        // Se la stringa dei colori contiene più colori separati da una virgola
+        String[] coloriArray = colori.split(",");
+
+        // Lista per contenere gli ID dei colori
+        List<Integer> idColori = new ArrayList<>();
+
+        // Itera su tutti i colori passati nella stringa
+        for (String coloreString : coloriArray) {
+            String coloreTrimmed = coloreString.trim();  // Rimuovi eventuali spazi bianchi
+            List<Integer> coloriTrovati = listColore.stream()
+                    .filter(colore1 -> colore1.getNome().equalsIgnoreCase(coloreTrimmed)) // Usa equalsIgnoreCase per un confronto più robusto
+                    .map(Colore::getId)
+                    .collect(Collectors.toList());
+
+            if (!coloriTrovati.isEmpty()) {
+                idColori.addAll(coloriTrovati); // Aggiungi tutti gli ID trovati
+            } else {
+                // Gestione errore se un colore non viene trovato
+                String message = "\"Errore: Colore " + coloreTrimmed + " non trovato.\"";
+                GestioneServlet.inviaRisposta(response, 500, message, false);
+                return;
+            }
+        }
+
+        if (idColori.isEmpty()) {
+            String message = "\"Errore durante la registrazione: nessun colore valido trovato.\"";
+            GestioneServlet.inviaRisposta(response, 500, message, false);
+            return;
+        }
+
         // Preparazione dei dati per l'inserimento
         Map<Integer, RegisterServlet.RegisterFields> request0 = new HashMap<>();
-        request0.put(1, new RegisterServlet.RegisterFields("id_modello", idModello));
-        request0.put(2, new RegisterServlet.RegisterFields("id_taglia", "" + idTaglia));
+        request0.put(0,new RegisterServlet.RegisterFields("nome",nome));
+        request0.put(1,new RegisterServlet.RegisterFields("id_categoria",idCategoria));
+        request0.put(2,new RegisterServlet.RegisterFields("id_brand",idBrand));
+        request0.put(3,new RegisterServlet.RegisterFields("descrizione",descrizione));
         request0.put(4, new RegisterServlet.RegisterFields("prezzo", "" + prezzo));
-        request0.put(5, new RegisterServlet.RegisterFields("quantita", "" + quantita));
-        request0.put(6, new RegisterServlet.RegisterFields("stato_pubblicazione", "" + statoPubblicazioneInt));
+        request0.put(5, new RegisterServlet.RegisterFields("stato_pubblicazione", "" + statoPubblicazioneInt));
+        request0.put(6, new RegisterServlet.RegisterFields("id_taglia", "" + idTaglia));
+        request0.put(7, new RegisterServlet.RegisterFields("quantita", "" + quantita));
 
-        // Aggiungi gli URL dei file caricati
+        // Inserisci tutti i colori nella mappa
+        int index = 8; // Punto di partenza dell'indice
+        for (int i = 0; i < idColori.size(); i++) {
+            request0.put(index++, new RegisterServlet.RegisterFields("colore_" + (i + 1), String.valueOf(idColori.get(i))));
+        }
+
+        // Inserisci tutti gli url nella mappa
         for (int j = 0; j < urls.size(); j++) {
-            request0.put(j + 7, new RegisterServlet.RegisterFields("url" + j, urls.get(j)));
+            request0.put(index++, new RegisterServlet.RegisterFields("url" + j, urls.get(j)));
         }
 
         // Inserimento nel database
@@ -208,11 +255,9 @@ public class ProdottiServlet extends HttpServlet{
         JSONObject object = new JSONObject(json);
         Map<Integer, RegisterServlet.RegisterFields> data = new HashMap<>();
         data.put(0,new RegisterServlet.RegisterFields("id_modello","" + object.getString("id_modello")));
-        data.put(1,new RegisterServlet.RegisterFields("id_taglia","" + object.getString("id_taglia")));
-        data.put(2,new RegisterServlet.RegisterFields("id_immagini","" + object.getString("id_immagini")));
-        data.put(3,new RegisterServlet.RegisterFields("prezzo","" + object.getString("prezzo")));
-        data.put(4,new RegisterServlet.RegisterFields("quantita","" + object.getString("quantita")));
-        data.put(5,new RegisterServlet.RegisterFields("stato_pubblicazione","" + object.getString("stato_pubblicazione")));
+        data.put(1,new RegisterServlet.RegisterFields("prezzo","" + object.getString("prezzo")));
+        data.put(2,new RegisterServlet.RegisterFields("quantita","" + object.getString("quantita")));
+        data.put(3,new RegisterServlet.RegisterFields("stato_pubblicazione","" + object.getString("stato_pubblicazione")));
         if (controller.updateObject(id,data)){
             String message="\"Product Updated Correctly.\"";
             GestioneServlet.inviaRisposta(response,200,message,true);

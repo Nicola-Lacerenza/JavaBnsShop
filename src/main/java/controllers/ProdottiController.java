@@ -32,50 +32,103 @@ public class ProdottiController implements Controllers<Prodotti> {
             connection = DriverManager.getConnection(Database.getDatabaseUrl(),Database.getDatabaseUsername(), Database.getDatabasePassword());
             connection.setAutoCommit(false); // Avvia transazione
 
-            String query1 = "INSERT INTO prodotti (id_modello,id_taglia,prezzo,quantita,stato_pubblicazione)" +
+        // INSERIMENTO MODELLO
+
+            String query1 = "INSERT INTO modello (id_categoria,id_brand,nome,descrizione)" +
                     "VALUES ('"+request.get(1).getValue()+"','"+request.get(2).getValue()+"'," +
-                    "'"+request.get(4).getValue()+"','"+request.get(5).getValue()+"','"+request.get(6).getValue()+"')";
+                    "'"+request.get(0).getValue()+"','"+request.get(3).getValue()+"')";
             PreparedStatement preparedStatement1 = connection.prepareStatement(query1);
             preparedStatement1.executeUpdate();
 
-            String query2 = "SELECT * FROM prodotti WHERE (id_modello='"+request.get(1).getValue()+"' " +
-                    "&& id_taglia='"+request.get(2).getValue()+"'&& prezzo='"+request.get(4).getValue()+"'&& quantita='"+request.get(5).getValue()+"'" +
-                    "&& stato_pubblicazione='"+request.get(6).getValue()+"')";
+            String query2 = "SELECT * FROM modello WHERE (id_categoria='"+request.get(1).getValue()+"' " +
+                    "&& id_brand='"+request.get(2).getValue()+"'&& nome='"+request.get(0).getValue()+"'&& descrizione='"+request.get(3).getValue()+"')";
             PreparedStatement preparedStatement2 = connection.prepareStatement(query2);
             ResultSet rs = preparedStatement2.executeQuery();
 
-
-            int idProdotto = -1;
+            int idModello = -1;
             if (rs.next()) {
-                idProdotto = rs.getInt("id");
+                idModello = rs.getInt("id");
             } else {
                 throw new SQLException("No image found for the provided URL");
             }
 
-            //Inserisci l'url delle immagini
-            String query3 = "INSERT INTO immagini (url) VALUES (?)";
+            //Inserisci i colori associati al modello
+            String query3 = "INSERT INTO colore_has_modello (id_colore, id_modello) VALUES (?, ?)";
             PreparedStatement preparedStatement3 = connection.prepareStatement(query3);
-            for (int i = 6; i < request.size()+1; i++) {
-                String combinedValue = request.get(i+1).getValue() + idProdotto;
-                preparedStatement3.setString(1, combinedValue);
-                preparedStatement3.executeUpdate();
+
+            int countColore = 0;
+            for (Map.Entry<Integer, RegisterServlet.RegisterFields> entry : request.entrySet()) {
+                if (entry.getKey() >= 8 && entry.getValue().getKey().startsWith("colore_")) {
+                    countColore++;
+                }
+            }
+
+            // Itera su tutti i colori e inseriscili nella tabella `colore_has_modello`
+            for (int i = 8; i < countColore+8; i++) {
+                int idColore = Integer.parseInt(request.get(i).getValue());  // Converti in Integer
+                preparedStatement3.setInt(1, idColore);
+                preparedStatement3.setInt(2, idModello);
+                preparedStatement3.addBatch();  // Aggiungi la query alla batch
+            }
 
 
-                String query4 = "SELECT * FROM immagini WHERE(url='"+combinedValue+"')";
-                PreparedStatement preparedStatement4 = connection.prepareStatement(query4);
-                ResultSet rs1 = preparedStatement4.executeQuery();
+            // Esegui tutte le query in batch
+            preparedStatement3.executeBatch();
+
+        // INSERIMENTO PRODOTTO
+
+            String query4 = "INSERT INTO prodotti (id_modello,prezzo,stato_pubblicazione)" + "VALUES ('"+idModello+"','"+request.get(4).getValue()+"'," +
+                    "'"+request.get(5).getValue()+"')";
+            PreparedStatement preparedStatement4 = connection.prepareStatement(query4);
+            preparedStatement4.executeUpdate();
+
+            // ESTRAZIONE ID PRODOTTO
+            String query5 ="SELECT * FROM prodotti WHERE (id_modello='"+idModello+"' " +
+                    "&& prezzo='"+request.get(4).getValue()+"'&& stato_pubblicazione='"+request.get(5).getValue()+"')";
+            PreparedStatement preparedStatement5 = connection.prepareStatement(query5);
+            ResultSet rs1 = preparedStatement5.executeQuery();
+
+            int idProdotto = -1;
+            if (rs1.next()) {
+                idProdotto = rs1.getInt("id");
+            } else {
+                throw new SQLException("No image found for the provided URL");
+            }
+
+        // INSERIMENTO TAGLIA E QUANTITA
+
+            String query9 = "INSERT INTO taglie_has_prodotti (id_taglia,id_prodotto,quantita) VALUES ('"+request.get(6).getValue()+"','"+idProdotto+"'," +
+                    "'"+request.get(7).getValue()+"')";
+            PreparedStatement preparedStatement9 = connection.prepareStatement(query9);
+            preparedStatement9.executeUpdate();
+
+        // INSERIMENTO URL IMMAGINE
+
+            String query6 = "INSERT INTO immagini (url) VALUES (?)";
+            PreparedStatement preparedStatement6 = connection.prepareStatement(query6);
+            for (int i = 8+countColore; i < request.size(); i++) {
+
+                String combinedValue = request.get(i).getValue().replace("\\", "\\\\") + idProdotto;
+                preparedStatement6.setString(1, combinedValue);
+                preparedStatement6.executeUpdate();
+
+                //ESTRAZIONE  ID IMMAGINE
+                String query7 = "SELECT * FROM immagini WHERE url = ?";
+                PreparedStatement preparedStatement7 = connection.prepareStatement(query7);
+                preparedStatement7.setString(1, combinedValue); // Usa il valore originale senza ulteriori modifiche
+                ResultSet rs2 = preparedStatement7.executeQuery();
 
                 int idImmagine = -1;
-                if (rs1.next()) {
-                    idImmagine = rs1.getInt("id");
+                if (rs2.next()) {
+                    idImmagine = rs2.getInt("id");
                 } else {
                     throw new SQLException("No image found for the provided URL");
                 }
 
-                //Inserisci le immagini associate al prodotto
-                String query5 = "INSERT INTO immagini_has_prodotti (id_immagine, id_prodotto) VALUES ('"+idImmagine+"', '"+idProdotto+"')";
-                PreparedStatement preparedStatement5 = connection.prepareStatement(query5);
-                preparedStatement5.executeUpdate();
+                //INSERIMENTO IMMAGINE ASSOCIATA AL PRODOTTO
+                String query8 = "INSERT INTO immagini_has_prodotti (id_immagine, id_prodotto) VALUES ('"+idImmagine+"', '"+idProdotto+"')";
+                PreparedStatement preparedStatement8 = connection.prepareStatement(query8);
+                preparedStatement8.executeUpdate();
 
             }
 
