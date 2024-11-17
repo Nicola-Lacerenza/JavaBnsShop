@@ -104,49 +104,13 @@ public class ModelloServlet extends HttpServlet{
         String nome= object.getString("nome");
         String descrizione= object.getString("descrizione");
 
-        //Estrazione ID Colore
-        // Estrazione degli ID Colore
-        ColoreController coloreController = new ColoreController();
-        List<Colore> listColore = coloreController.getAllObjects();
-
-        // Se la stringa dei colori contiene più colori separati da una virgola
-        String[] coloriArray = colore.split(",");
-
-        // Lista per contenere gli ID dei colori
-        List<Integer> idColori = new ArrayList<>();
-
-        // Itera su tutti i colori passati nella stringa
-        for (String coloreString : coloriArray) {
-            String coloreTrimmed = coloreString.trim();  // Rimuovi eventuali spazi bianchi
-            List<Integer> coloriTrovati = listColore.stream()
-                    .filter(colore1 -> colore1.getNome().equalsIgnoreCase(coloreTrimmed)) // Usa equalsIgnoreCase per un confronto più robusto
-                    .map(Colore::getId)
-                    .collect(Collectors.toList());
-
-            if (!coloriTrovati.isEmpty()) {
-                idColori.addAll(coloriTrovati); // Aggiungi tutti gli ID trovati
-            } else {
-                // Gestione errore se un colore non viene trovato
-                String message = "\"Errore: Colore " + coloreTrimmed + " non trovato.\"";
-                GestioneServlet.inviaRisposta(response, 500, message, false);
-                return;
-            }
-        }
-
-        if (idColori.isEmpty()) {
-            String message = "\"Errore durante la registrazione: nessun colore valido trovato.\"";
-            GestioneServlet.inviaRisposta(response, 500, message, false);
-            return;
-        }
-        Map<Integer, RegisterServlet.RegisterFields> request0= new HashMap<>();
+         Map<Integer, RegisterServlet.RegisterFields> request0= new HashMap<>();
         request0.put(0,new RegisterServlet.RegisterFields("id_categoria",idCategoria));
         request0.put(1,new RegisterServlet.RegisterFields("id_brand",idBrand));
         request0.put(2,new RegisterServlet.RegisterFields("nome",nome));
         request0.put(3,new RegisterServlet.RegisterFields("descrizione",descrizione));
-        // Inserisci tutti i colori nella mappa
-        for (int i = 0; i < idColori.size(); i++) {
-            request0.put(4 + i, new RegisterServlet.RegisterFields("colore_" + (i + 1), String.valueOf(idColori.get(i))));
-        }
+        request0.put(4,new RegisterServlet.RegisterFields("colore",colore));
+
         if (controller.insertObject(request0)) {
             String registrazione = "\"Registrazione effettuata correttamente.\"";
             GestioneServlet.inviaRisposta(response,201,registrazione,true);
