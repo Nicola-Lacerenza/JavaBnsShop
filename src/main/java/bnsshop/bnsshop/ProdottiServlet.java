@@ -13,6 +13,8 @@ import jakarta.servlet.http.Part;
 import models.Colore;
 import models.Prodotti;
 import models.Taglia;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import utility.GestioneServlet;
 
@@ -110,7 +112,8 @@ public class ProdottiServlet extends HttpServlet{
                 String fileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
 
                 // Specifica la directory completa dove vuoi salvare le immagini
-                String directory = "C:\\Users\\nicol\\Documents\\PROGETTI\\BNS SHOP\\JAVA - INTELLIJ\\images";
+                //String directory = "C:\\Users\\nicol\\Documents\\PROGETTI\\BNS SHOP\\JAVA - INTELLIJ\\images";
+                String directory = "C:\\Users\\Emanuele Schino\\Desktop\\PERSONALE\\JAVA\\images";
 
                 // Assicurati che la directory esista
                 Path dirPath = Paths.get(directory);
@@ -141,27 +144,65 @@ public class ProdottiServlet extends HttpServlet{
         String colori= formData.get("colori");
         String nome= formData.get("nome");
         String descrizione= formData.get("descrizione");
-        Integer taglia = Integer.parseInt(formData.get("taglia"));
+        //Integer taglia = Integer.parseInt(formData.get("taglia"));
         Integer prezzo = Integer.parseInt(formData.get("prezzo"));
-        Integer quantita = Integer.parseInt(formData.get("quantita"));
+        //Integer quantita = Integer.parseInt(formData.get("quantita"));
         Boolean statoPubblicazione = Boolean.parseBoolean(formData.get("stato_pubblicazione"));
         int statoPubblicazioneInt = statoPubblicazione ? 1 : 0;
 
-        // Estrazione ID Taglia
-        TagliaController tagliaController = new TagliaController();
-        List<Taglia> listTaglia = tagliaController.getAllObjects();
-        List<Integer> taglie = listTaglia.stream()
-                .filter(taglia1 -> taglia1.getTagliaEu().equals(String.valueOf(taglia)))
-                .map(Taglia::getId)
-                .toList();
+    // GESTIONE TAGLIA E QUANTITA'
 
-        if (taglie.isEmpty()) {
-            GestioneServlet.inviaRisposta(response, 500, "\"Errore durante la registrazione.\"", false);
-            return;
+        LinkedList<JSONObject> taglieQuantita = new LinkedList<>();
+
+        // Recupero e parsing del campo "taglie[]"
+        String taglieJson = request.getParameter("taglie[]");
+        if (taglieJson != null && !taglieJson.isEmpty()) {
+            try {
+                // Parsing della stringa JSON usando JSONObject
+                JSONArray taglieArray = new JSONArray(taglieJson);
+
+                // Itera sull'array JSON per estrarre le taglie e quantità
+                for (int i = 0; i < taglieArray.length(); i++) {
+                    JSONObject tagliaObj = taglieArray.getJSONObject(i);  // Ogni oggetto JSON
+                    Integer taglia = tagliaObj.getInt("taglia");  // Recupera la taglia
+                    Integer quantita = tagliaObj.getInt("quantita");  // Recupera la quantità
+
+                    // Aggiungi il dato alla lista LinkedList
+                    taglieQuantita.add(tagliaObj);  // Inserisci direttamente l'oggetto JSON nella LinkedList
+                }
+            } catch (JSONException e) {
+                String message = "\"Errore: Il formato delle taglie è errato.\"";
+                GestioneServlet.inviaRisposta(response, 400, message, false);
+                return;
+            }
         }
-        int idTaglia = taglie.get(0);
 
-        // Estrazione degli ID Colore
+        // Ora abbiamo una LinkedList di oggetti JSON con taglia e quantità
+        for (JSONObject tagliaData : taglieQuantita) {
+            Integer taglia = tagliaData.getInt("taglia");
+            Integer quantita = tagliaData.getInt("quantita");
+
+            // Verifica che la taglia esista nel database
+            TagliaController tagliaController = new TagliaController();
+            List<Taglia> listTaglia = tagliaController.getAllObjects();
+            List<Integer> taglie = listTaglia.stream()
+                    .filter(t -> t.getTagliaEu().equals(String.valueOf(taglia)))
+                    .map(Taglia::getId)
+                    .collect(Collectors.toList());
+
+            if (taglie.isEmpty()) {
+                String message = "\"Errore: Taglia non trovata per ID " + taglia + "\"";
+                GestioneServlet.inviaRisposta(response, 500, message, false);
+                return;
+            }
+
+            int idTaglia = taglie.get(0);  // Prendi il primo ID trovato
+
+
+        }
+
+    // ESTRAZIONE DEGLI ID COLORE
+
         ColoreController coloreController = new ColoreController();
         List<Colore> listColore = coloreController.getAllObjects();
 
@@ -195,7 +236,8 @@ public class ProdottiServlet extends HttpServlet{
             return;
         }
 
-        // Preparazione dei dati per l'inserimento
+    // PREPARAZIONE DEI DATI PER L'INSERIMENTO
+
         Map<Integer, RegisterServlet.RegisterFields> request0 = new HashMap<>();
         request0.put(0,new RegisterServlet.RegisterFields("nome",nome));
         request0.put(1,new RegisterServlet.RegisterFields("id_categoria",idCategoria));
@@ -203,8 +245,8 @@ public class ProdottiServlet extends HttpServlet{
         request0.put(3,new RegisterServlet.RegisterFields("descrizione",descrizione));
         request0.put(4, new RegisterServlet.RegisterFields("prezzo", "" + prezzo));
         request0.put(5, new RegisterServlet.RegisterFields("stato_pubblicazione", "" + statoPubblicazioneInt));
-        request0.put(6, new RegisterServlet.RegisterFields("id_taglia", "" + idTaglia));
-        request0.put(7, new RegisterServlet.RegisterFields("quantita", "" + quantita));
+        //request0.put(6, new RegisterServlet.RegisterFields("id_taglia", "" + idTaglia));
+        //request0.put(7, new RegisterServlet.RegisterFields("quantita", "" + quantita));
 
         // Inserisci tutti i colori nella mappa
         int index = 8; // Punto di partenza dell'indice
@@ -217,7 +259,8 @@ public class ProdottiServlet extends HttpServlet{
             request0.put(index++, new RegisterServlet.RegisterFields("url" + j, urls.get(j)));
         }
 
-        // Inserimento nel database
+    // INSERIMENTO NEL DATABASE
+
         if (controller.insertObject(request0)) {
             String registrazione = "\"Registrazione effettuata correttamente.\"";
             GestioneServlet.inviaRisposta(response, 201, registrazione, true);
