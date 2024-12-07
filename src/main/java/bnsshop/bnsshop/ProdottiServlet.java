@@ -13,6 +13,8 @@ import jakarta.servlet.http.Part;
 import models.Colore;
 import models.Prodotti;
 import models.Taglia;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import utility.GestioneServlet;
 
@@ -141,17 +143,32 @@ public class ProdottiServlet extends HttpServlet{
         String colori= formData.get("colori");
         String nome= formData.get("nome");
         String descrizione= formData.get("descrizione");
-        Integer taglia = Integer.parseInt(formData.get("taglia"));
+        //Integer taglia = Integer.parseInt(formData.get("taglia"));
         Integer prezzo = Integer.parseInt(formData.get("prezzo"));
-        Integer quantita = Integer.parseInt(formData.get("quantita"));
+        //Integer quantita = Integer.parseInt(formData.get("quantita"));
         Boolean statoPubblicazione = Boolean.parseBoolean(formData.get("stato_pubblicazione"));
         int statoPubblicazioneInt = statoPubblicazione ? 1 : 0;
+        String taglie = formData.get("taglie");
+        JSONArray taglie1;
+        try {
+            taglie1 = new JSONArray(taglie);
+        }catch (JSONException e){
+            GestioneServlet.inviaRisposta(response,500,"\"Array delle taglie non corretto\"",false);
+            return;
+        }
 
         // Estrazione ID Taglia
         TagliaController tagliaController = new TagliaController();
         List<Taglia> listTaglia = tagliaController.getAllObjects();
-        List<Integer> taglie = listTaglia.stream()
-                .filter(taglia1 -> taglia1.getTagliaEu().equals(String.valueOf(taglia)))
+        List<Integer> taglie2 = listTaglia.stream()
+                .filter(taglia3 -> {
+                    boolean out= false;
+                    for (int i = 0; i < taglie1.length(); i++) {
+                        JSONObject attuale = (JSONObject) taglie1.get(i);
+                        out = taglia3.getTagliaEu().equals(String.valueOf(attuale.getInt("taglia")));
+                    }
+                    return out;
+                })
                 .map(Taglia::getId)
                 .toList();
 
@@ -159,7 +176,7 @@ public class ProdottiServlet extends HttpServlet{
             GestioneServlet.inviaRisposta(response, 500, "\"Errore durante la registrazione.\"", false);
             return;
         }
-        int idTaglia = taglie.get(0);
+        //int idTaglia = taglie2.get(0);
 
         // Estrazione degli ID Colore
         ColoreController coloreController = new ColoreController();
@@ -203,11 +220,12 @@ public class ProdottiServlet extends HttpServlet{
         request0.put(3,new RegisterServlet.RegisterFields("descrizione",descrizione));
         request0.put(4, new RegisterServlet.RegisterFields("prezzo", "" + prezzo));
         request0.put(5, new RegisterServlet.RegisterFields("stato_pubblicazione", "" + statoPubblicazioneInt));
-        request0.put(6, new RegisterServlet.RegisterFields("id_taglia", "" + idTaglia));
-        request0.put(7, new RegisterServlet.RegisterFields("quantita", "" + quantita));
+        //request0.put(6, new RegisterServlet.RegisterFields("id_taglia", "" + idTaglia));
+        //request0.put(7, new RegisterServlet.RegisterFields("quantita", "" + quantita));
+
 
         // Inserisci tutti i colori nella mappa
-        int index = 8; // Punto di partenza dell'indice
+        int index = 6; // Punto di partenza dell'indice
         for (int i = 0; i < idColori.size(); i++) {
             request0.put(index++, new RegisterServlet.RegisterFields("colore_" + (i + 1), String.valueOf(idColori.get(i))));
         }
@@ -216,6 +234,13 @@ public class ProdottiServlet extends HttpServlet{
         for (int j = 0; j < urls.size(); j++) {
             request0.put(index++, new RegisterServlet.RegisterFields("url" + j, urls.get(j)));
         }
+
+        // Inserisci tutti gli url nella mappa
+        for (int j = 0; j < taglie2.size(); j++) {
+            request0.put(index++, new RegisterServlet.RegisterFields("taglia" + j, ""+taglie2.get(j)));
+        }
+
+
 
         // Inserimento nel database
         if (controller.insertObject(request0)) {
