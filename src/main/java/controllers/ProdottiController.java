@@ -212,10 +212,14 @@ public class ProdottiController implements Controllers<Prodotti> {
         if (objectid <= 0) {
             return false;
         }
-        String query1 = "DELETE FROM taglie_has_prodotti WHERE id_prodotto ="+objectid;
-        String query2 = "DELETE FROM immagini INNER JOIN immagini_has_prodotti ON immagini_has_prodotti.id_immagine=immagini.id WHERE immagini_has_prodotti.id_prodotto ="+objectid;
+
         String query3 = "DELETE FROM immagini_has_prodotti WHERE id_prodotto ="+objectid;
+        String query2 = " DELETE FROM immagini WHERE id IN (\n" +
+                "                SELECT id_immagine FROM immagini_has_prodotti WHERE id_prodotto ="+objectid;
         String query4 = "DELETE FROM prodotti WHERE id ="+objectid;
+        String query1 = "DELETE FROM taglie_has_prodotti WHERE id_prodotto ="+objectid;
+
+
         List<String> queries = new LinkedList<>();
         queries.add(query1);
         queries.add(query2);

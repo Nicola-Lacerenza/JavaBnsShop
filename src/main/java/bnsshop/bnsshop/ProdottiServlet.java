@@ -60,17 +60,17 @@ public class ProdottiServlet extends HttpServlet{
             id=-1;
         }
         Optional<Prodotti> prodotto=null;
-        List<Prodotti> prodotti=null;
+        List<ProdottiController.ResultProdotti> prodotti=null;
 
         if (id!=-1){
             prodotto = this.controller.getObject(id);
         }else{
-            prodotti = this.controller.getAllObjects();
+            prodotti = this.controller.getAllProducts();
         }
 
         if (prodotto!=null || prodotti!=null){
             if (prodotto!=null){
-                GestioneServlet.inviaRisposta(response,200,prodotto.get().toString(),true);
+               GestioneServlet.inviaRisposta(response,200,prodotto.get().toString(),true);
             }else{
                 GestioneServlet.inviaRisposta(response,200,prodotti.toString(),true);
             }
@@ -78,6 +78,8 @@ public class ProdottiServlet extends HttpServlet{
             String message = "\"Internal server error\"";
             GestioneServlet.inviaRisposta(response,500,message,false);
         }
+
+
     }
 
     @Override
@@ -112,7 +114,7 @@ public class ProdottiServlet extends HttpServlet{
                 String fileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
 
                 // Specifica la directory completa dove vuoi salvare le immagini
-                String directory = "C:\\Users\\nicol\\Documents\\PROGETTI\\BNS SHOP\\JAVA - INTELLIJ\\images";
+                String directory = "C:\\Users\\nicol\\Documents\\PROGETTI\\BNS SHOP\\JAVA - INTELLIJ\\src\\main\\webapp\\images";
 
                 // Assicurati che la directory esista
                 Path dirPath = Paths.get(directory);
@@ -125,7 +127,7 @@ public class ProdottiServlet extends HttpServlet{
                 Files.copy(part.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
                 // Aggiungi l'URL del file alla lista
-                String fileUrl = directory + "/" + fileName;  // Path relativo o URL come preferisci gestirlo
+                String fileUrl = "images/" + fileName;  // Path relativo o URL come preferisci gestirlo
                 urls.add(fileUrl);
 
                 // Facoltativo: verifica se il file è stato salvato correttamente
@@ -220,8 +222,6 @@ public class ProdottiServlet extends HttpServlet{
         request0.put(3,new RegisterServlet.RegisterFields("descrizione",descrizione));
         request0.put(4, new RegisterServlet.RegisterFields("prezzo", "" + prezzo));
         request0.put(5, new RegisterServlet.RegisterFields("stato_pubblicazione", "" + statoPubblicazioneInt));
-        //request0.put(6, new RegisterServlet.RegisterFields("id_taglia", "" + idTaglia));
-        //request0.put(7, new RegisterServlet.RegisterFields("quantita", "" + quantita));
 
 
         // Inserisci tutti i colori nella mappa
