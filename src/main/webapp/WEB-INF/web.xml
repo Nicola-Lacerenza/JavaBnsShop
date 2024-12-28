@@ -89,5 +89,20 @@
         <servlet-name>FornitoriServlet</servlet-name>
         <url-pattern>/FornitoriServlet</url-pattern>
     </servlet-mapping>
-
+    <servlet>
+        <servlet-name>TagliaServlet</servlet-name>
+        <servlet-class>bnsshop.bnsshop.TagliaServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>TagliaServlet</servlet-name>
+        <url-pattern>/TagliaServlet</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>TaglieProdottiServlet</servlet-name>
+        <servlet-class>bnsshop.bnsshop.TaglieProdottiServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>TaglieProdottiServlet</servlet-name>
+        <url-pattern>/TaglieProdottiServlet</url-pattern>
+    </servlet-mapping>
 </web-app>
