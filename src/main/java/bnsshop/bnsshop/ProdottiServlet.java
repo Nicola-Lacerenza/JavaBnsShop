@@ -145,12 +145,17 @@ public class ProdottiServlet extends HttpServlet{
         String colori= formData.get("colori");
         String nome= formData.get("nome");
         String descrizione= formData.get("descrizione");
-        //Integer taglia = Integer.parseInt(formData.get("taglia"));
         Integer prezzo = Integer.parseInt(formData.get("prezzo"));
-        //Integer quantita = Integer.parseInt(formData.get("quantita"));
         Boolean statoPubblicazione = Boolean.parseBoolean(formData.get("stato_pubblicazione"));
         int statoPubblicazioneInt = statoPubblicazione ? 1 : 0;
+
         String taglie = formData.get("taglie");
+
+        if (taglie.isEmpty()) {
+            GestioneServlet.inviaRisposta(response, 500, "\"Errore durante la registrazione.\"", false);
+            return;
+        }
+
         JSONArray taglie1;
         try {
             taglie1 = new JSONArray(taglie);
@@ -162,23 +167,28 @@ public class ProdottiServlet extends HttpServlet{
         // Estrazione ID Taglia
         TagliaController tagliaController = new TagliaController();
         List<Taglia> listTaglia = tagliaController.getAllObjects();
-        List<Integer> taglie2 = listTaglia.stream()
+        /*List<Integer> taglie2 = listTaglia.stream()
                 .filter(taglia3 -> {
                     boolean out= false;
                     for (int i = 0; i < taglie1.length(); i++) {
                         JSONObject attuale = (JSONObject) taglie1.get(i);
-                        out = taglia3.getTagliaEu().equals(String.valueOf(attuale.getInt("taglia")));
+                        //out = taglia3.getTagliaEu().equals(String.valueOf(attuale.getInt("taglia")));
+                        out = listTaglia.stream().allMatch(taglia4 -> taglia4.getTagliaEu().equals(attuale.getInt("taglia")));
                     }
                     return out;
                 })
                 .map(Taglia::getId)
-                .toList();
-
-        if (taglie.isEmpty()) {
-            GestioneServlet.inviaRisposta(response, 500, "\"Errore durante la registrazione.\"", false);
-            return;
+                .toList(); */
+        //List<Double> numeriTaglie = taglie1.toList().stream().map(obj -> ((JSONObject)obj).getDouble("taglia")).toList();
+        List<Double> numeriTaglie = new LinkedList<>();
+        for (int i = 0;i<taglie1.length();i++){
+            JSONObject tmp = (JSONObject) taglie1.get(i);
+            numeriTaglie.add(tmp.getDouble("taglia"));
         }
-        //int idTaglia = taglie2.get(0);
+
+        List<Integer> idTaglie = listTaglia.stream().filter(t -> numeriTaglie.contains(Double.parseDouble(t.getTagliaEu()))).map(t -> t.getId()).toList();
+
+
 
         // Estrazione degli ID Colore
         ColoreController coloreController = new ColoreController();
@@ -236,10 +246,14 @@ public class ProdottiServlet extends HttpServlet{
         }
 
         // Inserisci tutti gli url nella mappa
-        for (int j = 0; j < taglie2.size(); j++) {
-            request0.put(index++, new RegisterServlet.RegisterFields("taglia" + j, ""+taglie2.get(j)));
+        for (int j = 0; j < idTaglie.size(); j++) {
+            request0.put(index++, new RegisterServlet.RegisterFields("taglia_" + j, ""+idTaglie.get(j)));
         }
 
+        for (int j = 0; j < taglie1.length(); j++) {
+            JSONObject tmp = (JSONObject) taglie1.get(j);
+            request0.put(index++, new RegisterServlet.RegisterFields("quantita_" + j, ""+tmp.getInt("quantita")));
+        }
 
 
         // Inserimento nel database
@@ -303,7 +317,7 @@ public class ProdottiServlet extends HttpServlet{
             GestioneServlet.inviaRisposta(response,403,"\"Ruolo non corretto!\"",false);
             return;
         }
-        int id= Integer.parseInt((String) request.getAttribute("id"));
+        int id= Integer.parseInt((String) request.getParameter("id"));
         if (this.controller.deleteObject(id)){
             String message = "\"Product deleted Correctly.\"";
             GestioneServlet.inviaRisposta(response,200,message,true);

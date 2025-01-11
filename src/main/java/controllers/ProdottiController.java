@@ -8,10 +8,7 @@ import org.json.JSONObject;
 import utility.Database;
 
 import java.sql.*;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class ProdottiController implements Controllers<Prodotti> {
 
@@ -208,25 +205,95 @@ public class ProdottiController implements Controllers<Prodotti> {
 
     @Override
     public boolean deleteObject(int objectid) {
-
         if (objectid <= 0) {
             return false;
         }
 
-        String query3 = "DELETE FROM immagini_has_prodotti WHERE id_prodotto ="+objectid;
-        String query2 = " DELETE FROM immagini WHERE id IN (\n" +
-                "                SELECT id_immagine FROM immagini_has_prodotti WHERE id_prodotto ="+objectid;
-        String query4 = "DELETE FROM prodotti WHERE id ="+objectid;
-        String query1 = "DELETE FROM taglie_has_prodotti WHERE id_prodotto ="+objectid;
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Driver JDBC non trovato", e);
+        }
 
+        Connection connection = null;
+        List<PreparedStatement> statementList = new LinkedList<>();
+        boolean output = false;
+        try {
+            // Apertura connessione
+            connection = DriverManager.getConnection(Database.getDatabaseUrl(), Database.getDatabaseUsername(), Database.getDatabasePassword());
+            connection.setAutoCommit(false); // Avvia transazione
 
-        List<String> queries = new LinkedList<>();
-        queries.add(query1);
-        queries.add(query2);
-        queries.add(query3);
-        queries.add(query4);
-        return Database.executeQueries(queries);
+            // Identifica gli ID delle immagini da eliminare
+            String query1 = "SELECT id_immagine FROM immagini_has_prodotti WHERE id_prodotto = ?";
+            PreparedStatement preparedStatement1 = connection.prepareStatement(query1);
+            preparedStatement1.setInt(1, objectid);  // Impostiamo l'ID del prodotto
+            ResultSet rs = preparedStatement1.executeQuery();
+
+            List<Integer> immaginiDaEliminare = new ArrayList<>();
+            while (rs.next()) {
+                immaginiDaEliminare.add(rs.getInt("id_immagine"));
+            }
+
+            // Se non ci sono immagini associate al prodotto, procedi
+            if (immaginiDaEliminare.isEmpty()) {
+                throw new SQLException("No images found for the provided product");
+            }
+
+            // Elimina i riferimenti dalla tabella immagini_has_prodotti
+            String query2 = "DELETE FROM immagini_has_prodotti WHERE id_prodotto = ?";
+            PreparedStatement preparedStatement2 = connection.prepareStatement(query2);
+            preparedStatement2.setInt(1, objectid);
+            preparedStatement2.executeUpdate();
+
+            // Elimina le immagini dalla tabella immagini usando gli ID identificati
+            String query3 = "DELETE FROM immagini WHERE id = ?";
+            PreparedStatement preparedStatement3 = connection.prepareStatement(query3);
+
+            for (int idImmagine : immaginiDaEliminare) {
+                preparedStatement3.setInt(1, idImmagine);
+                preparedStatement3.addBatch();  // Aggiungi la query per l'eliminazione dell'immagine
+            }
+            preparedStatement3.executeBatch();  // Esegui tutte le query in batch
+
+            // Elimina altri riferimenti (ad esempio, taglie_has_prodotti)
+            String query4 = "DELETE FROM taglie_has_prodotti WHERE id_prodotto = ?";
+            PreparedStatement preparedStatement4 = connection.prepareStatement(query4);
+            preparedStatement4.setInt(1, objectid);
+            preparedStatement4.executeUpdate();
+
+            // Elimina il prodotto dalla tabella prodotti
+            String query5 = "DELETE FROM prodotti WHERE id = ?";
+            PreparedStatement preparedStatement5 = connection.prepareStatement(query5);
+            preparedStatement5.setInt(1, objectid);
+            preparedStatement5.executeUpdate();
+
+            connection.commit(); // Commit delle modifiche solo se tutte le query hanno successo
+            output = true;
+        } catch (SQLException e) {
+            // Gestione errori e rollback in caso di fallimento
+            e.printStackTrace();
+            if (connection != null) {
+                try {
+                    connection.rollback();
+                } catch (SQLException rollbackEx) {
+                    rollbackEx.printStackTrace();
+                }
+            }
+            output = false;
+        } finally {
+            // Chiusura connessione e statement
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException closeEx) {
+                    closeEx.printStackTrace();
+                }
+            }
+        }
+        return output;
     }
+
+
 
     @Override
     public Optional<Prodotti> getObject(int objectid) {
