@@ -93,8 +93,10 @@ public class CategoriaServlet extends HttpServlet{
         String json=builder.toString();
         JSONObject object = new JSONObject(json);
         String nomeCategoria= object.getString("nome_categoria");
+        String target= object.getString("target");
         Map<Integer, RegisterServlet.RegisterFields> request0= new HashMap<>();
         request0.put(0,new RegisterServlet.RegisterFields("nome_categoria",nomeCategoria));
+        request0.put(1,new RegisterServlet.RegisterFields("target",target));
         if (controller.insertObject(request0)) {
             String registrazione = "\"Registrazione effettuata correttamente.\"";
             GestioneServlet.inviaRisposta(response,201,registrazione,true);
@@ -131,6 +133,7 @@ public class CategoriaServlet extends HttpServlet{
         JSONObject object = new JSONObject(json);
         Map<Integer, RegisterServlet.RegisterFields> data = new HashMap<>();
         data.put(0,new RegisterServlet.RegisterFields("nome_categoria","" + object.getString("nome_categoria")));
+        data.put(1,new RegisterServlet.RegisterFields("target","" + object.getString("target")));
         if (controller.updateObject(id,data)){
             String message="\"Product Updated Correctly.\"";
             GestioneServlet.inviaRisposta(response,200,message,true);
