@@ -4,6 +4,7 @@ import bnsshop.bnsshop.RegisterServlet;
 import models.Colore;
 import models.Oggetti;
 import models.Prodotti;
+import models.ProdottiFull;
 import org.json.JSONObject;
 import utility.Database;
 
@@ -297,10 +298,36 @@ public class ProdottiController implements Controllers<Prodotti> {
 
     @Override
     public Optional<Prodotti> getObject(int objectid) {
-        if (objectid<=0){
+        if (objectid <= 0) {
             return Optional.empty();
         }
-        return Database.getElement(objectid,"prodotti",new Prodotti());
+        return Optional.empty();
+    }
+
+    public List<ProdottiFull> getFullObject(int objectid){
+        String query = "SELECT m.nome,\n" +
+                "       m.descrizione,\n" +
+                "       c.nome_categoria,\n" +
+                "       b.nome,\n" +
+                "       b.descrizione,\n" +
+                "       p.prezzo,\n" +
+                "       p.stato_pubblicazione,\n" +
+                "       taglia.taglia_Eu,\n" +
+                "       immagini.url,\n" +
+                "       colore.nome \n" +
+                "FROM prodotti p\n" +
+                "JOIN modello m ON p.id_modello = m.id\n" +
+                "JOIN categoria c ON m.id_categoria = c.id\n" +
+                "JOIN brand b ON m.id_categoria = b.id\n" +
+                "JOIN taglie_has_prodotti tp ON tp.id_prodotto = p.id\n" +
+                "JOIN taglia ON taglia.id = tp.id_taglia\n" +
+                "JOIN immagini_has_prodotti ip ON ip.id_prodotto = p.id\n" +
+                "JOIN immagini ON immagini.id = ip.id_immagine\n" +
+                "JOIN colore_has_modello cm ON cm.id_modello = m.id\n" +
+                "JOIN colore ON colore.id = cm.id_colore\n" +
+                "WHERE p.ID = ;" + objectid;
+        List<ProdottiFull> output = Database.executeGenericQuery("prodotti", new ProdottiFull(), query);
+        return output;
     }
 
     public List<ResultProdotti> getAllProducts(){

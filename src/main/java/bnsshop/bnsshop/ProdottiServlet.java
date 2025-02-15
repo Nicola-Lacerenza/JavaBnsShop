@@ -12,6 +12,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.Part;
 import models.Colore;
 import models.Prodotti;
+import models.ProdottiFull;
 import models.Taglia;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -59,11 +60,35 @@ public class ProdottiServlet extends HttpServlet{
             }        }catch(NumberFormatException exception){
             id=-1;
         }
-        Optional<Prodotti> prodotto=null;
+        Optional<ProdottiFull> prodotto=null;
         List<ProdottiController.ResultProdotti> prodotti=null;
 
         if (id!=-1){
-            prodotto = this.controller.getObject(id);
+            List<ProdottiFull> tmp = this.controller.getFullObject(id);
+            ProdottiFull prodotto1 = new ProdottiFull(tmp.getFirst().getId(),tmp.getFirst().getNomeModello(),tmp.getFirst().getDescrizioneModello(),tmp.getFirst().getNomeCategoria(),tmp.getFirst().getNomeBrand(),tmp.getFirst().getDescrizioneBrand(),tmp.getFirst().getStatoPubblicazione(),tmp.getFirst().getPrezzo(),new LinkedList<>(),new LinkedList<>(),new LinkedList<>(),new LinkedList<>(),new LinkedList<>());
+            List<String> taglia_Eu = new LinkedList<>();
+            List<String> taglia_Uk = new LinkedList<>();
+            List<String> taglia_Us = new LinkedList<>();
+            List<String> url = new LinkedList<>();
+            List<String> nome_colore = new LinkedList<>();
+            for (ProdottiFull tmp1 : tmp){
+                if (!prodotto1.getTagliaEu().containsAll(tmp1.getTagliaEu())){
+                    prodotto1.getTagliaEu().addAll(tmp1.getTagliaEu());
+                }
+                if (!prodotto1.getTagliaUk().containsAll(tmp1.getTagliaUk())){
+                    prodotto1.getTagliaUk().addAll(tmp1.getTagliaUk());
+                }
+                if (!prodotto1.getTagliaUs().containsAll(tmp1.getTagliaUs())){
+                    prodotto1.getTagliaUs().addAll(tmp1.getTagliaUs());
+                }
+                if (!prodotto1.getUrl().containsAll(tmp1.getUrl())){
+                    prodotto1.getUrl().addAll(tmp1.getUrl());
+                }
+                if (!prodotto1.getNomeColore().containsAll(tmp1.getNomeColore())){
+                    prodotto1.getNomeColore().addAll(tmp1.getNomeColore());
+                }
+            }
+            prodotto = Optional.of(prodotto1);
         }else{
             prodotti = this.controller.getAllProducts();
         }
@@ -114,8 +139,8 @@ public class ProdottiServlet extends HttpServlet{
                 String fileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
 
                 // Specifica la directory completa dove vuoi salvare le immagini
-                //String directory = "C:\\Users\\nicol\\Documents\\PROGETTI\\BNS SHOP\\JAVA - INTELLIJ\\src\\main\\webapp\\images";
-                String directory = "C:\\Users\\Emanuele Schino\\Desktop\\PERSONALE\\JAVA\\src\\main\\webapp\\images";
+                String directory = "C:\\Users\\nicol\\Documents\\PROGETTI\\BNS SHOP\\JAVA - INTELLIJ\\src\\main\\webapp\\images";
+                //String directory = "C:\\Users\\Emanuele Schino\\Desktop\\PERSONALE\\JAVA\\src\\main\\webapp\\images";
 
                 // Assicurati che la directory esista
                 Path dirPath = Paths.get(directory);
