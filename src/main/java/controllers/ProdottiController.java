@@ -305,16 +305,20 @@ public class ProdottiController implements Controllers<Prodotti> {
     }
 
     public List<ProdottiFull> getFullObject(int objectid){
-        String query = "SELECT m.nome,\n" +
-                "       m.descrizione,\n" +
+        String query = "SELECT p.id,\n" +
+                "       m.nome AS nome_modello,\n" +
+                "       m.descrizione AS descrizione_modello,\n" +
                 "       c.nome_categoria,\n" +
-                "       b.nome,\n" +
-                "       b.descrizione,\n" +
+                "       b.nome AS nome_brand,\n" +
+                "       b.descrizione AS descrizione_brand,\n" +
                 "       p.prezzo,\n" +
                 "       p.stato_pubblicazione,\n" +
                 "       taglia.taglia_Eu,\n" +
+                "       taglia.taglia_Uk,\n" +
+                "       taglia.taglia_Us,\n" +
+                "       tp.quantita,\n" +
                 "       immagini.url,\n" +
-                "       colore.nome \n" +
+                "       colore.nome AS nome_colore\n" +
                 "FROM prodotti p\n" +
                 "JOIN modello m ON p.id_modello = m.id\n" +
                 "JOIN categoria c ON m.id_categoria = c.id\n" +
@@ -325,7 +329,7 @@ public class ProdottiController implements Controllers<Prodotti> {
                 "JOIN immagini ON immagini.id = ip.id_immagine\n" +
                 "JOIN colore_has_modello cm ON cm.id_modello = m.id\n" +
                 "JOIN colore ON colore.id = cm.id_colore\n" +
-                "WHERE p.ID = ;" + objectid;
+                "WHERE p.ID =" + objectid;
         List<ProdottiFull> output = Database.executeGenericQuery("prodotti", new ProdottiFull(), query);
         return output;
     }

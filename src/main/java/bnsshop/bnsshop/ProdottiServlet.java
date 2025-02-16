@@ -57,20 +57,17 @@ public class ProdottiServlet extends HttpServlet{
                 id = Integer.parseInt(idString);
             } else {
                 id = -1;
-            }        }catch(NumberFormatException exception){
+            }
+        }catch(NumberFormatException exception){
             id=-1;
         }
+
         Optional<ProdottiFull> prodotto=null;
         List<ProdottiController.ResultProdotti> prodotti=null;
 
         if (id!=-1){
             List<ProdottiFull> tmp = this.controller.getFullObject(id);
-            ProdottiFull prodotto1 = new ProdottiFull(tmp.getFirst().getId(),tmp.getFirst().getNomeModello(),tmp.getFirst().getDescrizioneModello(),tmp.getFirst().getNomeCategoria(),tmp.getFirst().getNomeBrand(),tmp.getFirst().getDescrizioneBrand(),tmp.getFirst().getStatoPubblicazione(),tmp.getFirst().getPrezzo(),new LinkedList<>(),new LinkedList<>(),new LinkedList<>(),new LinkedList<>(),new LinkedList<>());
-            List<String> taglia_Eu = new LinkedList<>();
-            List<String> taglia_Uk = new LinkedList<>();
-            List<String> taglia_Us = new LinkedList<>();
-            List<String> url = new LinkedList<>();
-            List<String> nome_colore = new LinkedList<>();
+            ProdottiFull prodotto1 = new ProdottiFull(tmp.getFirst().getId(),tmp.getFirst().getNomeModello(),tmp.getFirst().getDescrizioneModello(),tmp.getFirst().getNomeCategoria(),tmp.getFirst().getNomeBrand(),tmp.getFirst().getDescrizioneBrand(),tmp.getFirst().getStatoPubblicazione(),tmp.getFirst().getPrezzo(),new LinkedList<>(),new LinkedList<>(),new LinkedList<>(),new LinkedList<>(),new LinkedList<>(),new LinkedList<>());
             for (ProdottiFull tmp1 : tmp){
                 if (!prodotto1.getTagliaEu().containsAll(tmp1.getTagliaEu())){
                     prodotto1.getTagliaEu().addAll(tmp1.getTagliaEu());
@@ -80,6 +77,9 @@ public class ProdottiServlet extends HttpServlet{
                 }
                 if (!prodotto1.getTagliaUs().containsAll(tmp1.getTagliaUs())){
                     prodotto1.getTagliaUs().addAll(tmp1.getTagliaUs());
+                }
+                if (!prodotto1.getQuantita().containsAll(tmp1.getQuantita())){
+                    prodotto1.getQuantita().addAll(tmp1.getQuantita());
                 }
                 if (!prodotto1.getUrl().containsAll(tmp1.getUrl())){
                     prodotto1.getUrl().addAll(tmp1.getUrl());

@@ -13,7 +13,7 @@ public class Database{
     //Variabili di servizio per interagire con il database
     private static final String DATABASE_NAME="mydb" ;
     private static final String DATABASE_USERNAME="root";
-    private static final String DATABASE_PASSWORD="";
+    private static final String DATABASE_PASSWORD="root";
     private static final String DATABASE_URL="jdbc:mysql://localhost:3306/" + DATABASE_NAME;
 
     private Database(){}
