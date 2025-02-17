@@ -193,19 +193,6 @@ public class ProdottiServlet extends HttpServlet{
         // Estrazione ID Taglia
         TagliaController tagliaController = new TagliaController();
         List<Taglia> listTaglia = tagliaController.getAllObjects();
-        /*List<Integer> taglie2 = listTaglia.stream()
-                .filter(taglia3 -> {
-                    boolean out= false;
-                    for (int i = 0; i < taglie1.length(); i++) {
-                        JSONObject attuale = (JSONObject) taglie1.get(i);
-                        //out = taglia3.getTagliaEu().equals(String.valueOf(attuale.getInt("taglia")));
-                        out = listTaglia.stream().allMatch(taglia4 -> taglia4.getTagliaEu().equals(attuale.getInt("taglia")));
-                    }
-                    return out;
-                })
-                .map(Taglia::getId)
-                .toList(); */
-        //List<Double> numeriTaglie = taglie1.toList().stream().map(obj -> ((JSONObject)obj).getDouble("taglia")).toList();
         List<Double> numeriTaglie = new LinkedList<>();
         for (int i = 0;i<taglie1.length();i++){
             JSONObject tmp = (JSONObject) taglie1.get(i);
@@ -213,8 +200,6 @@ public class ProdottiServlet extends HttpServlet{
         }
 
         List<Integer> idTaglie = listTaglia.stream().filter(t -> numeriTaglie.contains(Double.parseDouble(t.getTagliaEu()))).map(t -> t.getId()).toList();
-
-
 
         // Estrazione degli ID Colore
         ColoreController coloreController = new ColoreController();
@@ -258,7 +243,6 @@ public class ProdottiServlet extends HttpServlet{
         request0.put(3,new RegisterServlet.RegisterFields("descrizione",descrizione));
         request0.put(4, new RegisterServlet.RegisterFields("prezzo", "" + prezzo));
         request0.put(5, new RegisterServlet.RegisterFields("stato_pubblicazione", "" + statoPubblicazioneInt));
-
 
         // Inserisci tutti i colori nella mappa
         int index = 6; // Punto di partenza dell'indice

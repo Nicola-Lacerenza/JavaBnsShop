@@ -263,10 +263,10 @@ public class ProdottiController implements Controllers<Prodotti> {
             preparedStatement4.executeUpdate();
 
             // Elimina il prodotto dalla tabella prodotti
-            String query5 = "DELETE FROM prodotti WHERE id = ?";
-            PreparedStatement preparedStatement5 = connection.prepareStatement(query5);
-            preparedStatement5.setInt(1, objectid);
-            preparedStatement5.executeUpdate();
+            String query6 = "DELETE FROM prodotti WHERE id = ?";
+            PreparedStatement preparedStatement6 = connection.prepareStatement(query6);
+            preparedStatement6.setInt(1, objectid);
+            preparedStatement6.executeUpdate();
 
             connection.commit(); // Commit delle modifiche solo se tutte le query hanno successo
             output = true;
