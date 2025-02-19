@@ -16,6 +16,7 @@ public class ProdottiController implements Controllers<Prodotti> {
     public ProdottiController(){
     }
 
+
     @Override
     public boolean insertObject(Map<Integer, RegisterServlet.RegisterFields> request) {
         try {
