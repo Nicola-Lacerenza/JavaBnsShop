@@ -14,7 +14,10 @@ public class ProdottiFull implements Oggetti<ProdottiFull>{
     private final int id;
     private final String nomeModello ;
     private final String descrizioneModello ;
+    private final int idCategoria;
     private final String nomeCategoria;
+    private final String target;
+    private final int idBrand;
     private final String nomeBrand;
     private final String descrizioneBrand;
     private final int statoPubblicazione;
@@ -26,11 +29,14 @@ public class ProdottiFull implements Oggetti<ProdottiFull>{
     private final List<String> url;
     private final List<String> nomeColore;
 
-    public ProdottiFull(int id, String nomeModello, String descrizioneModello, String nomeCategoria, String nomeBrand, String descrizioneBrand, int statoPubblicazione, double prezzo, List<String> tagliaEu, List<String> tagliaUk, List<String> tagliaUs,List<String> quantita, List<String> url, List<String> nomeColore) {
+    public ProdottiFull(int id, String nomeModello, String descrizioneModello,int idCategoria, String nomeCategoria, String target,int idBrand,String nomeBrand, String descrizioneBrand, int statoPubblicazione, double prezzo, List<String> tagliaEu, List<String> tagliaUk, List<String> tagliaUs,List<String> quantita, List<String> url, List<String> nomeColore) {
         this.id = id;
         this.nomeModello = nomeModello;
         this.descrizioneModello = descrizioneModello;
+        this.idCategoria = idCategoria;
         this.nomeCategoria = nomeCategoria;
+        this.target = target;
+        this.idBrand = idBrand;
         this.nomeBrand = nomeBrand;
         this.descrizioneBrand = descrizioneBrand;
         this.statoPubblicazione = statoPubblicazione;
@@ -43,7 +49,7 @@ public class ProdottiFull implements Oggetti<ProdottiFull>{
         this.nomeColore = nomeColore;
     }
     public ProdottiFull() {
-        this(0,"","","","","",0,0,new LinkedList<>(),new LinkedList<>(),new LinkedList<>(),new LinkedList<>(),new LinkedList<>(),new LinkedList<>());
+        this(0,"","",0,"","",0,"","",0,0,new LinkedList<>(),new LinkedList<>(),new LinkedList<>(),new LinkedList<>(),new LinkedList<>(),new LinkedList<>());
     }
 
     public int getId() {
@@ -58,8 +64,20 @@ public class ProdottiFull implements Oggetti<ProdottiFull>{
         return descrizioneModello;
     }
 
+    public int getIdCategoria() {
+        return idCategoria;
+    }
+
     public String getNomeCategoria() {
         return nomeCategoria;
+    }
+
+    public String getTarget() {
+        return target;
+    }
+
+    public int getIdBrand() {
+        return idBrand;
     }
 
     public String getNomeBrand() {
@@ -112,7 +130,10 @@ public class ProdottiFull implements Oggetti<ProdottiFull>{
             int id1 = rs.getInt("id");
             String nomeModello1 = rs.getString("nome_modello");
             String descrizioneModello1 = rs.getString("descrizione_modello");
+            int idCategoria1 = rs.getInt("id_categoria");
             String nomeCategoria1 = rs.getString("nome_categoria");
+            String target1 = rs.getString("target");
+            int idBrand1 = rs.getInt("id_brand");
             String nomeBrand1 = rs.getString("nome_brand");
             String descrizioneBrand1 = rs.getString("descrizione_brand");
             int statoPubblicazione1 = rs.getInt("stato_pubblicazione");
@@ -135,7 +156,7 @@ public class ProdottiFull implements Oggetti<ProdottiFull>{
             tmp4.add(quantita1);
             tmp5.add(url1);
             tmp6.add(nomeColore1);
-            return Optional.of(new ProdottiFull(id1,nomeModello1,descrizioneModello1,nomeCategoria1,nomeBrand1,descrizioneBrand1, statoPubblicazione1,prezzo1,tmp1,tmp2,tmp3,tmp4,tmp5,tmp6));
+            return Optional.of(new ProdottiFull(id1,nomeModello1,descrizioneModello1,idCategoria1,nomeCategoria1,target1,idBrand1,nomeBrand1,descrizioneBrand1, statoPubblicazione1,prezzo1,tmp1,tmp2,tmp3,tmp4,tmp5,tmp6));
         }catch (SQLException e){
             e.printStackTrace();
             return Optional.empty();
@@ -162,6 +183,9 @@ public class ProdottiFull implements Oggetti<ProdottiFull>{
         output.put("nome_modello",nomeModello);
         output.put("descrizione_modello",descrizioneModello);
         output.put("nome_categoria",nomeCategoria);
+        output.put("id_categoria",idCategoria);
+        output.put("target",target);
+        output.put("id_brand",idBrand);
         output.put("nome_brand",nomeBrand);
         output.put("descrizione_brand",descrizioneBrand);
         output.put("stato_pubblicazione",statoPubblicazione);

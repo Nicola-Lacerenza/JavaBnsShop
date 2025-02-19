@@ -50,61 +50,47 @@ public class ProdottiServlet extends HttpServlet{
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException,IOException{
-        int id;
-        try{
-            String idString = request.getParameter("id");
-            if (idString != null) {
-                id = Integer.parseInt(idString);
-            } else {
-                id = -1;
-            }
-        }catch(NumberFormatException exception){
-            id=-1;
+
+        int id = readId(request);
+
+        if (id == -2) {
+            List<ProdottiController.ResultProdotti> prodotti = this.controller.getAllProducts();
+            GestioneServlet.inviaRisposta(response, 200, prodotti.toString(), true);
+            return;
         }
 
-        Optional<ProdottiFull> prodotto=null;
-        List<ProdottiController.ResultProdotti> prodotti=null;
 
-        if (id!=-1){
+        if (id>0) {
             List<ProdottiFull> tmp = this.controller.getFullObject(id);
-            ProdottiFull prodotto1 = new ProdottiFull(tmp.getFirst().getId(),tmp.getFirst().getNomeModello(),tmp.getFirst().getDescrizioneModello(),tmp.getFirst().getNomeCategoria(),tmp.getFirst().getNomeBrand(),tmp.getFirst().getDescrizioneBrand(),tmp.getFirst().getStatoPubblicazione(),tmp.getFirst().getPrezzo(),new LinkedList<>(),new LinkedList<>(),new LinkedList<>(),new LinkedList<>(),new LinkedList<>(),new LinkedList<>());
-            for (ProdottiFull tmp1 : tmp){
-                if (!prodotto1.getTagliaEu().containsAll(tmp1.getTagliaEu())){
+            ProdottiFull prodotto1 = new ProdottiFull(tmp.getFirst().getId(), tmp.getFirst().getNomeModello(), tmp.getFirst().getDescrizioneModello(), tmp.getFirst().getIdCategoria(),tmp.getFirst().getNomeCategoria(),tmp.getFirst().getTarget(), tmp.getFirst().getIdBrand()
+                    ,tmp.getFirst().getNomeBrand(), tmp.getFirst().getDescrizioneBrand(), tmp.getFirst().getStatoPubblicazione(), tmp.getFirst().getPrezzo(), new LinkedList<>(), new LinkedList<>(), new LinkedList<>(), new LinkedList<>(), new LinkedList<>(), new LinkedList<>());
+            for (ProdottiFull tmp1 : tmp) {
+                if (!prodotto1.getTagliaEu().containsAll(tmp1.getTagliaEu())) {
                     prodotto1.getTagliaEu().addAll(tmp1.getTagliaEu());
                 }
-                if (!prodotto1.getTagliaUk().containsAll(tmp1.getTagliaUk())){
+                if (!prodotto1.getTagliaUk().containsAll(tmp1.getTagliaUk())) {
                     prodotto1.getTagliaUk().addAll(tmp1.getTagliaUk());
                 }
-                if (!prodotto1.getTagliaUs().containsAll(tmp1.getTagliaUs())){
+                if (!prodotto1.getTagliaUs().containsAll(tmp1.getTagliaUs())) {
                     prodotto1.getTagliaUs().addAll(tmp1.getTagliaUs());
                 }
-                if (!prodotto1.getQuantita().containsAll(tmp1.getQuantita())){
+                if (!prodotto1.getQuantita().containsAll(tmp1.getQuantita())) {
                     prodotto1.getQuantita().addAll(tmp1.getQuantita());
                 }
-                if (!prodotto1.getUrl().containsAll(tmp1.getUrl())){
+                if (!prodotto1.getUrl().containsAll(tmp1.getUrl())) {
                     prodotto1.getUrl().addAll(tmp1.getUrl());
                 }
-                if (!prodotto1.getNomeColore().containsAll(tmp1.getNomeColore())){
+                if (!prodotto1.getNomeColore().containsAll(tmp1.getNomeColore())) {
                     prodotto1.getNomeColore().addAll(tmp1.getNomeColore());
                 }
             }
-            prodotto = Optional.of(prodotto1);
+            GestioneServlet.inviaRisposta(response,200,prodotto1.toString(),true);
         }else{
-            prodotti = this.controller.getAllProducts();
-        }
 
-        if (prodotto!=null || prodotti!=null){
-            if (prodotto!=null){
-               GestioneServlet.inviaRisposta(response,200,prodotto.get().toString(),true);
-            }else{
-                GestioneServlet.inviaRisposta(response,200,prodotti.toString(),true);
-            }
-        }else{
             String message = "\"Internal server error\"";
             GestioneServlet.inviaRisposta(response,500,message,false);
+
         }
-
-
     }
 
     @Override
@@ -335,6 +321,23 @@ public class ProdottiServlet extends HttpServlet{
             String message = "\"Internal server error\"";
             GestioneServlet.inviaRisposta(response,500,message,false);
         }
+    }
+
+    private int readId(HttpServletRequest request){
+        String string = request.getParameter("id");
+        if(string==null){
+            //Entro qui se l'id è nullo
+            return -2;
+        }
+        int id;
+        try{
+            id = Integer.parseInt(string);
+        }catch (NumberFormatException e){
+            //Vado in errore con codice di errore -1 se il parametro id è presente ma non è un numero valido
+            e.printStackTrace();
+            id = -1;
+        }
+        return id;
     }
 
 }

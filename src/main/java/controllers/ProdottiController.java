@@ -308,7 +308,10 @@ public class ProdottiController implements Controllers<Prodotti> {
         String query = "SELECT p.id,\n" +
                 "       m.nome AS nome_modello,\n" +
                 "       m.descrizione AS descrizione_modello,\n" +
+                "       c.id AS id_categoria,\n" +
                 "       c.nome_categoria,\n" +
+                "       c.target,\n" +
+                "       b.id AS id_brand,\n" +
                 "       b.nome AS nome_brand,\n" +
                 "       b.descrizione AS descrizione_brand,\n" +
                 "       p.prezzo,\n" +
