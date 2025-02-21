@@ -1,6 +1,5 @@
 package bnsshop.bnsshop;
 
-import controllers.ColoreModelloController;
 import controllers.ImmaginiProdottiController;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;

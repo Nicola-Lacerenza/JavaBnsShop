@@ -11,7 +11,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.Part;
 import models.Colore;
-import models.Prodotti;
 import models.ProdottiFull;
 import models.Taglia;
 import org.json.JSONArray;

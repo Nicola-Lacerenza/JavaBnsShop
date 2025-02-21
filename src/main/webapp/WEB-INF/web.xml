@@ -51,7 +51,7 @@
     </servlet-mapping>
     <servlet>
         <servlet-name>ColoreModelloServlet</servlet-name>
-        <servlet-class>bnsshop.bnsshop.ColoreModelloServlet</servlet-class>
+        <servlet-class>bnsshop.bnsshop.ColoreProdottiServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>ColoreModelloServlet</servlet-name>

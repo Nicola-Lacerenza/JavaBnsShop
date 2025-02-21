@@ -6,18 +6,18 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
 
-public class ColoreModello implements Oggetti<ColoreModello> {
+public class ColoreProdotti implements Oggetti<ColoreProdotti> {
   private final int id;
   private final int idColore;
-  private final int idModello;
+  private final int idProdotto;
 
-  public ColoreModello(int id,int idColore, int idModello) {
+  public ColoreProdotti(int id, int idColore, int idProdotto) {
     this.id = id;
     this.idColore = idColore;
-    this.idModello = idModello;
+    this.idProdotto = idProdotto;
   }
 
-  public ColoreModello(){
+  public ColoreProdotti(){
     this(0,0,0);
   }
 
@@ -29,22 +29,22 @@ public class ColoreModello implements Oggetti<ColoreModello> {
     return idColore;
   }
 
-  public int getIdModello() {
-    return idModello;
+  public int getIdProdotto() {
+    return idProdotto;
   }
 
   @Override
-  public ColoreModello createObject() {
-    return new ColoreModello();
+  public ColoreProdotti createObject() {
+    return new ColoreProdotti();
   }
 
   @Override
-  public Optional<ColoreModello> convertDBToJava(ResultSet rs) {
+  public Optional<ColoreProdotti> convertDBToJava(ResultSet rs) {
     try{
       int id1 = rs.getInt("id");
-      int idColore = rs.getInt("id_colore");
-      int idModello = rs.getInt("id_modello");
-      return Optional.of(new ColoreModello(id1,idColore, idModello));
+      int idColore1 = rs.getInt("id_colore");
+      int idProdotto1 = rs.getInt("id_prodotto");
+      return Optional.of(new ColoreProdotti(id1,idColore1, idProdotto1));
     }catch (SQLException e){
       e.printStackTrace();
       return Optional.empty();
@@ -55,7 +55,7 @@ public class ColoreModello implements Oggetti<ColoreModello> {
     JSONObject output = new JSONObject();
     output.put("id",id);
     output.put("id_colore",idColore);
-    output.put("id_modello",idModello);
+    output.put("id_prodotto",idProdotto);
     return output.toString(4);
   }
 }

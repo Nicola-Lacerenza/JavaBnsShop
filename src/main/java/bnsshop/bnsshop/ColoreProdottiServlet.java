@@ -1,28 +1,27 @@
 package bnsshop.bnsshop;
 
-import controllers.ColoreModelloController;
+import controllers.ColoreProdottiController;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import models.ColoreModello;
+import models.ColoreProdotti;
 import org.json.JSONObject;
 import utility.GestioneServlet;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.*;
 
-@WebServlet(name = "ColoreModelloServlet", value = "/ColoreModelloServlet")
-public class ColoreModelloServlet extends HttpServlet{
-    ColoreModelloController controller;
+@WebServlet(name = "ColoreProdottiServlet", value = "/ColoreProdottiServlet")
+public class ColoreProdottiServlet extends HttpServlet{
+    ColoreProdottiController controller;
 
     @Override
     public void init() throws ServletException{
         super.init();
-        controller = new ColoreModelloController();
+        controller = new ColoreProdottiController();
     }
 
     // Gestione richiesta preflight (OPTIONS)
@@ -48,20 +47,20 @@ public class ColoreModelloServlet extends HttpServlet{
         }catch(NumberFormatException exception){
             idColoreModello=-1;
         }
-        Optional<ColoreModello> coloremodello=null;
-        List<ColoreModello> colorimodelli=null;
+        Optional<ColoreProdotti> coloreprodotto=null;
+        List<ColoreProdotti> coloriprodotti=null;
 
         if (idColoreModello!=-1){
-            coloremodello = this.controller.getObject(idColoreModello);
+            coloreprodotto = this.controller.getObject(idColoreModello);
         }else{
-            colorimodelli = this.controller.getAllObjects();
+            coloriprodotti = this.controller.getAllObjects();
         }
 
-        if (coloremodello!=null || colorimodelli!=null){
-            if (coloremodello!=null){
-                GestioneServlet.inviaRisposta(response,200,coloremodello.get().toString(),true);
+        if (coloreprodotto!=null || coloriprodotti!=null){
+            if (coloreprodotto!=null){
+                GestioneServlet.inviaRisposta(response,200,coloreprodotto.get().toString(),true);
             }else{
-                GestioneServlet.inviaRisposta(response,200,colorimodelli.toString(),true);
+                GestioneServlet.inviaRisposta(response,200,coloriprodotti.toString(),true);
             }
         }else{
             String message = "\"Internal server error\"";
@@ -94,10 +93,10 @@ public class ColoreModelloServlet extends HttpServlet{
         String json=builder.toString();
         JSONObject object = new JSONObject(json);
         String idColore= object.getString("id_colore");
-        String idModello= object.getString("id_modello");
+        String idProdotto= object.getString("id_prodotto");
         Map<Integer, RegisterServlet.RegisterFields> request0= new HashMap<>();
         request0.put(0,new RegisterServlet.RegisterFields("id_colore",idColore));
-        request0.put(1,new RegisterServlet.RegisterFields("id_modello",idModello));
+        request0.put(1,new RegisterServlet.RegisterFields("id_prodotto",idProdotto));
         if (controller.insertObject(request0)) {
             String registrazione = "\"Registrazione effettuata correttamente.\"";
             GestioneServlet.inviaRisposta(response,201,registrazione,true);
@@ -134,7 +133,7 @@ public class ColoreModelloServlet extends HttpServlet{
         JSONObject object = new JSONObject(json);
         Map<Integer, RegisterServlet.RegisterFields> data = new HashMap<>();
         data.put(0,new RegisterServlet.RegisterFields("id_colore","" + object.getString("id_colore")));
-        data.put(1,new RegisterServlet.RegisterFields("id_modello","" + object.getString("id_modello")));
+        data.put(1,new RegisterServlet.RegisterFields("id_prodotto","" + object.getString("id_prodotto")));
         if (controller.updateObject(idCategoria,data)){
             String message="\"Product Updated Correctly.\"";
             GestioneServlet.inviaRisposta(response,200,message,true);

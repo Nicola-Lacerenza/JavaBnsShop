@@ -34,29 +34,64 @@ public class ProdottiController implements Controllers<Prodotti> {
             connection = DriverManager.getConnection(Database.getDatabaseUrl(),Database.getDatabaseUsername(), Database.getDatabasePassword());
             connection.setAutoCommit(false); // Avvia transazione
 
-        // INSERIMENTO MODELLO
+    // ESTRAZIONE ID MODELLO (SE ESISTE)
 
-            String query1 = "INSERT INTO modello (id_categoria,id_brand,nome,descrizione)" +
-                    "VALUES ('"+request.get(1).getValue()+"','"+request.get(2).getValue()+"'," +
-                    "'"+request.get(0).getValue()+"','"+request.get(3).getValue()+"')";
+            String query1 = "SELECT * FROM modello WHERE (id_categoria='"+request.get(1).getValue()+"' " +
+                    "&& id_brand='"+request.get(2).getValue()+"'&& nome='"+request.get(0).getValue()+"')";
             PreparedStatement preparedStatement1 = connection.prepareStatement(query1);
-            preparedStatement1.executeUpdate();
-
-            String query2 = "SELECT * FROM modello WHERE (id_categoria='"+request.get(1).getValue()+"' " +
-                    "&& id_brand='"+request.get(2).getValue()+"'&& nome='"+request.get(0).getValue()+"'&& descrizione='"+request.get(3).getValue()+"')";
-            PreparedStatement preparedStatement2 = connection.prepareStatement(query2);
-            ResultSet rs = preparedStatement2.executeQuery();
+            ResultSet rs = preparedStatement1.executeQuery();
 
             int idModello = -1;
             if (rs.next()) {
+
+                //https://chatgpt.com/c/67b8bff7-f8b0-800b-b73e-695511b0f04d
                 idModello = rs.getInt("id");
+
+
             } else {
-                throw new SQLException("No image found for the provided URL");
+
+        // INSERIMENTO MODELLO
+
+                String query2 = "INSERT INTO modello (id_categoria,id_brand,nome,descrizione)" +
+                        "VALUES ('"+request.get(1).getValue()+"','"+request.get(2).getValue()+"'," +
+                        "'"+request.get(0).getValue()+"','"+request.get(3).getValue()+"')";
+                PreparedStatement preparedStatement2 = connection.prepareStatement(query2);
+                preparedStatement2.executeUpdate();
+
+                String query3 = "SELECT * FROM modello WHERE (id_categoria='"+request.get(1).getValue()+"' " +
+                        "&& id_brand='"+request.get(2).getValue()+"'&& nome='"+request.get(0).getValue()+"'&& descrizione='"+request.get(3).getValue()+"')";
+                PreparedStatement preparedStatement3 = connection.prepareStatement(query3);
+                ResultSet rs1 = preparedStatement3.executeQuery();
+
+                if (rs1.next()) {
+                    idModello = rs1.getInt("id");
+                } else {
+                    throw new SQLException("No image found for the provided URL");
+                }
             }
 
-            //Inserisci i colori associati al modello
-            String query3 = "INSERT INTO colore_has_modello (id_colore, id_modello) VALUES (?, ?)";
-            PreparedStatement preparedStatement3 = connection.prepareStatement(query3);
+
+        // INSERIMENTO PRODOTTO + ESTRAZIONE ID
+
+            String query4 = "INSERT INTO prodotti (id_modello, prezzo, stato_pubblicazione) VALUES (?, ?, ?)";
+            PreparedStatement preparedStatement4 = connection.prepareStatement(query4, Statement.RETURN_GENERATED_KEYS);
+            preparedStatement4.setInt(1, idModello);
+            preparedStatement4.setDouble(2, Double.parseDouble(request.get(4).getValue()));  // Assumendo che sia un prezzo numerico
+            preparedStatement4.setString(3, request.get(5).getValue());
+            preparedStatement4.executeUpdate();
+
+            ResultSet generatedKeys = preparedStatement4.getGeneratedKeys();
+            int idProdotto = -1;
+            if (generatedKeys.next()) {
+                idProdotto = generatedKeys.getInt(1);
+            } else {
+                throw new SQLException("Errore: Nessun ID prodotto generato.");
+            }
+
+        // INSERIMENTO COLORI
+
+            String query6 = "INSERT INTO colore_has_prodotti (id_colore, id_prodotto) VALUES (?, ?)";
+            PreparedStatement preparedStatement6 = connection.prepareStatement(query6);
 
             int countColore = 0;
             for (Map.Entry<Integer, RegisterServlet.RegisterFields> entry : request.entrySet()) {
@@ -68,38 +103,19 @@ public class ProdottiController implements Controllers<Prodotti> {
             // Itera su tutti i colori e inseriscili nella tabella `colore_has_modello`
             for (int i = 6; i < countColore+6; i++) {
                 int idColore = Integer.parseInt(request.get(i).getValue());  // Converti in Integer
-                preparedStatement3.setInt(1, idColore);
-                preparedStatement3.setInt(2, idModello);
-                preparedStatement3.addBatch();  // Aggiungi la query alla batch
+                preparedStatement6.setInt(1, idColore);
+                preparedStatement6.setInt(2, idProdotto);
+                preparedStatement6.addBatch();  // Aggiungi la query alla batch
             }
 
             // Esegui tutte le query in batch
-            preparedStatement3.executeBatch();
+            preparedStatement6.executeBatch();
 
-        // INSERIMENTO PRODOTTO
-
-            String query4 = "INSERT INTO prodotti (id_modello,prezzo,stato_pubblicazione)" + "VALUES ('"+idModello+"','"+request.get(4).getValue()+"'," +
-                    "'"+request.get(5).getValue()+"')";
-            PreparedStatement preparedStatement4 = connection.prepareStatement(query4);
-            preparedStatement4.executeUpdate();
-
-            // ESTRAZIONE ID PRODOTTO
-            String query5 ="SELECT * FROM prodotti WHERE (id_modello='"+idModello+"' " +
-                    "&& prezzo='"+request.get(4).getValue()+"'&& stato_pubblicazione='"+request.get(5).getValue()+"')";
-            PreparedStatement preparedStatement5 = connection.prepareStatement(query5);
-            ResultSet rs1 = preparedStatement5.executeQuery();
-
-            int idProdotto = -1;
-            if (rs1.next()) {
-                idProdotto = rs1.getInt("id");
-            } else {
-                throw new SQLException("No image found for the provided URL");
-            }
 
         // INSERIMENTO TAGLIA E QUANTITA
 
-            String query9 = "INSERT INTO taglie_has_prodotti (id_taglia, id_prodotto, quantita) VALUES (?, ?, ?)";
-            PreparedStatement preparedStatement9 = connection.prepareStatement(query9);
+            String query7 = "INSERT INTO taglie_has_prodotti (id_taglia, id_prodotto, quantita) VALUES (?, ?, ?)";
+            PreparedStatement preparedStatement7 = connection.prepareStatement(query7);
             int startTaglie = -1;
             int countTaglie = 0;
 
@@ -130,13 +146,13 @@ public class ProdottiController implements Controllers<Prodotti> {
                 int idTaglia = Integer.parseInt(request.get(startTaglie + i).getValue());
                 int quantita = Integer.parseInt(request.get(startTaglie + countTaglie + i).getValue());
 
-                preparedStatement9.setInt(1, idTaglia);
-                preparedStatement9.setInt(2, idProdotto);
-                preparedStatement9.setInt(3, quantita);
-                preparedStatement9.addBatch();
+                preparedStatement7.setInt(1, idTaglia);
+                preparedStatement7.setInt(2, idProdotto);
+                preparedStatement7.setInt(3, quantita);
+                preparedStatement7.addBatch();
             }
 
-            preparedStatement9.executeBatch();
+            preparedStatement7.executeBatch();
 
         // INSERIMENTO URL IMMAGINE
 
@@ -146,31 +162,33 @@ public class ProdottiController implements Controllers<Prodotti> {
                     countUrl++;
                 }
             }
-            String query6 = "INSERT INTO immagini (url) VALUES (?)";
-            PreparedStatement preparedStatement6 = connection.prepareStatement(query6);
+            String query8 = "INSERT INTO immagini (url) VALUES (?)";
+            PreparedStatement preparedStatement8 = connection.prepareStatement(query8);
             for (int i = 6+countColore; i < 6+countColore+countUrl; i++) {
 
                 String combinedValue = request.get(i).getValue().replace("\\", "\\\\");
-                preparedStatement6.setString(1, combinedValue);
-                preparedStatement6.executeUpdate();
+                preparedStatement8.setString(1, combinedValue);
+                preparedStatement8.executeUpdate();
 
-                //ESTRAZIONE  ID IMMAGINE
-                String query7 = "SELECT * FROM immagini WHERE url = ?";
-                PreparedStatement preparedStatement7 = connection.prepareStatement(query7);
-                preparedStatement7.setString(1, combinedValue); // Usa il valore originale senza ulteriori modifiche
-                ResultSet rs2 = preparedStatement7.executeQuery();
+        //ESTRAZIONE  ID IMMAGINE
+
+                String query9 = "SELECT * FROM immagini WHERE url = ?";
+                PreparedStatement preparedStatement9 = connection.prepareStatement(query9);
+                preparedStatement9.setString(1, combinedValue); // Usa il valore originale senza ulteriori modifiche
+                ResultSet rs3 = preparedStatement9.executeQuery();
 
                 int idImmagine = -1;
-                if (rs2.next()) {
-                    idImmagine = rs2.getInt("id");
+                if (rs3.next()) {
+                    idImmagine = rs3.getInt("id");
                 } else {
                     throw new SQLException("No image found for the provided URL");
                 }
 
-                //INSERIMENTO IMMAGINE ASSOCIATA AL PRODOTTO
-                String query8 = "INSERT INTO immagini_has_prodotti (id_immagine, id_prodotto) VALUES ('"+idImmagine+"', '"+idProdotto+"')";
-                PreparedStatement preparedStatement8 = connection.prepareStatement(query8);
-                preparedStatement8.executeUpdate();
+        //INSERIMENTO IMMAGINE ASSOCIATA AL PRODOTTO
+
+                String query10 = "INSERT INTO immagini_has_prodotti (id_immagine, id_prodotto) VALUES ('"+idImmagine+"', '"+idProdotto+"')";
+                PreparedStatement preparedStatement10 = connection.prepareStatement(query10);
+                preparedStatement10.executeUpdate();
 
             }
 
@@ -263,15 +281,45 @@ public class ProdottiController implements Controllers<Prodotti> {
             preparedStatement4.setInt(1, objectid);
             preparedStatement4.executeUpdate();
 
+            // Elimina altri riferimenti (ad esempio, taglie_has_prodotti)
+            String query5 = "DELETE FROM colore_has_prodotti WHERE id_prodotto = ?";
+            PreparedStatement preparedStatement5 = connection.prepareStatement(query5);
+            preparedStatement5.setInt(1, objectid);
+            preparedStatement5.executeUpdate();
+
+    // ESTRAZIONE ID MODELLO
+
+            String query10 = "SELECT id_modello, (SELECT COUNT(*) FROM prodotti WHERE id_modello = p.id_modello) AS totale FROM prodotti p WHERE id = ?";
+            PreparedStatement preparedStatement10 = connection.prepareStatement(query10);
+            preparedStatement10.setInt(1, objectid);
+            ResultSet rs10 = preparedStatement10.executeQuery();
+
+            int idModello = -1;
+            int count = 0;
+
+            if (rs10.next()) {
+                idModello = rs10.getInt("id_modello");
+                count = rs10.getInt("totale");
+            }
+
             // Elimina il prodotto dalla tabella prodotti
             String query6 = "DELETE FROM prodotti WHERE id = ?";
             PreparedStatement preparedStatement6 = connection.prepareStatement(query6);
             preparedStatement6.setInt(1, objectid);
             preparedStatement6.executeUpdate();
 
+            if (count<=1){
+                // Elimina il prodotto dalla tabella prodotti
+                String query8 = "DELETE FROM modello WHERE id = ?";
+                PreparedStatement preparedStatement8 = connection.prepareStatement(query8);
+                preparedStatement8.setInt(1, idModello);
+                preparedStatement8.executeUpdate();
+            }
+
             connection.commit(); // Commit delle modifiche solo se tutte le query hanno successo
             output = true;
         } catch (SQLException e) {
+
             // Gestione errori e rollback in caso di fallimento
             e.printStackTrace();
             if (connection != null) {
