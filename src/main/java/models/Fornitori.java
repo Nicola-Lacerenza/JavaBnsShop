@@ -33,11 +33,6 @@ public class Fornitori implements Oggetti<Fornitori>{
     }
 
     @Override
-    public Fornitori createObject() {
-        return new Fornitori();
-    }
-
-    @Override
     public Optional<Fornitori> convertDBToJava(ResultSet rs) {
         try{
             int idFornitore = rs.getInt("id");

@@ -75,12 +75,6 @@ public class Utenti implements Oggetti<Utenti> {
 
     public String getRuolo() { return ruolo;}
 
-
-    @Override
-    public Utenti createObject() {
-        return new Utenti();
-    }
-
     @Override
     public Optional<Utenti> convertDBToJava(ResultSet rs) {
         try{

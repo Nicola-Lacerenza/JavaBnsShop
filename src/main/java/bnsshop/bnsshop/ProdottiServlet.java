@@ -62,9 +62,9 @@ public class ProdottiServlet extends HttpServlet{
         if (id>0) {
             List<ProdottiFull> tmp = this.controller.getFullObject(id);
             ProdottiFull prodotto1 = new ProdottiFull(tmp.getFirst().getId(), tmp.getFirst().getNomeModello(), tmp.getFirst().getDescrizioneModello(), tmp.getFirst().getIdCategoria(),tmp.getFirst().getNomeCategoria(),tmp.getFirst().getTarget(), tmp.getFirst().getIdBrand()
-                    ,tmp.getFirst().getNomeBrand(), tmp.getFirst().getDescrizioneBrand(), tmp.getFirst().getStatoPubblicazione(), tmp.getFirst().getPrezzo(), new LinkedList<>(), new LinkedList<>(), new LinkedList<>(), new LinkedList<>(), new LinkedList<>(), new LinkedList<>());
+                    ,tmp.getFirst().getNomeBrand(), tmp.getFirst().getDescrizioneBrand(), tmp.getFirst().getStatoPubblicazione(), tmp.getFirst().getPrezzo(), new LinkedList<>(), new LinkedList<>(), new LinkedList<>());
             for (ProdottiFull tmp1 : tmp) {
-                if (!prodotto1.getTagliaEu().containsAll(tmp1.getTagliaEu())) {
+                /*if (!prodotto1.getTagliaEu().containsAll(tmp1.getTagliaEu())) {
                     prodotto1.getTagliaEu().addAll(tmp1.getTagliaEu());
                 }
                 if (!prodotto1.getTagliaUk().containsAll(tmp1.getTagliaUk())) {
@@ -75,7 +75,11 @@ public class ProdottiServlet extends HttpServlet{
                 }
                 if (!prodotto1.getQuantita().containsAll(tmp1.getQuantita())) {
                     prodotto1.getQuantita().addAll(tmp1.getQuantita());
+                }*/
+                if (!prodotto1.getTaglieProdotto().containsAll(tmp1.getTaglieProdotto())){
+                    prodotto1.getTaglieProdotto().addAll(tmp1.getTaglieProdotto());
                 }
+
                 if (!prodotto1.getUrl().containsAll(tmp1.getUrl())) {
                     prodotto1.getUrl().addAll(tmp1.getUrl());
                 }

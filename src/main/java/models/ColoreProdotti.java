@@ -34,11 +34,6 @@ public class ColoreProdotti implements Oggetti<ColoreProdotti> {
   }
 
   @Override
-  public ColoreProdotti createObject() {
-    return new ColoreProdotti();
-  }
-
-  @Override
   public Optional<ColoreProdotti> convertDBToJava(ResultSet rs) {
     try{
       int id1 = rs.getInt("id");

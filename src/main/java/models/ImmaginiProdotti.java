@@ -34,11 +34,6 @@ public class ImmaginiProdotti implements Oggetti<ImmaginiProdotti> {
   }
 
   @Override
-  public ImmaginiProdotti createObject() {
-    return new ImmaginiProdotti();
-  }
-
-  @Override
   public Optional<ImmaginiProdotti> convertDBToJava(ResultSet rs) {
     try{
       int id1 = rs.getInt("id");

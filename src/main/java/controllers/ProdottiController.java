@@ -379,8 +379,8 @@ public class ProdottiController implements Controllers<Prodotti> {
                 "JOIN taglia ON taglia.id = tp.id_taglia\n" +
                 "JOIN immagini_has_prodotti ip ON ip.id_prodotto = p.id\n" +
                 "JOIN immagini ON immagini.id = ip.id_immagine\n" +
-                "JOIN colore_has_modello cm ON cm.id_modello = m.id\n" +
-                "JOIN colore ON colore.id = cm.id_colore\n" +
+                "JOIN colore_has_prodotti cp ON cp.id_prodotto = p.id\n" +
+                "JOIN colore ON colore.id = cp.id_colore\n" +
                 "WHERE p.ID =" + objectid;
         List<ProdottiFull> output = Database.executeGenericQuery("prodotti", new ProdottiFull(), query);
         return output;
@@ -438,10 +438,6 @@ public class ProdottiController implements Controllers<Prodotti> {
 
         public ResultProdotti(){
             this(0,0,0,"","","","","","");
-        }
-        @Override
-        public ResultProdotti createObject() {
-            return new ResultProdotti();
         }
 
         @Override

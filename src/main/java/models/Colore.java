@@ -29,12 +29,6 @@ public class Colore implements Oggetti<Colore> {
         return nome;
     }
 
-
-    @Override
-    public Colore createObject() {
-        return new Colore();
-    }
-
     @Override
     public Optional<Colore> convertDBToJava(ResultSet rs) {
         try{

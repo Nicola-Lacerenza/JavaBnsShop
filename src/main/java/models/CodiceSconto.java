@@ -46,11 +46,6 @@ public class CodiceSconto implements Oggetti<CodiceSconto>{
     }
 
     @Override
-    public CodiceSconto createObject() {
-        return new CodiceSconto();
-    }
-
-    @Override
     public Optional<CodiceSconto> convertDBToJava(ResultSet rs) {
         try{
             int id1= rs.getInt("id");

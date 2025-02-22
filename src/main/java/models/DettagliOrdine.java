@@ -51,11 +51,6 @@ public class DettagliOrdine implements Oggetti<DettagliOrdine> {
     }
 
     @Override
-    public DettagliOrdine createObject() {
-        return new DettagliOrdine();
-    }
-
-    @Override
     public Optional<DettagliOrdine> convertDBToJava(ResultSet rs) {
         try{
             int id1 = rs.getInt("id");

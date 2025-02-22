@@ -39,11 +39,6 @@ public class Prodotti implements Oggetti<Prodotti>{
     }
 
     @Override
-    public Prodotti createObject() {
-        return new Prodotti();
-    }
-
-    @Override
     public Optional<Prodotti> convertDBToJava(ResultSet rs) {
         try{
             int idProdotto = rs.getInt("id");

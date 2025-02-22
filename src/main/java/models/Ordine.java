@@ -54,11 +54,6 @@ public class Ordine implements Oggetti<Ordine>{
     }
 
     @Override
-    public Ordine createObject() {
-        return new Ordine();
-    }
-
-    @Override
     public Optional<Ordine> convertDBToJava(ResultSet rs) {
         try{
             int id1 = rs.getInt("id");

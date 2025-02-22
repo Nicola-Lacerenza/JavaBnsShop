@@ -33,11 +33,6 @@ public class Categoria implements Oggetti<Categoria> {
     }
 
     @Override
-    public Categoria createObject() {
-        return new Categoria();
-    }
-
-    @Override
     public Optional<Categoria> convertDBToJava(ResultSet rs) {
         try{
             int id1 = rs.getInt("id");

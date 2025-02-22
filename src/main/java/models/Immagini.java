@@ -26,11 +26,6 @@ public class Immagini implements Oggetti<Immagini>{
     }
 
     @Override
-    public Immagini createObject() {
-        return new Immagini();
-    }
-
-    @Override
     public Optional<Immagini> convertDBToJava(ResultSet rs) {
         try{
             int id1 = rs.getInt("id");

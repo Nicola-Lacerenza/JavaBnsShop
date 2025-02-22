@@ -51,11 +51,6 @@ public class Indirizzo implements Oggetti<Indirizzo> {
     }
 
     @Override
-    public Indirizzo createObject() {
-        return new Indirizzo();
-    }
-
-    @Override
     public Optional<Indirizzo> convertDBToJava(ResultSet rs) {
         try{
             int id1 = rs.getInt("id");

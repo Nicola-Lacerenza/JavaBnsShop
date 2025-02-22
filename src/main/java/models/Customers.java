@@ -45,11 +45,6 @@ public class Customers implements Oggetti<Customers> {
     }
 
     @Override
-    public Customers createObject() {
-        return new Customers();
-    }
-
-    @Override
     public Optional<Customers> convertDBToJava(ResultSet rs) {
         try{
             int id1 = rs.getInt("id");

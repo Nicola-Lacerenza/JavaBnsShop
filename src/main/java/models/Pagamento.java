@@ -54,11 +54,6 @@ public class Pagamento implements Oggetti<Pagamento>{
     }
 
     @Override
-    public Pagamento createObject() {
-        return null;
-    }
-
-    @Override
     public Optional<Pagamento> convertDBToJava(ResultSet rs) {
         try{
             int id1 = rs.getInt("id");

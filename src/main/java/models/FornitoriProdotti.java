@@ -52,11 +52,6 @@ public class FornitoriProdotti implements Oggetti<FornitoriProdotti> {
     }
 
     @Override
-    public FornitoriProdotti createObject() {
-        return new FornitoriProdotti();
-    }
-
-    @Override
     public Optional<FornitoriProdotti> convertDBToJava(ResultSet rs) {
         try{
             int id1 = rs.getInt("id");

@@ -22,14 +22,16 @@ public class ProdottiFull implements Oggetti<ProdottiFull>{
     private final String descrizioneBrand;
     private final int statoPubblicazione;
     private final double prezzo;
-    private final List<String> tagliaEu;
-    private final List<String> tagliaUk;
-    private final List<String> tagliaUs;
-    private final List<String> quantita;
+
+    private final List<ProdottiTaglieEstratte> taglieProdotto;
+    //private final List<String> tagliaEu;
+    //private final List<String> tagliaUk;
+    //private final List<String> tagliaUs;
+    //private final List<String> quantita;
     private final List<String> url;
     private final List<String> nomeColore;
 
-    public ProdottiFull(int id, String nomeModello, String descrizioneModello,int idCategoria, String nomeCategoria, String target,int idBrand,String nomeBrand, String descrizioneBrand, int statoPubblicazione, double prezzo, List<String> tagliaEu, List<String> tagliaUk, List<String> tagliaUs,List<String> quantita, List<String> url, List<String> nomeColore) {
+    public ProdottiFull(int id, String nomeModello, String descrizioneModello,int idCategoria, String nomeCategoria, String target,int idBrand,String nomeBrand, String descrizioneBrand, int statoPubblicazione, double prezzo, /*List<String> tagliaEu, List<String> tagliaUk, List<String> tagliaUs,List<String> quantita,*/List<ProdottiTaglieEstratte> list, List<String> url, List<String> nomeColore) {
         this.id = id;
         this.nomeModello = nomeModello;
         this.descrizioneModello = descrizioneModello;
@@ -41,15 +43,23 @@ public class ProdottiFull implements Oggetti<ProdottiFull>{
         this.descrizioneBrand = descrizioneBrand;
         this.statoPubblicazione = statoPubblicazione;
         this.prezzo = prezzo;
-        this.tagliaEu = tagliaEu;
-        this.tagliaUk = tagliaUk;
-        this.tagliaUs = tagliaUs;
-        this.quantita = quantita;
+        /*this.taglieProdotto = new LinkedList<>();
+        for (int i=0; i<tagliaEu.size();i++){
+            String t1 = tagliaEu.get(i);
+            String t2 = tagliaUk.get(i);
+            String t3 = tagliaUs.get(i);
+            this.taglieProdotto.add(new ProdottiTaglieEstratte(new Taglia(0,t1,t2,t3),new TaglieProdotti(0,0,id,Integer.parseInt(quantita.getFirst()))));
+        }*/
+        this.taglieProdotto = list;
+        //this.tagliaEu = tagliaEu;
+        //this.tagliaUk = tagliaUk;
+        //this.tagliaUs = tagliaUs;
+        //this.quantita = quantita;
         this.url = url;
         this.nomeColore = nomeColore;
     }
     public ProdottiFull() {
-        this(0,"","",0,"","",0,"","",0,0,new LinkedList<>(),new LinkedList<>(),new LinkedList<>(),new LinkedList<>(),new LinkedList<>(),new LinkedList<>());
+        this(0,"","",0,"","",0,"","",0,0,new LinkedList<>(),new LinkedList<>(),new LinkedList<>());
     }
 
     public int getId() {
@@ -96,7 +106,7 @@ public class ProdottiFull implements Oggetti<ProdottiFull>{
         return prezzo;
     }
 
-    public List<String> getTagliaEu() {
+    /*public List<String> getTagliaEu() {
         return tagliaEu;
     }
 
@@ -107,8 +117,13 @@ public class ProdottiFull implements Oggetti<ProdottiFull>{
     public List<String> getTagliaUs() {
         return tagliaUs;
     }
+
     public List<String> getQuantita() {
         return quantita;
+    }*/
+
+    public List<ProdottiTaglieEstratte> getTaglieProdotto() {
+        return taglieProdotto;
     }
 
     public List<String> getUrl() {
@@ -117,11 +132,6 @@ public class ProdottiFull implements Oggetti<ProdottiFull>{
 
     public List<String> getNomeColore() {
         return nomeColore;
-    }
-
-    @Override
-    public ProdottiFull createObject() {
-        return new ProdottiFull();
     }
 
     @Override
@@ -144,19 +154,13 @@ public class ProdottiFull implements Oggetti<ProdottiFull>{
             String quantita1 = rs.getString("quantita");
             String url1 = rs.getString("url");
             String nomeColore1 = rs.getString("nome_colore");
-            List<String> tmp1 = new LinkedList<>();
+            List<ProdottiTaglieEstratte> tmp1 = new LinkedList<>();
             List<String> tmp2 = new LinkedList<>();
             List<String> tmp3 = new LinkedList<>();
-            List<String> tmp4 = new LinkedList<>();
-            List<String> tmp5 = new LinkedList<>();
-            List<String> tmp6 = new LinkedList<>();
-            tmp1.add(taglia_Eu1);
-            tmp2.add(taglia_Uk1);
-            tmp3.add(taglia_Us1);
-            tmp4.add(quantita1);
-            tmp5.add(url1);
-            tmp6.add(nomeColore1);
-            return Optional.of(new ProdottiFull(id1,nomeModello1,descrizioneModello1,idCategoria1,nomeCategoria1,target1,idBrand1,nomeBrand1,descrizioneBrand1, statoPubblicazione1,prezzo1,tmp1,tmp2,tmp3,tmp4,tmp5,tmp6));
+            tmp1.add(new ProdottiTaglieEstratte(new Taglia(0,taglia_Eu1,taglia_Uk1,taglia_Us1),new TaglieProdotti(0,0,id1,Integer.parseInt(quantita1))));
+            tmp2.add(url1);
+            tmp3.add(nomeColore1);
+            return Optional.of(new ProdottiFull(id1,nomeModello1,descrizioneModello1,idCategoria1,nomeCategoria1,target1,idBrand1,nomeBrand1,descrizioneBrand1, statoPubblicazione1,prezzo1,tmp1,tmp2,tmp3));
         }catch (SQLException e){
             e.printStackTrace();
             return Optional.empty();
@@ -190,12 +194,48 @@ public class ProdottiFull implements Oggetti<ProdottiFull>{
         output.put("descrizione_brand",descrizioneBrand);
         output.put("stato_pubblicazione",statoPubblicazione);
         output.put("prezzo",prezzo);
-        output.put("taglia_Eu",tagliaEu);
+        /*output.put("taglia_Eu",tagliaEu);
         output.put("taglia_Uk",tagliaUk);
         output.put("taglia_Us",tagliaUs);
-        output.put("quantita",quantita);
+        output.put("quantita",quantita);*/
+        output.put("taglieProdotto",taglieProdotto);
         output.put("url",url);
         output.put("nome_colore",nomeColore);
         return output.toString(4);
+    }
+
+    public static final class ProdottiTaglieEstratte implements Oggetti<ProdottiTaglieEstratte>{
+        private Taglia taglia;
+        private TaglieProdotti taglieProdotti;
+
+        public ProdottiTaglieEstratte(Taglia taglia, TaglieProdotti taglieProdotti) {
+            this.taglia = taglia;
+            this.taglieProdotti = taglieProdotti;
+        }
+
+        @Override
+        public Optional<ProdottiTaglieEstratte> convertDBToJava(ResultSet rs) {
+            return Optional.empty();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj==null){ return false; }
+            if (this==obj){ return  true; }
+            if (!(obj instanceof ProdottiTaglieEstratte)){ return false; }
+            ProdottiTaglieEstratte other = (ProdottiTaglieEstratte)(obj);
+            return taglia.getTagliaEu().equals(other.taglia.getTagliaEu()) &&
+                    taglia.getTagliaUk().equals(other.taglia.getTagliaUk()) &&
+                    taglia.getTagliaUs().equals(other.taglia.getTagliaUs()) &&
+                    taglieProdotti.getQuantita()==other.taglieProdotti.getQuantita();
+        }
+
+        @Override
+        public String toString() {
+            JSONObject output = new JSONObject();
+            output.put("taglia",new JSONObject(taglia.toString()));
+            output.put("taglia_prodotti",new JSONObject(taglieProdotti.toString()));
+            return output.toString(4);
+        }
     }
 }

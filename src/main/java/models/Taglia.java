@@ -1,5 +1,7 @@
 package models;
 
+import org.json.JSONObject;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
@@ -36,11 +38,6 @@ public class Taglia implements Oggetti<Taglia>{
     }
 
     @Override
-    public Taglia createObject() {
-        return new Taglia();
-    }
-
-    @Override
     public Optional<Taglia> convertDBToJava(ResultSet rs) {
         try{
             int idTaglia = rs.getInt("id");
@@ -52,5 +49,15 @@ public class Taglia implements Oggetti<Taglia>{
             e.printStackTrace();
             return Optional.empty();
         }
+    }
+
+    @Override
+    public String toString() {
+        JSONObject output = new JSONObject();
+        output.put("id",id);
+        output.put("taglia_Eu",tagliaEu);
+        output.put("taglia_Uk",tagliaUk);
+        output.put("taglia_Us",tagliaUs);
+        return output.toString(4);
     }
 }

@@ -37,16 +37,11 @@ public class TaglieProdotti implements Oggetti<TaglieProdotti> {
   public int getQuantita() { return quantita; }
 
   @Override
-  public TaglieProdotti createObject() {
-    return new TaglieProdotti();
-  }
-
-  @Override
   public Optional<TaglieProdotti> convertDBToJava(ResultSet rs) {
     try{
       int id1 = rs.getInt("id");
-      int idTaglia = rs.getInt("id_Taglia");
-      int idProdotto = rs.getInt("id_Prodotto");
+      int idTaglia = rs.getInt("id_taglia");
+      int idProdotto = rs.getInt("id_prodotto");
       int quantita = rs.getInt("quantita");
       return Optional.of(new TaglieProdotti(id1,idTaglia, idProdotto,quantita));
     }catch (SQLException e){
@@ -58,8 +53,8 @@ public class TaglieProdotti implements Oggetti<TaglieProdotti> {
   public String toString() {
     JSONObject output = new JSONObject();
     output.put("id",id);
-    output.put("id_Taglia",idTaglia);
-    output.put("id_Prodotto",idProdotto);
+    output.put("id_taglia",idTaglia);
+    output.put("id_prodotto",idProdotto);
     output.put("quantita",quantita);
     return output.toString(4);
   }

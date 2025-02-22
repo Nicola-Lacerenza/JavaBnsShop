@@ -46,11 +46,6 @@ public class Modello implements Oggetti<Modello> {
     }
 
     @Override
-    public Modello createObject() {
-        return new Modello();
-    }
-
-    @Override
     public Optional<Modello> convertDBToJava(ResultSet rs) {
         try{
             int idModello = rs.getInt("id");

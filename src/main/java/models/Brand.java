@@ -34,11 +34,6 @@ public class Brand implements Oggetti<Brand>{
     }
 
     @Override
-    public Brand createObject() {
-        return new Brand();
-    }
-
-    @Override
     public Optional<Brand> convertDBToJava(ResultSet rs) {
         try{
             int id1 = rs.getInt("id");
