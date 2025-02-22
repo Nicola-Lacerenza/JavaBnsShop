@@ -64,18 +64,6 @@ public class ProdottiServlet extends HttpServlet{
             ProdottiFull prodotto1 = new ProdottiFull(tmp.getFirst().getId(), tmp.getFirst().getNomeModello(), tmp.getFirst().getDescrizioneModello(), tmp.getFirst().getIdCategoria(),tmp.getFirst().getNomeCategoria(),tmp.getFirst().getTarget(), tmp.getFirst().getIdBrand()
                     ,tmp.getFirst().getNomeBrand(), tmp.getFirst().getDescrizioneBrand(), tmp.getFirst().getStatoPubblicazione(), tmp.getFirst().getPrezzo(), new LinkedList<>(), new LinkedList<>(), new LinkedList<>());
             for (ProdottiFull tmp1 : tmp) {
-                /*if (!prodotto1.getTagliaEu().containsAll(tmp1.getTagliaEu())) {
-                    prodotto1.getTagliaEu().addAll(tmp1.getTagliaEu());
-                }
-                if (!prodotto1.getTagliaUk().containsAll(tmp1.getTagliaUk())) {
-                    prodotto1.getTagliaUk().addAll(tmp1.getTagliaUk());
-                }
-                if (!prodotto1.getTagliaUs().containsAll(tmp1.getTagliaUs())) {
-                    prodotto1.getTagliaUs().addAll(tmp1.getTagliaUs());
-                }
-                if (!prodotto1.getQuantita().containsAll(tmp1.getQuantita())) {
-                    prodotto1.getQuantita().addAll(tmp1.getQuantita());
-                }*/
                 if (!prodotto1.getTaglieProdotto().containsAll(tmp1.getTaglieProdotto())){
                     prodotto1.getTaglieProdotto().addAll(tmp1.getTaglieProdotto());
                 }
@@ -163,7 +151,6 @@ public class ProdottiServlet extends HttpServlet{
         Integer prezzo = Integer.parseInt(formData.get("prezzo"));
         Boolean statoPubblicazione = Boolean.parseBoolean(formData.get("stato_pubblicazione"));
         int statoPubblicazioneInt = statoPubblicazione ? 1 : 0;
-
         String taglie = formData.get("taglie");
 
         if (taglie.isEmpty()) {
@@ -230,8 +217,8 @@ public class ProdottiServlet extends HttpServlet{
         request0.put(1,new RegisterServlet.RegisterFields("id_categoria",idCategoria));
         request0.put(2,new RegisterServlet.RegisterFields("id_brand",idBrand));
         request0.put(3,new RegisterServlet.RegisterFields("descrizione",descrizione));
-        request0.put(4, new RegisterServlet.RegisterFields("prezzo", "" + prezzo));
-        request0.put(5, new RegisterServlet.RegisterFields("stato_pubblicazione", "" + statoPubblicazioneInt));
+        request0.put(4,new RegisterServlet.RegisterFields("prezzo", "" + prezzo));
+        request0.put(5,new RegisterServlet.RegisterFields("stato_pubblicazione", "" + statoPubblicazioneInt));
 
         // Inserisci tutti i colori nella mappa
         int index = 6; // Punto di partenza dell'indice

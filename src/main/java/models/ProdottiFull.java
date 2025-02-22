@@ -1,5 +1,6 @@
 package models;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.sql.ResultSet;
@@ -22,12 +23,7 @@ public class ProdottiFull implements Oggetti<ProdottiFull>{
     private final String descrizioneBrand;
     private final int statoPubblicazione;
     private final double prezzo;
-
     private final List<ProdottiTaglieEstratte> taglieProdotto;
-    //private final List<String> tagliaEu;
-    //private final List<String> tagliaUk;
-    //private final List<String> tagliaUs;
-    //private final List<String> quantita;
     private final List<String> url;
     private final List<String> nomeColore;
 
@@ -43,18 +39,7 @@ public class ProdottiFull implements Oggetti<ProdottiFull>{
         this.descrizioneBrand = descrizioneBrand;
         this.statoPubblicazione = statoPubblicazione;
         this.prezzo = prezzo;
-        /*this.taglieProdotto = new LinkedList<>();
-        for (int i=0; i<tagliaEu.size();i++){
-            String t1 = tagliaEu.get(i);
-            String t2 = tagliaUk.get(i);
-            String t3 = tagliaUs.get(i);
-            this.taglieProdotto.add(new ProdottiTaglieEstratte(new Taglia(0,t1,t2,t3),new TaglieProdotti(0,0,id,Integer.parseInt(quantita.getFirst()))));
-        }*/
         this.taglieProdotto = list;
-        //this.tagliaEu = tagliaEu;
-        //this.tagliaUk = tagliaUk;
-        //this.tagliaUs = tagliaUs;
-        //this.quantita = quantita;
         this.url = url;
         this.nomeColore = nomeColore;
     }
@@ -105,22 +90,6 @@ public class ProdottiFull implements Oggetti<ProdottiFull>{
     public double getPrezzo() {
         return prezzo;
     }
-
-    /*public List<String> getTagliaEu() {
-        return tagliaEu;
-    }
-
-    public List<String> getTagliaUk() {
-        return tagliaUk;
-    }
-
-    public List<String> getTagliaUs() {
-        return tagliaUs;
-    }
-
-    public List<String> getQuantita() {
-        return quantita;
-    }*/
 
     public List<ProdottiTaglieEstratte> getTaglieProdotto() {
         return taglieProdotto;
@@ -194,11 +163,11 @@ public class ProdottiFull implements Oggetti<ProdottiFull>{
         output.put("descrizione_brand",descrizioneBrand);
         output.put("stato_pubblicazione",statoPubblicazione);
         output.put("prezzo",prezzo);
-        /*output.put("taglia_Eu",tagliaEu);
-        output.put("taglia_Uk",tagliaUk);
-        output.put("taglia_Us",tagliaUs);
-        output.put("quantita",quantita);*/
-        output.put("taglieProdotto",taglieProdotto);
+        JSONArray array = new JSONArray();
+        for (ProdottiTaglieEstratte t : taglieProdotto){
+            array.put(new JSONObject(t.toString()));
+        }
+        output.put("taglieProdotto",array);
         output.put("url",url);
         output.put("nome_colore",nomeColore);
         return output.toString(4);

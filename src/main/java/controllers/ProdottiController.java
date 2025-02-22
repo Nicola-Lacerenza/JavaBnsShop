@@ -70,7 +70,6 @@ public class ProdottiController implements Controllers<Prodotti> {
                 }
             }
 
-
         // INSERIMENTO PRODOTTO + ESTRAZIONE ID
 
             String query4 = "INSERT INTO prodotti (id_modello, prezzo, stato_pubblicazione) VALUES (?, ?, ?)";
