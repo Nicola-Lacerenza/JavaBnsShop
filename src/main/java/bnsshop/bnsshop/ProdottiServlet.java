@@ -53,7 +53,7 @@ public class ProdottiServlet extends HttpServlet{
         int id = readId(request);
 
         if (id == -2) {
-            List<ProdottiController.ResultProdotti> prodotti = this.controller.getAllProducts();
+            List<ProdottiFull> prodotti = this.controller.getAllProducts();
             GestioneServlet.inviaRisposta(response, 200, prodotti.toString(), true);
             return;
         }

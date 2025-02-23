@@ -219,6 +219,43 @@ public class ProdottiController implements Controllers<Prodotti> {
 
     @Override
     public boolean updateObject(int id,Map<Integer, RegisterServlet.RegisterFields> request) {
+
+    // INSERIMENTO MODELLO SE NON ESISTE + AGGIORNAMENTO ID MODELLO NELLA TABELLA PRODOTTI
+
+        /*-- Inserisci il modello se non esiste oppure aggiorna in modo da ottenere l'id esistente
+        INSERT INTO modello (id_categoria, id_brand, nome)
+        VALUES (2, 7, 'Nike Air Force Off White')
+        ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id);
+
+        -- Aggiorna il prodotto impostando l'id_modello ottenuto
+        UPDATE prodotti
+        SET id_modello = LAST_INSERT_ID()
+        WHERE id = 28;*/
+
+
+    // AGGIORNAMENTO TABELLA PRODOTTI CAMPI PREZZO E' STATO PUBBLICAZIONE
+
+        //UPDATE `prodotti` SET `prezzo`='300',`stato_pubblicazione`='1' WHERE id=28
+
+
+    // ELIMINA I VECCHI COLORI E AGGIORNA CON QUELLI NUOVI
+
+        /*DELETE FROM colore_has_prodotti
+        WHERE idprodotto = 28;
+
+        INSERT INTO colore_has_prodotti (idcolore, idprodotto)
+        VALUES(5, 28), (8, 28),(10, 28);*/
+
+
+    // ELIMINA LE VECCHIE TAGLIA E QUANTITA E AGGIORNA CON QUELLE NUOVE
+
+        /*DELETE FROM taglia_has_prodotto
+        WHERE id_prodotto = 28;
+
+        INSERT INTO taglia_has_prodotto (id_taglia, id_prodotto, quantita)
+        VALUE (4, 28, 10),(5, 28, 15),(6, 28, 8);*/
+
+
         return Database.updateElement(id,request, "prodotti");
     }
 
@@ -342,8 +379,6 @@ public class ProdottiController implements Controllers<Prodotti> {
         return output;
     }
 
-
-
     @Override
     public Optional<Prodotti> getObject(int objectid) {
         if (objectid <= 0) {
@@ -385,96 +420,41 @@ public class ProdottiController implements Controllers<Prodotti> {
         return output;
     }
 
-    public List<ResultProdotti> getAllProducts(){
+    public List<ProdottiFull> getAllProducts(){
         String query="SELECT\n" +
                 "                    prodotti.id,\n" +
-                "                    prodotti.prezzo,\n" +
-                "                    prodotti.stato_pubblicazione,\n" +
                 "                    modello.nome AS nome_modello,\n" +
                 "                    modello.descrizione AS descrizione_modello,\n" +
+                "                    categoria.id AS id_categoria,\n" +
                 "                    categoria.nome_categoria,\n" +
+                "                    categoria.target,\n" +
+                "                    brand.id AS id_brand,\n" +
                 "                    brand.nome AS nome_brand,\n" +
                 "                    brand.descrizione AS descrizione_brand,\n" +
-                "                    immagini.url\n" +
+                "                    prodotti.prezzo,\n" +
+                "                    prodotti.stato_pubblicazione,\n" +
+                "                    taglia.taglia_Eu,\n" +
+                "                    taglia.taglia_Uk,\n" +
+                "                    taglia.taglia_Us,\n" +
+                "                    tp.quantita,\n" +
+                "                    immagini.url,\n" +
+                "                    colore.nome AS nome_colore\n" +
                 "                FROM prodotti\n" +
                 "                INNER JOIN modello ON prodotti.id_modello = modello.id\n" +
                 "                INNER JOIN immagini_has_prodotti ON prodotti.id = immagini_has_prodotti.id_prodotto\n" +
                 "                INNER JOIN immagini ON immagini.id = immagini_has_prodotti.id_immagine \n" +
                 "                INNER JOIN brand ON modello.id_brand = brand.id\n" +
-                "                INNER JOIN categoria ON modello.id_categoria = categoria.id;\n" +
-                "                ";
+                "                INNER JOIN categoria ON modello.id_categoria = categoria.id\n" +
+                "                INNER JOIN taglie_has_prodotti tp ON tp.id_prodotto = prodotti.id\n" +
+                "                INNER JOIN taglia ON taglia.id = tp.id_taglia\n" +
+                "                INNER JOIN colore_has_prodotti cp ON cp.id_prodotto = prodotti.id\n" +
+                "                INNER JOIN colore ON colore.id = cp.id_colore";
 
-        List<ResultProdotti> tmp = Database.executeGenericQuery("prodotti",new ResultProdotti(),query);
+        List<ProdottiFull> tmp = Database.executeGenericQuery("prodotti",new ProdottiFull(),query);
         return tmp;
     }
     @Override
     public List<Prodotti> getAllObjects() {
         return new LinkedList<>();
     }
-
-    public static class ResultProdotti implements Oggetti<ResultProdotti> {
-        private  int id;
-        private  double prezzo;
-        private  int statoPubblicazione;
-        private  String nomeModello;
-        private  String descrizioneModello;
-        private  String nomeCategoria;
-        private  String nomeBrand;
-        private  String descrizioneBrand;
-        private  String url;
-
-        public ResultProdotti(int id, double prezzo, int statoPubblicazione, String nomeModello, String descrizioneModello, String nomeCategoria, String nomeBrand, String descrizioneBrand,String url) {
-            this.id = id;
-            this.prezzo = prezzo;
-            this.statoPubblicazione = statoPubblicazione;
-            this.nomeModello = nomeModello;
-            this.descrizioneModello = descrizioneModello;
-            this.nomeCategoria = nomeCategoria;
-            this.nomeBrand = nomeBrand;
-            this.descrizioneBrand = descrizioneBrand;
-            this.url = url;
-        }
-
-        public ResultProdotti(){
-            this(0,0,0,"","","","","","");
-        }
-
-        @Override
-        public Optional<ResultProdotti> convertDBToJava(ResultSet rs) {
-            int id,statoPubblicazione;
-            double prezzo;
-            String nomeModello,descrizioneModello,nomeCategoria,nomeBrand,descrizioneBrand,url;
-            try {
-                id = rs.getInt("id");
-                prezzo = rs.getDouble("prezzo");
-                statoPubblicazione = rs.getInt("stato_pubblicazione");
-                nomeModello = rs.getString("nome_modello");
-                descrizioneModello = rs.getString("descrizione_modello");
-                nomeCategoria = rs.getString("nome_categoria");
-                nomeBrand = rs.getString("nome_brand");
-                descrizioneBrand = rs.getString("descrizione_brand");
-                url = rs.getString("url");
-            }catch (SQLException e){
-                e.printStackTrace();
-                return Optional.empty();
-            }
-            ResultProdotti output = new ResultProdotti(id,prezzo,statoPubblicazione,nomeModello,descrizioneModello,nomeCategoria,nomeBrand,descrizioneBrand,url);
-            return Optional.of(output);
-        }
-        @Override
-        public String toString() {
-            JSONObject output = new JSONObject();
-            output.put("id",id);
-            output.put("prezzo",prezzo);
-            output.put("stato_pubblicazione",statoPubblicazione);
-            output.put("nome_modello",nomeModello);
-            output.put("descrizione_modello",descrizioneModello);
-            output.put("nome_categoria",nomeCategoria);
-            output.put("nome_brand",nomeBrand);
-            output.put("descrizione_brand",descrizioneBrand);
-            output.put("url",url);
-            return output.toString(4);
-        }
-    }
-
 }
