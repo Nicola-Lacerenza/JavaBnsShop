@@ -1,11 +1,8 @@
 package controllers;
 
 import bnsshop.bnsshop.RegisterServlet;
-import models.Colore;
-import models.Oggetti;
 import models.Prodotti;
 import models.ProdottiFull;
-import org.json.JSONObject;
 import utility.Database;
 
 import java.sql.*;
@@ -13,7 +10,7 @@ import java.util.*;
 
 public class ProdottiController implements Controllers<Prodotti> {
 
-    public ProdottiController(){
+    public ProdottiController() {
     }
 
 
@@ -30,14 +27,16 @@ public class ProdottiController implements Controllers<Prodotti> {
 
         boolean output = false;
         try {
-            // Apertura connessione
-            connection = DriverManager.getConnection(Database.getDatabaseUrl(),Database.getDatabaseUsername(), Database.getDatabasePassword());
+
+        // APERTURA CONNESSIONE
+
+            connection = DriverManager.getConnection(Database.getDatabaseUrl(), Database.getDatabaseUsername(), Database.getDatabasePassword());
             connection.setAutoCommit(false); // Avvia transazione
 
-    // ESTRAZIONE ID MODELLO (SE ESISTE)
+        // ESTRAZIONE ID MODELLO (SE ESISTE)
 
-            String query1 = "SELECT * FROM modello WHERE (id_categoria='"+request.get(1).getValue()+"' " +
-                    "&& id_brand='"+request.get(2).getValue()+"'&& nome='"+request.get(0).getValue()+"')";
+            String query1 = "SELECT * FROM modello WHERE (id_categoria='" + request.get(1).getValue() + "' " +
+                    "&& id_brand='" + request.get(2).getValue() + "'&& nome='" + request.get(0).getValue() + "')";
             PreparedStatement preparedStatement1 = connection.prepareStatement(query1);
             ResultSet rs = preparedStatement1.executeQuery();
 
@@ -53,13 +52,13 @@ public class ProdottiController implements Controllers<Prodotti> {
         // INSERIMENTO MODELLO
 
                 String query2 = "INSERT INTO modello (id_categoria,id_brand,nome,descrizione)" +
-                        "VALUES ('"+request.get(1).getValue()+"','"+request.get(2).getValue()+"'," +
-                        "'"+request.get(0).getValue()+"','"+request.get(3).getValue()+"')";
+                        "VALUES ('" + request.get(1).getValue() + "','" + request.get(2).getValue() + "'," +
+                        "'" + request.get(0).getValue() + "','" + request.get(3).getValue() + "')";
                 PreparedStatement preparedStatement2 = connection.prepareStatement(query2);
                 preparedStatement2.executeUpdate();
 
-                String query3 = "SELECT * FROM modello WHERE (id_categoria='"+request.get(1).getValue()+"' " +
-                        "&& id_brand='"+request.get(2).getValue()+"'&& nome='"+request.get(0).getValue()+"'&& descrizione='"+request.get(3).getValue()+"')";
+                String query3 = "SELECT * FROM modello WHERE (id_categoria='" + request.get(1).getValue() + "' " +
+                        "&& id_brand='" + request.get(2).getValue() + "'&& nome='" + request.get(0).getValue() + "'&& descrizione='" + request.get(3).getValue() + "')";
                 PreparedStatement preparedStatement3 = connection.prepareStatement(query3);
                 ResultSet rs1 = preparedStatement3.executeQuery();
 
@@ -100,7 +99,7 @@ public class ProdottiController implements Controllers<Prodotti> {
             }
 
             // Itera su tutti i colori e inseriscili nella tabella `colore_has_modello`
-            for (int i = 6; i < countColore+6; i++) {
+            for (int i = 6; i < countColore + 6; i++) {
                 int idColore = Integer.parseInt(request.get(i).getValue());  // Converti in Integer
                 preparedStatement6.setInt(1, idColore);
                 preparedStatement6.setInt(2, idProdotto);
@@ -163,13 +162,13 @@ public class ProdottiController implements Controllers<Prodotti> {
             }
             String query8 = "INSERT INTO immagini (url) VALUES (?)";
             PreparedStatement preparedStatement8 = connection.prepareStatement(query8);
-            for (int i = 6+countColore; i < 6+countColore+countUrl; i++) {
+            for (int i = 6 + countColore; i < 6 + countColore + countUrl; i++) {
 
                 String combinedValue = request.get(i).getValue().replace("\\", "\\\\");
                 preparedStatement8.setString(1, combinedValue);
                 preparedStatement8.executeUpdate();
 
-        //ESTRAZIONE  ID IMMAGINE
+                //ESTRAZIONE  ID IMMAGINE
 
                 String query9 = "SELECT * FROM immagini WHERE url = ?";
                 PreparedStatement preparedStatement9 = connection.prepareStatement(query9);
@@ -183,9 +182,9 @@ public class ProdottiController implements Controllers<Prodotti> {
                     throw new SQLException("No image found for the provided URL");
                 }
 
-        //INSERIMENTO IMMAGINE ASSOCIATA AL PRODOTTO
+                //INSERIMENTO IMMAGINE ASSOCIATA AL PRODOTTO
 
-                String query10 = "INSERT INTO immagini_has_prodotti (id_immagine, id_prodotto) VALUES ('"+idImmagine+"', '"+idProdotto+"')";
+                String query10 = "INSERT INTO immagini_has_prodotti (id_immagine, id_prodotto) VALUES ('" + idImmagine + "', '" + idProdotto + "')";
                 PreparedStatement preparedStatement10 = connection.prepareStatement(query10);
                 preparedStatement10.executeUpdate();
 
@@ -218,45 +217,192 @@ public class ProdottiController implements Controllers<Prodotti> {
     }
 
     @Override
-    public boolean updateObject(int id,Map<Integer, RegisterServlet.RegisterFields> request) {
+    public boolean updateObject(int objectid, Map<Integer, RegisterServlet.RegisterFields> request) {
+        if (objectid <= 0) {
+            return false;
+        }
+
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Driver JDBC non trovato", e);
+        }
+
+        Connection connection = null;
+        List<PreparedStatement> statementList = new LinkedList<>();
+        boolean output = false;
+        try {
+            connection = DriverManager.getConnection(Database.getDatabaseUrl(), Database.getDatabaseUsername(), Database.getDatabasePassword());
+            connection.setAutoCommit(false); // Avvia transazione
+
+
+    // ESTRAZIONE ID MODELLO
+
+            String query1 = "SELECT id_modello FROM prodotti WHERE id = ?";
+            PreparedStatement preparedStatement1 = connection.prepareStatement(query1);
+            preparedStatement1.setInt(1, objectid);
+            ResultSet rs = preparedStatement1.executeQuery();
+
+            int idModelloOld = -1;
+            if (rs.next()) {
+                idModelloOld = rs.getInt(1);
+            }
 
     // INSERIMENTO MODELLO SE NON ESISTE + AGGIORNAMENTO ID MODELLO NELLA TABELLA PRODOTTI
 
-        /*-- Inserisci il modello se non esiste oppure aggiorna in modo da ottenere l'id esistente
-        INSERT INTO modello (id_categoria, id_brand, nome)
-        VALUES (2, 7, 'Nike Air Force Off White')
-        ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id);
+            String query2 = "INSERT INTO modello (id_categoria, id_brand, nome,descrizione) " +
+                    "VALUES (?, ?, ?,?) " +
+                    "ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id);";
+            PreparedStatement preparedStatement2 = connection.prepareStatement(query2, Statement.RETURN_GENERATED_KEYS);
+            preparedStatement2.setInt(1, Integer.parseInt(request.get(1).getValue()));
+            preparedStatement2.setInt(2, Integer.parseInt(request.get(2).getValue()));
+            preparedStatement2.setString(3, request.get(0).getValue());
+            preparedStatement2.setString(4, request.get(3).getValue());
+            preparedStatement2.executeUpdate();
 
-        -- Aggiorna il prodotto impostando l'id_modello ottenuto
-        UPDATE prodotti
-        SET id_modello = LAST_INSERT_ID()
-        WHERE id = 28;*/
+            ResultSet rs1 = preparedStatement2.getGeneratedKeys();
+            int idModello = -1;
+            if (rs1.next()) {
+                idModello = rs1.getInt(1);
+            }
+
+            String query3 = "UPDATE prodotti SET id_modello = ? WHERE id = ?;";
+            PreparedStatement preparedStatement3 = connection.prepareStatement(query3);
+            preparedStatement3.setInt(1, idModello);
+            preparedStatement3.setInt(2, objectid);
+            preparedStatement3.executeUpdate();
 
 
     // AGGIORNAMENTO TABELLA PRODOTTI CAMPI PREZZO E' STATO PUBBLICAZIONE
 
-        //UPDATE `prodotti` SET `prezzo`='300',`stato_pubblicazione`='1' WHERE id=28
-
+            String query4 = "UPDATE `prodotti` SET `prezzo`= ?,`stato_pubblicazione`= ? WHERE id= ?";
+            PreparedStatement preparedStatement4 = connection.prepareStatement(query4);
+            preparedStatement4.setDouble(1, Double.parseDouble(request.get(4).getValue()));  // Assumendo che sia un prezzo numerico
+            preparedStatement4.setString(2, request.get(5).getValue());
+            preparedStatement4.setInt(3, objectid);  // Impostiamo l'ID del prodotto
+            preparedStatement4.executeUpdate();
 
     // ELIMINA I VECCHI COLORI E AGGIORNA CON QUELLI NUOVI
 
-        /*DELETE FROM colore_has_prodotti
-        WHERE idprodotto = 28;
+            String query5 = "DELETE FROM colore_has_prodotti WHERE id_prodotto = ?";
+            PreparedStatement preparedStatement5 = connection.prepareStatement(query5);
+            preparedStatement5.setInt(1, objectid);
+            preparedStatement5.executeUpdate();
 
-        INSERT INTO colore_has_prodotti (idcolore, idprodotto)
-        VALUES(5, 28), (8, 28),(10, 28);*/
+            String query6 = "INSERT INTO colore_has_prodotti (id_colore, id_prodotto) VALUES (?, ?)";
+            PreparedStatement preparedStatement6 = connection.prepareStatement(query6);
 
+            int countColore = 0;
+            for (Map.Entry<Integer, RegisterServlet.RegisterFields> entry : request.entrySet()) {
+                if (entry.getKey() >= 6 && entry.getValue().getKey().startsWith("colore_")) {
+                    countColore++;
+                }
+            }
+
+            // Itera su tutti i colori e inseriscili nella tabella `colore_has_modello`
+            for (int i = 6; i < countColore + 6; i++) {
+                int idColore = Integer.parseInt(request.get(i).getValue());  // Converti in Integer
+                preparedStatement6.setInt(1, idColore);
+                preparedStatement6.setInt(2, objectid);
+                preparedStatement6.addBatch();  // Aggiungi la query alla batch
+            }
+
+            // Esegui tutte le query in batch
+            preparedStatement6.executeBatch();
 
     // ELIMINA LE VECCHIE TAGLIA E QUANTITA E AGGIORNA CON QUELLE NUOVE
 
-        /*DELETE FROM taglia_has_prodotto
-        WHERE id_prodotto = 28;
+            String query7 = "DELETE FROM taglie_has_prodotti WHERE id_prodotto = ?;";
+            PreparedStatement preparedStatement7 = connection.prepareStatement(query7);
+            preparedStatement7.setInt(1, objectid);
+            preparedStatement7.executeUpdate();
 
-        INSERT INTO taglia_has_prodotto (id_taglia, id_prodotto, quantita)
-        VALUE (4, 28, 10),(5, 28, 15),(6, 28, 8);*/
+            // INSERIMENTO TAGLIA E QUANTITA
 
+            String query8 = "INSERT INTO taglie_has_prodotti (id_taglia, id_prodotto, quantita) VALUES (?, ?, ?)";
+            PreparedStatement preparedStatement8 = connection.prepareStatement(query8);
+            int startTaglie = -1;
+            int countTaglie = 0;
 
-        return Database.updateElement(id,request, "prodotti");
+            for (Map.Entry<Integer, RegisterServlet.RegisterFields> entry : request.entrySet()) {
+                String key = entry.getValue().getKey();
+
+                // Identifica il primo indice di `taglia_X`
+                if (key.startsWith("taglia_") && startTaglie == -1) {
+                    startTaglie = entry.getKey();
+                }
+
+                // Conta tutte le taglie
+                if (key.startsWith("taglia_")) {
+                    countTaglie++;
+                }
+            }
+
+            // Verifica che ci siano quantità corrispondenti
+            for (int i = startTaglie; i < startTaglie + countTaglie; i++) {
+                String quantitaKey = "quantita_" + (i - startTaglie);
+                if (!request.containsKey(i + countTaglie)) {
+                    throw new IllegalArgumentException("Quantità mancante per la taglia: " + quantitaKey);
+                }
+            }
+
+            // Ora puoi iterare per inserire nel database
+            for (int i = 0; i < countTaglie; i++) {
+                int idTaglia = Integer.parseInt(request.get(startTaglie + i).getValue());
+                int quantita = Integer.parseInt(request.get(startTaglie + countTaglie + i).getValue());
+
+                preparedStatement8.setInt(1, idTaglia);
+                preparedStatement8.setInt(2, objectid);
+                preparedStatement8.setInt(3, quantita);
+                preparedStatement8.addBatch();
+            }
+
+            preparedStatement8.executeBatch();
+
+    // ELIMINO ID MODELLO VECCHIO SE NON E' PIU UTILIZZATO
+
+            if (idModelloOld != idModello) {
+                String query9 = "SELECT id FROM prodotti WHERE id_modello = ?";
+                PreparedStatement preparedStatement9 = connection.prepareStatement(query9);
+                preparedStatement9.setInt(1, idModelloOld);
+                ResultSet rs2 = preparedStatement9.executeQuery();
+
+                if (rs2.next()) {
+
+                }else{
+                    // Elimina il prodotto dalla tabella prodotti
+                    String query10 = "DELETE FROM modello WHERE id = ?";
+                    PreparedStatement preparedStatement10 = connection.prepareStatement(query10);
+                    preparedStatement10.setInt(1, idModelloOld);
+                    preparedStatement10.executeUpdate();
+                }
+            }
+
+            connection.commit();
+            output = true;
+
+        } catch(SQLException e){
+        // Gestione errori e rollback in caso di fallimento
+        e.printStackTrace();
+        if (connection != null) {
+            try {
+                connection.rollback();
+            } catch (SQLException rollbackEx) {
+                rollbackEx.printStackTrace();
+            }
+        }
+        output = false;
+        } finally {
+        // Chiusura connessione e statement
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException closeEx) {
+                    closeEx.printStackTrace();
+                }
+            }
+        }
+        return output;
     }
 
     @Override
@@ -275,11 +421,14 @@ public class ProdottiController implements Controllers<Prodotti> {
         List<PreparedStatement> statementList = new LinkedList<>();
         boolean output = false;
         try {
-            // Apertura connessione
+
+        // APERTURA CONNESSIONE
+
             connection = DriverManager.getConnection(Database.getDatabaseUrl(), Database.getDatabaseUsername(), Database.getDatabasePassword());
             connection.setAutoCommit(false); // Avvia transazione
 
-            // Identifica gli ID delle immagini da eliminare
+        // IDENTIFICA GLI ID DELLE IMMAGINI DA ELIMINARE
+
             String query1 = "SELECT id_immagine FROM immagini_has_prodotti WHERE id_prodotto = ?";
             PreparedStatement preparedStatement1 = connection.prepareStatement(query1);
             preparedStatement1.setInt(1, objectid);  // Impostiamo l'ID del prodotto
@@ -290,18 +439,19 @@ public class ProdottiController implements Controllers<Prodotti> {
                 immaginiDaEliminare.add(rs.getInt("id_immagine"));
             }
 
-            // Se non ci sono immagini associate al prodotto, procedi
             if (immaginiDaEliminare.isEmpty()) {
                 throw new SQLException("No images found for the provided product");
             }
 
-            // Elimina i riferimenti dalla tabella immagini_has_prodotti
+        // ELIMINA I RIFERIMENTI DALLA TABELLA IMMAGINI_HAS_PRODOTTI
+
             String query2 = "DELETE FROM immagini_has_prodotti WHERE id_prodotto = ?";
             PreparedStatement preparedStatement2 = connection.prepareStatement(query2);
             preparedStatement2.setInt(1, objectid);
             preparedStatement2.executeUpdate();
 
-            // Elimina le immagini dalla tabella immagini usando gli ID identificati
+        // ELIMINA LE IMMAGINI DALLA TABELLA DELLE IMMAGINI USANDO GLI ID IDENTIFICATI
+
             String query3 = "DELETE FROM immagini WHERE id = ?";
             PreparedStatement preparedStatement3 = connection.prepareStatement(query3);
 
@@ -311,19 +461,21 @@ public class ProdottiController implements Controllers<Prodotti> {
             }
             preparedStatement3.executeBatch();  // Esegui tutte le query in batch
 
-            // Elimina altri riferimenti (ad esempio, taglie_has_prodotti)
+        // ELIMINA RIFERIMENTI TAGLIE_HAS_PRODOTTI
+
             String query4 = "DELETE FROM taglie_has_prodotti WHERE id_prodotto = ?";
             PreparedStatement preparedStatement4 = connection.prepareStatement(query4);
             preparedStatement4.setInt(1, objectid);
             preparedStatement4.executeUpdate();
 
-            // Elimina altri riferimenti (ad esempio, taglie_has_prodotti)
+        // ELIMINA RIFERIMENTI COLORE_HAS_PRODOTTI
+
             String query5 = "DELETE FROM colore_has_prodotti WHERE id_prodotto = ?";
             PreparedStatement preparedStatement5 = connection.prepareStatement(query5);
             preparedStatement5.setInt(1, objectid);
             preparedStatement5.executeUpdate();
 
-    // ESTRAZIONE ID MODELLO
+        // ESTRAZIONE ID MODELLO + ELIMINAZIONE PRODOTTO + MODELLO(SE UNICO)
 
             String query10 = "SELECT id_modello, (SELECT COUNT(*) FROM prodotti WHERE id_modello = p.id_modello) AS totale FROM prodotti p WHERE id = ?";
             PreparedStatement preparedStatement10 = connection.prepareStatement(query10);
@@ -352,7 +504,7 @@ public class ProdottiController implements Controllers<Prodotti> {
                 preparedStatement8.executeUpdate();
             }
 
-            connection.commit(); // Commit delle modifiche solo se tutte le query hanno successo
+            connection.commit();
             output = true;
         } catch (SQLException e) {
 
@@ -408,7 +560,7 @@ public class ProdottiController implements Controllers<Prodotti> {
                 "FROM prodotti p\n" +
                 "JOIN modello m ON p.id_modello = m.id\n" +
                 "JOIN categoria c ON m.id_categoria = c.id\n" +
-                "JOIN brand b ON m.id_categoria = b.id\n" +
+                "JOIN brand b ON m.id_brand = b.id\n" +
                 "JOIN taglie_has_prodotti tp ON tp.id_prodotto = p.id\n" +
                 "JOIN taglia ON taglia.id = tp.id_taglia\n" +
                 "JOIN immagini_has_prodotti ip ON ip.id_prodotto = p.id\n" +
@@ -453,6 +605,7 @@ public class ProdottiController implements Controllers<Prodotti> {
         List<ProdottiFull> tmp = Database.executeGenericQuery("prodotti",new ProdottiFull(),query);
         return tmp;
     }
+
     @Override
     public List<Prodotti> getAllObjects() {
         return new LinkedList<>();
