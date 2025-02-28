@@ -85,16 +85,6 @@ public class ProdottiServlet extends HttpServlet{
 
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String email = GestioneServlet.validaToken(request, response);
-        if (email.isEmpty()) {
-            return;
-        }
-
-        String ruolo = GestioneServlet.controllaRuolo(email);
-        if (!"admin".equals(ruolo)) {
-            GestioneServlet.inviaRisposta(response, 403, "\"Ruolo non corretto!\"", false);
-            return;
-        }
 
         // Map per memorizzare i dati di input non-file
         Map<String, String> formData = new HashMap<>();
@@ -115,8 +105,8 @@ public class ProdottiServlet extends HttpServlet{
                 String fileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
 
                 // Specifica la directory completa dove vuoi salvare le immagini
-                //String directory = "C:\\Users\\nicol\\Documents\\PROGETTI\\BNS SHOP\\JAVA - INTELLIJ\\src\\main\\webapp\\images";
-                String directory = "C:\\Users\\Emanuele Schino\\Desktop\\PERSONALE\\JAVA\\src\\main\\webapp\\images";
+                String directory = "C:\\Users\\nicol\\Documents\\PROGETTI\\BNS SHOP\\JAVA - INTELLIJ\\src\\main\\webapp\\images";
+                //String directory = "C:\\Users\\Emanuele Schino\\Desktop\\PERSONALE\\JAVA\\src\\main\\webapp\\images";
 
                 // Assicurati che la directory esista
                 Path dirPath = Paths.get(directory);
@@ -131,13 +121,6 @@ public class ProdottiServlet extends HttpServlet{
                 // Aggiungi l'URL del file alla lista
                 String fileUrl = "images/" + fileName;  // Path relativo o URL come preferisci gestirlo
                 urls.add(fileUrl);
-
-                // Facoltativo: verifica se il file è stato salvato correttamente
-                if (Files.exists(filePath)) {
-                    System.out.println("File salvato correttamente in: " + filePath.toString());
-                } else {
-                    System.out.println("Errore nel salvataggio del file.");
-                }
             }
         }
 
@@ -248,18 +231,16 @@ public class ProdottiServlet extends HttpServlet{
         } else {
             String message = "\"Errore durante la registrazione.\"";
             GestioneServlet.inviaRisposta(response, 500, message, false);
+            for (String url : urls){
+                File file = new File(url);
+                file.delete();
+            }
+
         }
     }
 
     @Override
     public void doPut(HttpServletRequest request,HttpServletResponse response) throws ServletException,IOException{
-
-    // CONTROLLO MAIL VALIDA
-
-        String email = validateTokenAndRole(request, response);
-        if (email == null) {
-            return;
-        }
 
         // Estrazione dei campi non-file e dei file dalla request
         Map<String, String> formData = extractFormData(request);
@@ -378,15 +359,7 @@ public class ProdottiServlet extends HttpServlet{
 
     @Override
     public void doDelete(HttpServletRequest request,HttpServletResponse response) throws ServletException,IOException{
-        String email = GestioneServlet.validaToken(request,response);
-        if (email.isEmpty()){
-            return;
-        }
-        String ruolo = GestioneServlet.controllaRuolo(email);
-        if(!ruolo.equals("admin")){
-            GestioneServlet.inviaRisposta(response,403,"\"Ruolo non corretto!\"",false);
-            return;
-        }
+
         int id= Integer.parseInt((String) request.getParameter("id"));
         if (this.controller.deleteObject(id)){
             String message = "\"Product deleted Correctly.\"";
@@ -414,18 +387,6 @@ public class ProdottiServlet extends HttpServlet{
         return id;
     }
 
-    private String validateTokenAndRole(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String email = GestioneServlet.validaToken(request, response);
-        if (email.isEmpty()) {
-            return null;
-        }
-        if (!"admin".equals(GestioneServlet.controllaRuolo(email))) {
-            GestioneServlet.inviaRisposta(response, 403, "\"Ruolo non corretto!\"", false);
-            return null;
-        }
-        return email;
-    }
-
     private Map<String, String> extractFormData(HttpServletRequest request) throws IOException, ServletException {
         Map<String, String> formData = new HashMap<>();
         for (Part part : request.getParts()) {
@@ -446,15 +407,17 @@ public class ProdottiServlet extends HttpServlet{
                 String fileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
                 // Specifica la directory dove salvare le immagini
                 String directory = "C:\\Users\\nicol\\Documents\\PROGETTI\\BNS SHOP\\JAVA - INTELLIJ\\src\\main\\webapp\\images";
-                Path dirPath = Paths.get(directory);
-                if (!Files.exists(dirPath)) {
-                    Files.createDirectories(dirPath);
+                File file = new File(directory + "\\" + fileName);
+                if (!file.exists()) {
+                    Path dirPath = Paths.get(directory);
+                    if (!Files.exists(dirPath)) {
+                        Files.createDirectories(dirPath);
+                    }
+                    Path filePath = Paths.get(directory, fileName);
+                    Files.copy(part.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+                    // Aggiunge l'URL relativo alla lista
+                    urls.add("images/" + fileName);
                 }
-                Path filePath = Paths.get(directory, fileName);
-                Files.copy(part.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-                // Aggiunge l'URL relativo alla lista
-                urls.add("images/" + fileName);
-
             }
         }
         return urls;
