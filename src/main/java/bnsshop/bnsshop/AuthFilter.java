@@ -8,7 +8,7 @@ import utility.GestioneServlet;
 
 import java.io.IOException;
 
-@WebFilter("/ProdottiServlet")
+//@WebFilter("/ProdottiServlet")
 public class AuthFilter implements Filter {
 
     @Override
