@@ -58,7 +58,6 @@ public class ProdottiServlet extends HttpServlet{
             return;
         }
 
-
         if (id>0) {
             List<ProdottiFull> tmp = this.controller.getFullObject(id);
             ProdottiFull prodotto1 = new ProdottiFull(tmp.getFirst().getId(), tmp.getFirst().getNomeModello(), tmp.getFirst().getDescrizioneModello(), tmp.getFirst().getIdCategoria(),tmp.getFirst().getNomeCategoria(),tmp.getFirst().getTarget(), tmp.getFirst().getIdBrand()
