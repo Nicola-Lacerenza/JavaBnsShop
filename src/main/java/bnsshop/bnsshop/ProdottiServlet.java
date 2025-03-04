@@ -105,8 +105,8 @@ public class ProdottiServlet extends HttpServlet{
                 String fileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
 
                 // Specifica la directory completa dove vuoi salvare le immagini
-                String directory = "C:\\Users\\nicol\\Documents\\PROGETTI\\BNS SHOP\\JAVA - INTELLIJ\\src\\main\\webapp\\images";
-                //String directory = "C:\\Users\\Emanuele Schino\\Desktop\\PERSONALE\\JAVA\\src\\main\\webapp\\images";
+                //String directory = "C:\\Users\\nicol\\Documents\\PROGETTI\\BNS SHOP\\JAVA - INTELLIJ\\src\\main\\webapp\\images";
+                String directory = "C:\\Users\\Emanuele Schino\\Desktop\\PERSONALE\\JAVA\\src\\main\\webapp\\images";
 
                 // Assicurati che la directory esista
                 Path dirPath = Paths.get(directory);

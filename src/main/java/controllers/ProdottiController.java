@@ -13,7 +13,6 @@ public class ProdottiController implements Controllers<Prodotti> {
     public ProdottiController() {
     }
 
-
     @Override
     public boolean insertObject(Map<Integer, RegisterServlet.RegisterFields> request) {
         try {
@@ -51,16 +50,23 @@ public class ProdottiController implements Controllers<Prodotti> {
 
         // INSERIMENTO MODELLO
 
-                String query2 = "INSERT INTO modello (id_categoria,id_brand,nome,descrizione)" +
-                        "VALUES ('" + request.get(1).getValue() + "','" + request.get(2).getValue() + "'," +
-                        "'" + request.get(0).getValue() + "','" + request.get(3).getValue() + "')";
+                String query2 = "INSERT INTO modello (id_categoria, id_brand, nome, descrizione) VALUES (?, ?, ?, ?)";
                 PreparedStatement preparedStatement2 = connection.prepareStatement(query2);
+                preparedStatement2.setString(1, request.get(1).getValue());
+                preparedStatement2.setString(2, request.get(2).getValue());
+                preparedStatement2.setString(3, request.get(0).getValue());
+                preparedStatement2.setString(4, request.get(3).getValue());
                 preparedStatement2.executeUpdate();
 
-                String query3 = "SELECT * FROM modello WHERE (id_categoria='" + request.get(1).getValue() + "' " +
-                        "&& id_brand='" + request.get(2).getValue() + "'&& nome='" + request.get(0).getValue() + "'&& descrizione='" + request.get(3).getValue() + "')";
+
+                String query3 = "SELECT * FROM modello WHERE id_categoria = ? AND id_brand = ? AND nome = ? AND descrizione = ?";
                 PreparedStatement preparedStatement3 = connection.prepareStatement(query3);
+                preparedStatement3.setString(1, request.get(1).getValue());
+                preparedStatement3.setString(2, request.get(2).getValue());
+                preparedStatement3.setString(3, request.get(0).getValue());
+                preparedStatement3.setString(4, request.get(3).getValue());
                 ResultSet rs1 = preparedStatement3.executeQuery();
+
 
                 if (rs1.next()) {
                     idModello = rs1.getInt("id");
@@ -160,34 +166,33 @@ public class ProdottiController implements Controllers<Prodotti> {
                     countUrl++;
                 }
             }
-            String query8 = "INSERT INTO immagini (url) VALUES (?)";
-            PreparedStatement preparedStatement8 = connection.prepareStatement(query8);
-            for (int i = 6 + countColore; i < 6 + countColore + countUrl; i++) {
 
+// Prepara la query per l'inserimento dell'immagine utilizzando RETURN_GENERATED_KEYS
+            String query8 = "INSERT INTO immagini (url) VALUES (?)";
+            PreparedStatement preparedStatement8 = connection.prepareStatement(query8, Statement.RETURN_GENERATED_KEYS);
+
+// Prepara la query per associare l'immagine al prodotto usando parametri
+            String query10 = "INSERT INTO immagini_has_prodotti (id_immagine, id_prodotto) VALUES (?, ?)";
+            PreparedStatement preparedStatement10 = connection.prepareStatement(query10);
+
+            for (int i = 6 + countColore; i < 6 + countColore + countUrl; i++) {
                 String combinedValue = request.get(i).getValue().replace("\\", "\\\\");
                 preparedStatement8.setString(1, combinedValue);
                 preparedStatement8.executeUpdate();
 
-                //ESTRAZIONE  ID IMMAGINE
-
-                String query9 = "SELECT * FROM immagini WHERE url = ?";
-                PreparedStatement preparedStatement9 = connection.prepareStatement(query9);
-                preparedStatement9.setString(1, combinedValue); // Usa il valore originale senza ulteriori modifiche
-                ResultSet rs3 = preparedStatement9.executeQuery();
-
+                // Recupera il generated key dell'immagine inserita
+                ResultSet generatedKeys1 = preparedStatement8.getGeneratedKeys();
                 int idImmagine = -1;
-                if (rs3.next()) {
-                    idImmagine = rs3.getInt("id");
+                if (generatedKeys1.next()) {
+                    idImmagine = generatedKeys1.getInt(1);
                 } else {
                     throw new SQLException("No image found for the provided URL");
                 }
 
-                //INSERIMENTO IMMAGINE ASSOCIATA AL PRODOTTO
-
-                String query10 = "INSERT INTO immagini_has_prodotti (id_immagine, id_prodotto) VALUES ('" + idImmagine + "', '" + idProdotto + "')";
-                PreparedStatement preparedStatement10 = connection.prepareStatement(query10);
+                // Inserisci l'associazione tra l'immagine e il prodotto utilizzando i parametri
+                preparedStatement10.setInt(1, idImmagine);
+                preparedStatement10.setInt(2, idProdotto);
                 preparedStatement10.executeUpdate();
-
             }
 
             connection.commit(); // Commit delle modifiche solo se tutte le query hanno successo
