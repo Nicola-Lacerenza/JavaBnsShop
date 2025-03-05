@@ -54,7 +54,27 @@ public class ProdottiServlet extends HttpServlet{
 
         if (id == -2) {
             List<ProdottiFull> prodotti = this.controller.getAllProducts();
-            GestioneServlet.inviaRisposta(response, 200, prodotti.toString(), true);
+            List<ProdottiFull> prodotti2 = new LinkedList<>();
+            for (int k=0 ; k<prodotti.size(); k++){
+                ProdottiFull prodotto = prodotti.get(k);
+                if(!prodotti2.contains(prodotto)){
+                    prodotti2.add(prodotto);
+                }
+                List<ProdottiFull> prodottoFiltrato = prodotti.stream().filter(p -> p.getId()==prodotto.getId()).toList();
+                int k1 = prodotti2.indexOf(prodotto);
+                for (ProdottiFull prodottoFiltrato1 : prodottoFiltrato){
+                    if (!prodotti2.get(k1).getUrl().containsAll(prodottoFiltrato1.getUrl())) {
+                        prodotti2.get(k1).getUrl().addAll(prodottoFiltrato1.getUrl());
+                    }
+                    if (!prodotti2.get(k1).getTaglieProdotto().containsAll(prodottoFiltrato1.getTaglieProdotto())) {
+                        prodotti2.get(k1).getTaglieProdotto().addAll(prodottoFiltrato1.getTaglieProdotto());
+                    }
+                    if (!prodotti2.get(k1).getNomeColore().containsAll(prodottoFiltrato1.getNomeColore())) {
+                        prodotti2.get(k1).getNomeColore().addAll(prodottoFiltrato1.getNomeColore());
+                    }
+                }
+            }
+            GestioneServlet.inviaRisposta(response, 200, prodotti2.toString(), true);
             return;
         }
 
@@ -115,8 +135,8 @@ public class ProdottiServlet extends HttpServlet{
                 String uniqueFileName = UUID.randomUUID().toString() + extension;
 
                 // Specifica la directory completa dove vuoi salvare le immagini
-                //String directory = "C:\\Users\\nicol\\Documents\\PROGETTI\\BNS SHOP\\JAVA - INTELLIJ\\src\\main\\webapp\\images";
-                String directory = "C:\\Users\\Emanuele Schino\\Desktop\\PERSONALE\\JAVA\\src\\main\\webapp\\images";
+                String directory = "C:\\Users\\nicol\\Documents\\PROGETTI\\BNS SHOP\\JAVA - INTELLIJ\\src\\main\\webapp\\images";
+                //String directory = "C:\\Users\\Emanuele Schino\\Desktop\\PERSONALE\\JAVA\\src\\main\\webapp\\images";
 
                 // Assicurati che la directory esista
                 Path dirPath = Paths.get(directory);

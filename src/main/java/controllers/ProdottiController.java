@@ -245,7 +245,7 @@ public class ProdottiController implements Controllers<Prodotti> {
             connection.setAutoCommit(false); // Avvia transazione
 
 
-    // region ESTRAZIONE E INSERIMENTO ID MODELLO SE NON ESISTE + AGGIORNAMENTO ID MODELLO NELLA TABELLA PRODOTTI
+    //region ESTRAZIONE E INSERIMENTO ID MODELLO SE NON ESISTE + AGGIORNAMENTO ID MODELLO NELLA TABELLA PRODOTTI
         // ESTRAZIONE ID MODELLO
 
             String query1 = "SELECT id_modello FROM prodotti WHERE id = ?";
@@ -373,7 +373,7 @@ public class ProdottiController implements Controllers<Prodotti> {
             preparedStatement8.executeBatch();
     //endregion
 
-    //region ELIMINA LE VECCHIE IMMAGINI E AGGIORNA CON QUELLE NUOVE
+    /*//region ELIMINA LE VECCHIE IMMAGINI E AGGIORNA CON QUELLE NUOVE
 
             String query100 = "SELECT id_immagine FROM immagini_has_prodotti WHERE id_prodotto = ?";
             PreparedStatement preparedStatement100 = connection.prepareStatement(query100);
@@ -443,7 +443,7 @@ public class ProdottiController implements Controllers<Prodotti> {
                 preparedStatement1000.setInt(2, objectid);
                 preparedStatement1000.executeUpdate();
             }
-    //endregion
+    //endregion*/
 
     //region ELIMINO ID MODELLO VECCHIO SE NON E' PIU UTILIZZATO
 
