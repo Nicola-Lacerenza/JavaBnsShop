@@ -104,9 +104,19 @@ public class ProdottiServlet extends HttpServlet{
                 // Gestione dei file
                 String fileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
 
+                // Estrai l'estensione dal nome originale
+                String extension = "";
+                int dotIndex = fileName.lastIndexOf('.');
+                if (dotIndex > 0) {
+                    extension = fileName.substring(dotIndex);
+                }
+
+                // Genera un nome univoco usando UUID e aggiungi l'estensione
+                String uniqueFileName = UUID.randomUUID().toString() + extension;
+
                 // Specifica la directory completa dove vuoi salvare le immagini
-                String directory = "C:\\Users\\nicol\\Documents\\PROGETTI\\BNS SHOP\\JAVA - INTELLIJ\\src\\main\\webapp\\images";
-                //String directory = "C:\\Users\\Emanuele Schino\\Desktop\\PERSONALE\\JAVA\\src\\main\\webapp\\images";
+                //String directory = "C:\\Users\\nicol\\Documents\\PROGETTI\\BNS SHOP\\JAVA - INTELLIJ\\src\\main\\webapp\\images";
+                String directory = "C:\\Users\\Emanuele Schino\\Desktop\\PERSONALE\\JAVA\\src\\main\\webapp\\images";
 
                 // Assicurati che la directory esista
                 Path dirPath = Paths.get(directory);
@@ -115,11 +125,11 @@ public class ProdottiServlet extends HttpServlet{
                 }
 
                 // Salva il file nella directory specificata
-                Path filePath = Paths.get(directory, fileName);
+                Path filePath = Paths.get(directory, uniqueFileName );
                 Files.copy(part.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
                 // Aggiungi l'URL del file alla lista
-                String fileUrl = "images/" + fileName;  // Path relativo o URL come preferisci gestirlo
+                String fileUrl = "images/" + uniqueFileName;  // Path relativo o URL come preferisci gestirlo
                 urls.add(fileUrl);
             }
         }
