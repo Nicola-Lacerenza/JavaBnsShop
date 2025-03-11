@@ -628,6 +628,7 @@ public class ProdottiController implements Controllers<Prodotti> {
 
     public List<ProdottiFull> getFullObject(int objectid){
         String query = "SELECT p.id,\n" +
+                "       m.id AS id_modello,\n" +
                 "       m.nome AS nome_modello,\n" +
                 "       m.descrizione AS descrizione_modello,\n" +
                 "       c.id AS id_categoria,\n" +
@@ -662,6 +663,7 @@ public class ProdottiController implements Controllers<Prodotti> {
     public List<ProdottiFull> getAllProducts(){
         String query="SELECT\n" +
                 "                    prodotti.id,\n" +
+                "                    modello.id AS id_modello,\n" +
                 "                    modello.nome AS nome_modello,\n" +
                 "                    modello.descrizione AS descrizione_modello,\n" +
                 "                    categoria.id AS id_categoria,\n" +

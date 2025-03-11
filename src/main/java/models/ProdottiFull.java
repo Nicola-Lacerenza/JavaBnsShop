@@ -13,6 +13,7 @@ import java.util.Optional;
 public class ProdottiFull implements Oggetti<ProdottiFull>{
 
     private final int id;
+    private final int idModello;
     private final String nomeModello ;
     private final String descrizioneModello ;
     private final int idCategoria;
@@ -27,8 +28,9 @@ public class ProdottiFull implements Oggetti<ProdottiFull>{
     private final List<String> url;
     private final List<String> nomeColore;
 
-    public ProdottiFull(int id, String nomeModello, String descrizioneModello,int idCategoria, String nomeCategoria, String target,int idBrand,String nomeBrand, String descrizioneBrand, int statoPubblicazione, double prezzo, /*List<String> tagliaEu, List<String> tagliaUk, List<String> tagliaUs,List<String> quantita,*/List<ProdottiTaglieEstratte> list, List<String> url, List<String> nomeColore) {
+    public ProdottiFull(int id,int idModello, String nomeModello, String descrizioneModello,int idCategoria, String nomeCategoria, String target,int idBrand,String nomeBrand, String descrizioneBrand, int statoPubblicazione, double prezzo, /*List<String> tagliaEu, List<String> tagliaUk, List<String> tagliaUs,List<String> quantita,*/List<ProdottiTaglieEstratte> list, List<String> url, List<String> nomeColore) {
         this.id = id;
+        this.idModello = idModello;
         this.nomeModello = nomeModello;
         this.descrizioneModello = descrizioneModello;
         this.idCategoria = idCategoria;
@@ -44,12 +46,13 @@ public class ProdottiFull implements Oggetti<ProdottiFull>{
         this.nomeColore = nomeColore;
     }
     public ProdottiFull() {
-        this(0,"","",0,"","",0,"","",0,0,new LinkedList<>(),new LinkedList<>(),new LinkedList<>());
+        this(0,0,"","",0,"","",0,"","",0,0,new LinkedList<>(),new LinkedList<>(),new LinkedList<>());
     }
 
     public int getId() {
         return id;
     }
+    public int getIdModello() { return idModello;}
 
     public String getNomeModello() {
         return nomeModello;
@@ -107,6 +110,7 @@ public class ProdottiFull implements Oggetti<ProdottiFull>{
     public Optional<ProdottiFull> convertDBToJava(ResultSet rs) {
         try{
             int id1 = rs.getInt("id");
+            int idModello1 = rs.getInt("id_modello");
             String nomeModello1 = rs.getString("nome_modello");
             String descrizioneModello1 = rs.getString("descrizione_modello");
             int idCategoria1 = rs.getInt("id_categoria");
@@ -129,7 +133,7 @@ public class ProdottiFull implements Oggetti<ProdottiFull>{
             tmp1.add(new ProdottiTaglieEstratte(new Taglia(0,taglia_Eu1,taglia_Uk1,taglia_Us1),new TaglieProdotti(0,0,id1,Integer.parseInt(quantita1))));
             tmp2.add(url1);
             tmp3.add(nomeColore1);
-            return Optional.of(new ProdottiFull(id1,nomeModello1,descrizioneModello1,idCategoria1,nomeCategoria1,target1,idBrand1,nomeBrand1,descrizioneBrand1, statoPubblicazione1,prezzo1,tmp1,tmp2,tmp3));
+            return Optional.of(new ProdottiFull(id1,idModello1,nomeModello1,descrizioneModello1,idCategoria1,nomeCategoria1,target1,idBrand1,nomeBrand1,descrizioneBrand1, statoPubblicazione1,prezzo1,tmp1,tmp2,tmp3));
         }catch (SQLException e){
             e.printStackTrace();
             return Optional.empty();
@@ -153,6 +157,7 @@ public class ProdottiFull implements Oggetti<ProdottiFull>{
     public String toString() {
         JSONObject output = new JSONObject();
         output.put("id",id);
+        output.put("id_modello",idModello);
         output.put("nome_modello",nomeModello);
         output.put("descrizione_modello",descrizioneModello);
         output.put("nome_categoria",nomeCategoria);
