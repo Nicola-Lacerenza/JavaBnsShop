@@ -6,7 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
 
-public class Indirizzo implements Oggetti<Indirizzo> {
+public class Indirizzi implements Oggetti<Indirizzi> {
     private final int id;
     private final String citta;
     private final String stato;
@@ -14,7 +14,7 @@ public class Indirizzo implements Oggetti<Indirizzo> {
     private final String indirizzo;
     private final int idCustomer;
 
-    public Indirizzo(int id, String citta, String stato, String cap, String indirizzo, int idCustomer) {
+    public Indirizzi(int id, String citta, String stato, String cap, String indirizzo, int idCustomer) {
         this.id = id;
         this.citta = citta;
         this.stato = stato;
@@ -22,7 +22,7 @@ public class Indirizzo implements Oggetti<Indirizzo> {
         this.indirizzo = indirizzo;
         this.idCustomer = idCustomer;
     }
-    public Indirizzo(){
+    public Indirizzi(){
         this(0,"","","","",0);
     }
 
@@ -51,7 +51,7 @@ public class Indirizzo implements Oggetti<Indirizzo> {
     }
 
     @Override
-    public Optional<Indirizzo> convertDBToJava(ResultSet rs) {
+    public Optional<Indirizzi> convertDBToJava(ResultSet rs) {
         try{
             int id1 = rs.getInt("id");
             String citta = rs.getString("citta");
@@ -59,7 +59,7 @@ public class Indirizzo implements Oggetti<Indirizzo> {
             String cap = rs.getString("cap");
             String indirizzo = rs.getString("indirizzo");
             int idCustomer = rs.getInt("id_customers");
-            return Optional.of(new Indirizzo(id1,citta,stato,cap,indirizzo,idCustomer));
+            return Optional.of(new Indirizzi(id1,citta,stato,cap,indirizzo,idCustomer));
         }catch (SQLException e){
             e.printStackTrace();
             return Optional.empty();

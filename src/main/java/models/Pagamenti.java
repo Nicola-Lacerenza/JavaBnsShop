@@ -8,7 +8,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Optional;
 
-public class Pagamento implements Oggetti<Pagamento>{
+public class Pagamenti implements Oggetti<Pagamenti>{
     private final int id;
     private final String nomeTitolare;
     private final String numeroCarta;
@@ -16,11 +16,11 @@ public class Pagamento implements Oggetti<Pagamento>{
     private final String codiceVerifica;
     private final int idCustomers;
 
-    public Pagamento(){
+    public Pagamenti(){
         this(0,"","",Calendar.getInstance(),"",0);
     }
 
-    public Pagamento(int id, String nomeTitolare, String numeroCarta, Calendar dataScadenza, String codiceVerifica, int idCustomers) {
+    public Pagamenti(int id, String nomeTitolare, String numeroCarta, Calendar dataScadenza, String codiceVerifica, int idCustomers) {
         this.id = id;
         this.nomeTitolare = nomeTitolare;
         this.numeroCarta = numeroCarta;
@@ -54,7 +54,7 @@ public class Pagamento implements Oggetti<Pagamento>{
     }
 
     @Override
-    public Optional<Pagamento> convertDBToJava(ResultSet rs) {
+    public Optional<Pagamenti> convertDBToJava(ResultSet rs) {
         try{
             int id1 = rs.getInt("id");
             String nomeTitolare1 = rs.getString("nome_titolare");
@@ -63,7 +63,7 @@ public class Pagamento implements Oggetti<Pagamento>{
             dataScadenza1.setTime(rs.getDate("data_scadenza"));
             String codiceVerifica1 = rs.getString("codice_verifica");
             int idCustomers1 = rs.getInt("id_customers");
-            return Optional.of(new Pagamento(id1,nomeTitolare1,numeroCarta1,dataScadenza1,codiceVerifica1,idCustomers1));
+            return Optional.of(new Pagamenti(id1,nomeTitolare1,numeroCarta1,dataScadenza1,codiceVerifica1,idCustomers1));
         }catch (SQLException e){
             e.printStackTrace();
             return Optional.empty();
