@@ -10,15 +10,15 @@ import java.util.Optional;
 
 public class Ordine implements Oggetti<Ordine>{
     private final int id;
-    private final int idCustomers;
+    private final int idUtente;
     private final int idPagamento;
     private final int idIndirizzo;
     private final String statoOrdine;
     private final Calendar dataOrdine;
 
-    public Ordine(int id, int idCustomers, int idPagamento, int idIndirizzo, String statoOrdine, Calendar dataOrdine) {
+    public Ordine(int id, int idUtente, int idPagamento, int idIndirizzo, String statoOrdine, Calendar dataOrdine) {
         this.id = id;
-        this.idCustomers = idCustomers;
+        this.idUtente = idUtente;
         this.idPagamento = idPagamento;
         this.idIndirizzo = idIndirizzo;
         this.statoOrdine = statoOrdine;
@@ -33,8 +33,8 @@ public class Ordine implements Oggetti<Ordine>{
         return id;
     }
 
-    public int getIdCustomers() {
-        return idCustomers;
+    public int getIdUtente() {
+        return idUtente;
     }
 
     public int getIdPagamento() {
@@ -57,13 +57,13 @@ public class Ordine implements Oggetti<Ordine>{
     public Optional<Ordine> convertDBToJava(ResultSet rs) {
         try{
             int id1 = rs.getInt("id");
-            int idCustomers = rs.getInt("id_customers");
+            int idUtente = rs.getInt("id_utente");
             int idPagamento = rs.getInt("id_pagamento");
             int idIndirizzo = rs.getInt("id_indirizzo");
             String statoOrdine = rs.getString("stato_ordine");
             Calendar dataOrdine = new GregorianCalendar();
             dataOrdine.setTime(rs.getDate("data_ordine"));
-            return Optional.of(new Ordine(id1,idCustomers,idPagamento,idIndirizzo,statoOrdine,dataOrdine));
+            return Optional.of(new Ordine(id1,idUtente,idPagamento,idIndirizzo,statoOrdine,dataOrdine));
         }catch (SQLException e){
             e.printStackTrace();
             return Optional.empty();
@@ -73,7 +73,7 @@ public class Ordine implements Oggetti<Ordine>{
     public String toString() {
         JSONObject output = new JSONObject();
         output.put("id",id);
-        output.put("id_customers",idCustomers);
+        output.put("id_utente",idUtente);
         output.put("id_pagamento",idPagamento);
         output.put("id_indirizzo",idIndirizzo);
         output.put("stato_ordine",statoOrdine);
