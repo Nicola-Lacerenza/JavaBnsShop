@@ -274,7 +274,9 @@ public class ProdottiServlet extends HttpServlet{
 
         // Estrazione dei campi non-file e dei file dalla request
         Map<String, String> formData = extractFormData(request);
-        List<String> imageUrls = processFileParts(request);
+        //List<String> imageUrls = processFileParts(request);
+        String imageUrls1 = formData.get("url");
+        JSONArray imageUrls = new JSONArray(imageUrls1);
 
         // Recupera i valori dal form
         Integer id = Integer.parseInt(formData.get("id"));
@@ -362,8 +364,8 @@ public class ProdottiServlet extends HttpServlet{
         }
 
         // Inserisci tutti gli url nella mappa
-        for (int j = 0; j < imageUrls.size(); j++) {
-            request0.put(index++, new RegisterServlet.RegisterFields("url" + j, imageUrls.get(j)));
+        for (int j = 0; j < imageUrls.length(); j++) {
+            request0.put(index++, new RegisterServlet.RegisterFields("url" + j, (String)imageUrls.get(j)));
         }
 
         // Inserisci tutti gli url nella mappa

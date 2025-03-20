@@ -373,9 +373,9 @@ public class ProdottiController implements Controllers<Prodotti> {
             preparedStatement8.executeBatch();
     //endregion
 
-    /*//region ELIMINA LE VECCHIE IMMAGINI E AGGIORNA CON QUELLE NUOVE
+    //region ELIMINA LE VECCHIE IMMAGINI E AGGIORNA CON QUELLE NUOVE
 
-            String query100 = "SELECT id_immagine FROM immagini_has_prodotti WHERE id_prodotto = ?";
+           /* String query100 = "SELECT id_immagine FROM immagini_has_prodotti WHERE id_prodotto = ?";
             PreparedStatement preparedStatement100 = connection.prepareStatement(query100);
             preparedStatement100.setInt(1, objectid);  // Impostiamo l'ID del prodotto
             ResultSet rs100 = preparedStatement100.executeQuery();
@@ -442,8 +442,8 @@ public class ProdottiController implements Controllers<Prodotti> {
                 preparedStatement1000.setInt(1, idImmagine);
                 preparedStatement1000.setInt(2, objectid);
                 preparedStatement1000.executeUpdate();
-            }
-    //endregion*/
+            }*/
+    //endregion
 
     //region ELIMINO ID MODELLO VECCHIO SE NON E' PIU UTILIZZATO
 
