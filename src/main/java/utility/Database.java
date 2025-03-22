@@ -34,6 +34,64 @@ public class Database{
         return DATABASE_URL;
     }
 
+    /*public static <T extends Oggetti<T>> boolean insertElement1(Map<Integer, RegisterServlet.RegisterFields> fields, String tableName) {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        String nomi = "";
+        String valori = "";
+        for (int i = 0;i<fields.size();i++){
+            RegisterServlet.RegisterFields attuale = fields.get(i);
+            nomi+=attuale.getKey();
+            valori+= "?";
+            if (i<(fields.size()-1)){
+                nomi+=",";
+                valori+=",";
+            }
+        }
+
+        String query="INSERT INTO "+tableName+"("+nomi+") VALUES("+valori+")";
+        boolean output;
+        Connection connection = null;
+        PreparedStatement statement = null;
+        try{
+            connection=DriverManager.getConnection(DATABASE_URL,DATABASE_USERNAME,DATABASE_PASSWORD);
+            statement=connection.prepareStatement(query);
+
+            for (int i = 0;i<fields.size();i++){
+                RegisterServlet.RegisterFields attuale = fields.get(i);
+                statement.setString(i+1,attuale.getValue());
+
+            }
+            statement.executeUpdate();
+            output = true;
+        }catch(SQLException exception){
+            exception.printStackTrace();
+            output = false;
+        }finally {
+            if (statement != null) {
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    //Questo non é un errore è un warning
+                    e.printStackTrace();
+                }
+            }
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    //Questo non é un errore è un warning
+                    e.printStackTrace();
+                }
+            }
+        }
+        return output;
+
+    }*/
+
     public static <T extends Oggetti<T>> boolean insertElement(Map<Integer, RegisterServlet.RegisterFields> fields, String tableName){
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");

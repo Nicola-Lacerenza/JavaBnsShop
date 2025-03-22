@@ -699,4 +699,9 @@ public class ProdottiController implements Controllers<Prodotti> {
     public List<Prodotti> getAllObjects() {
         return new LinkedList<>();
     }
+
+    @Override
+    public List<Prodotti> executeQuery(String query) {
+        return null;
+    }
 }

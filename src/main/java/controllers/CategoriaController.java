@@ -43,4 +43,9 @@ public class CategoriaController implements Controllers<Categoria> {
         return Database.getAllElements("categoria",new Categoria());
 
     }
+
+    @Override
+    public List<Categoria> executeQuery(String query) {
+        return null;
+    }
 }

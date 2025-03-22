@@ -44,4 +44,9 @@ public class FornitoriProdottiController implements Controllers<FornitoriProdott
     public List<FornitoriProdotti> getAllObjects() {
         return Database.getAllElements("fornitori_has_prodotti",new FornitoriProdotti());
     }
+
+    @Override
+    public List<FornitoriProdotti> executeQuery(String query) {
+        return null;
+    }
 }

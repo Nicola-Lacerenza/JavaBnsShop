@@ -27,6 +27,36 @@ public class GestioneServlet{
         writer.close();
     }
 
+    public static boolean isLogged(HttpServletRequest request,HttpServletResponse response) throws  IOException{
+        String token = request.getHeader("Authorization");
+        if (token==null){
+            return false;
+        }
+        String[] auth = token.split(" ");
+        if (auth.length<2){
+            return false;
+        }
+        return true;
+    }
+
+    public static String extractEmail(HttpServletRequest request,HttpServletResponse response) throws IOException{
+
+        String token = request.getHeader("Authorization");
+        if (token==null){
+            return "";
+        }
+        String[] auth = token.split(" ");
+        if (auth.length<2){
+            return "";
+        }
+        String auth1 = auth[1];
+        String email = GestioneToken.validateToken(auth1);
+        if (email.equals("")){
+            return "";
+        }
+        return email;
+    }
+
     public static String validaToken(HttpServletRequest request,HttpServletResponse response) throws IOException{
 
         String token = request.getHeader("Authorization");

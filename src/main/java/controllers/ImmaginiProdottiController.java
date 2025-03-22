@@ -45,4 +45,9 @@ public class ImmaginiProdottiController implements Controllers<ImmaginiProdotti>
     public List<ImmaginiProdotti> getAllObjects() {
         return Database.getAllElements("immagini_has_prodotti",new ImmaginiProdotti());
     }
+
+    @Override
+    public List<ImmaginiProdotti> executeQuery(String query) {
+        return null;
+    }
 }

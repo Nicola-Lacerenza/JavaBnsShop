@@ -44,4 +44,9 @@ public class FornitoriController implements Controllers<Fornitori> {
     public List<Fornitori> getAllObjects() {
         return Database.getAllElements("fornitori",new Fornitori());
     }
+
+    @Override
+    public List<Fornitori> executeQuery(String query) {
+        return null;
+    }
 }

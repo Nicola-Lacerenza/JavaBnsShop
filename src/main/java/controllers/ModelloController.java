@@ -47,4 +47,9 @@ public class ModelloController implements Controllers<Modello> {
     public List<Modello> getAllObjects() {
         return Database.getAllElements("modello",new Modello());
     }
+
+    @Override
+    public List<Modello> executeQuery(String query) {
+        return null;
+    }
 }

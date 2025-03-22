@@ -44,4 +44,9 @@ public class ColoreController implements Controllers<Colore> {
         return Database.getAllElements("colore",new Colore());
 
     }
+
+    @Override
+    public List<Colore> executeQuery(String query) {
+        return null;
+    }
 }

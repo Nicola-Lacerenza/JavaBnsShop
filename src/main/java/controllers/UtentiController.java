@@ -59,6 +59,16 @@ public class UtentiController implements Controllers<Utenti> {
         return user.getFirst().getRuolo().equals("admin");
     }
 
+    public Optional<Utenti> getUserByEmail(String email){
+        String query = "SELECT * FROM utenti WHERE email='"+email+"'";
+        List<Utenti> user = Database.executeGenericQuery("utenti",new Utenti(),query);
+        if (user.isEmpty()){
+            return Optional.empty();
+        }
+        return Optional.of(user.getFirst());
+    }
+
+
     public List<Utenti> executeQuery(String query){
         return Database.executeGenericQuery("utenti",new Utenti(),query);
     }

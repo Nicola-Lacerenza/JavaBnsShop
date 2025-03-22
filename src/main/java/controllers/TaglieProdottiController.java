@@ -44,4 +44,9 @@ public class TaglieProdottiController implements Controllers<TaglieProdotti> {
     public List<TaglieProdotti> getAllObjects() {
         return Database.getAllElements("taglie_has_prodotti",new TaglieProdotti());
     }
+
+    @Override
+    public List<TaglieProdotti> executeQuery(String query) {
+        return null;
+    }
 }

@@ -8,7 +8,6 @@ import java.util.Optional;
 
 public class Indirizzi implements Oggetti<Indirizzi> {
     private final int id;
-    private final int idUtente;
     private final String nome;
     private final String cognome;
     private final String citta;
@@ -19,9 +18,8 @@ public class Indirizzi implements Oggetti<Indirizzi> {
     private final String numeroTelefono;
 
 
-    public Indirizzi(int id, int idUtente ,String nome,String cognome, String citta, String stato, String cap, String indirizzo,String email, String numeroTelefono) {
+    public Indirizzi(int id,String nome,String cognome, String citta, String stato, String cap, String indirizzo,String email, String numeroTelefono) {
         this.id = id;
-        this.idUtente = idUtente;
         this.nome = nome;
         this.cognome = cognome;
         this.citta = citta;
@@ -32,14 +30,11 @@ public class Indirizzi implements Oggetti<Indirizzi> {
         this.numeroTelefono = numeroTelefono;
     }
     public Indirizzi(){
-        this(0,0,"","","","","","","","");
+        this(0,"","","","","","","","");
     }
 
     public int getId() {
         return id;
-    }
-    public int getIdUtente() {
-        return idUtente;
     }
     public String getNome() {
         return nome;
@@ -57,7 +52,6 @@ public class Indirizzi implements Oggetti<Indirizzi> {
     public Optional<Indirizzi> convertDBToJava(ResultSet rs) {
         try{
             int id1 = rs.getInt("id");
-            int idUtente = rs.getInt("id_utente");
             String nome = rs.getString("nome");
             String cognome = rs.getString("cognome");
             String citta = rs.getString("citta");
@@ -66,7 +60,7 @@ public class Indirizzi implements Oggetti<Indirizzi> {
             String indirizzo = rs.getString("indirizzo");
             String email = rs.getString("email");
             String numeroTelefono = rs.getString("numero_telefono");
-            return Optional.of(new Indirizzi(id1,idUtente,nome,cognome,citta,stato,cap,indirizzo,email,numeroTelefono));
+            return Optional.of(new Indirizzi(id1,nome,cognome,citta,stato,cap,indirizzo,email,numeroTelefono));
         }catch (SQLException e){
             e.printStackTrace();
             return Optional.empty();
@@ -76,7 +70,6 @@ public class Indirizzi implements Oggetti<Indirizzi> {
     public String toString() {
         JSONObject output = new JSONObject();
         output.put("id",id);
-        output.put("id_utente",idUtente);
         output.put("nome",nome);
         output.put("cognome",cognome);
         output.put("citta",citta);

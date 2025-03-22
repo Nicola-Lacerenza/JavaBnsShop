@@ -43,4 +43,9 @@ public class ColoreProdottiController implements Controllers<ColoreProdotti> {
     public List<ColoreProdotti> getAllObjects() {
         return Database.getAllElements("colore_has_prodotti",new ColoreProdotti());
     }
+
+    @Override
+    public List<ColoreProdotti> executeQuery(String query) {
+        return null;
+    }
 }

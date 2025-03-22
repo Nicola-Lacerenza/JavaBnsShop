@@ -17,6 +17,6 @@ public interface Controllers<E> {
 
     List<E> getAllObjects();
 
-
+    List<E> executeQuery(String query);
 
 }

@@ -44,4 +44,9 @@ public class BrandController implements Controllers<Brand> {
     public List<Brand> getAllObjects() {
         return Database.getAllElements("brand",new Brand());
     }
+
+    @Override
+    public List<Brand> executeQuery(String query) {
+        return null;
+    }
 }

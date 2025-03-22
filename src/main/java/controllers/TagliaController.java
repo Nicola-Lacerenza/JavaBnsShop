@@ -43,4 +43,9 @@ public class TagliaController implements Controllers<Taglia> {
     public List<Taglia> getAllObjects() {
         return Database.getAllElements("taglia",new Taglia());
     }
+
+    @Override
+    public List<Taglia> executeQuery(String query) {
+        return null;
+    }
 }

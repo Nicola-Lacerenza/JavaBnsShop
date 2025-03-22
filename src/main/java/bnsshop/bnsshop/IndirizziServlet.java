@@ -1,17 +1,21 @@
 package bnsshop.bnsshop;
 
-import controllers.BrandController;
+
 import controllers.IndirizziController;
+
+import controllers.UtentiController;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import models.Fornitori;
 import models.Indirizzi;
+import models.Utenti;
 import org.json.JSONObject;
+import utility.Database;
 import utility.GestioneServlet;
 
+import javax.xml.crypto.Data;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.*;
@@ -23,7 +27,7 @@ public class IndirizziServlet extends HttpServlet {
     @Override
     public void init() throws ServletException {
         super.init();
-        controller = new IndirizziController();
+        controller = new IndirizziController("");
     }
 
     @Override
@@ -37,49 +41,21 @@ public class IndirizziServlet extends HttpServlet {
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException,IOException{
-        int id;
-        try{
-            String idString = request.getParameter("id");
-            if (idString != null) {
-                id = Integer.parseInt(idString);
-            } else {
-                id = -1;
-            }
-        }catch(NumberFormatException exception){
-            id=-1;
-        }
-        Optional<Indirizzi> indirizzo=null;
-        List<Indirizzi> indirizzi=null;
 
-        if (id!=-1){
-            indirizzo = this.controller.getObject(id);
-        }else{
-            indirizzi = this.controller.getAllObjects();
+        boolean logged = GestioneServlet.isLogged(request,response);
+        if (!logged) {
+            GestioneServlet.inviaRisposta(response,200,"[]",true);
+            return;
         }
-
-        if (indirizzo!=null || indirizzi!=null){
-            if (indirizzo!=null){
-                GestioneServlet.inviaRisposta(response,200,indirizzo.get().toString(),true);
-            }else{
-                GestioneServlet.inviaRisposta(response,200,indirizzi.toString(),true);
-            }
-        }else{
-            String message = "\"Internal server error\"";
-            GestioneServlet.inviaRisposta(response,500,message,false);
-        }
+        String email = GestioneServlet.validaToken(request,response);
+        controller = new IndirizziController(email);
+        List<Indirizzi> indirizzi = controller.getAllObjects();
+        GestioneServlet.inviaRisposta(response,200,indirizzi.toString(),true);
     }
 
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException,IOException{
-        String email = GestioneServlet.validaToken(request,response);
-        if (email.isEmpty()){
-            return;
-        }
-        String ruolo = GestioneServlet.controllaRuolo(email);
-        if(!ruolo.equals("admin")){
-            GestioneServlet.inviaRisposta(response,403,"\"Ruolo non corretto!\"",false);
-            return;
-        }
+
         BufferedReader reader=request.getReader();
         String row=reader.readLine();
         List<String> rows = new ArrayList<>();
@@ -93,7 +69,23 @@ public class IndirizziServlet extends HttpServlet {
         }
         String json=builder.toString();
         JSONObject object = new JSONObject(json);
-        String id_utente= object.getString("id_utente");
+        boolean isLogged = GestioneServlet.isLogged(request,response);
+        String id_utente;
+        if (!isLogged){
+            id_utente = "";
+        }else{
+            UtentiController controllerUtenti = new UtentiController();
+            String email = GestioneServlet.extractEmail(request,response);
+            Optional<Utenti> user = controllerUtenti.getUserByEmail(email);
+            if (user.isEmpty()){
+                String message = "\"Errore durante la registrazione.\"";
+                GestioneServlet.inviaRisposta(response,500,message,false);
+                return;
+            }
+            id_utente = String.valueOf(user.get().getId());
+        }
+
+
         String nome= object.getString("nome");
         String cognome= object.getString("cognome");
         String citta= object.getString("citta");
@@ -112,6 +104,36 @@ public class IndirizziServlet extends HttpServlet {
         request0.put(6,new RegisterServlet.RegisterFields("indirizzo",indirizzo));
         request0.put(7,new RegisterServlet.RegisterFields("email",email1));
         request0.put(8,new RegisterServlet.RegisterFields("numero_telefono",numero_telefono));
+
+
+        /*boolean isLogged = GestioneServlet.isLogged(request,response);
+        if (!isLogged){
+            boolean result = Database.insertElement(request0,"indirizzi");
+            if (!result){
+                String message = "\"Errore durante la registrazione.\"";
+                GestioneServlet.inviaRisposta(response,500,message,false);
+            }else{
+                String registrazione = "\"Registrazione effettuata correttamente.\"";
+                GestioneServlet.inviaRisposta(response,201,registrazione,true);
+            }
+        }else{
+            String email = GestioneServlet.validaToken(request,response);
+            controller = new IndirizziController(email);
+            String query1 = "INSERT INTO indirizzi(nome,cognome,citta,stato,cap,indirizzo,email,numero_telefono) VALUES ('"+nome+"','"+cognome+"''"+citta+"','"+stato+"''"+cap+"','"+indirizzo+"''"+email1+"','"+numero_telefono+"')";
+            String query2 = "INSERT INTO indirizzi_has_utenti(id_utente,id_indirizzo) VALUES ('"+1+"','"+2+"')";
+            List<String> queries = new LinkedList<>();
+            queries.add(query1);
+            queries.add(query2);
+            boolean result = Database.executeQueries(queries);
+            if (!result){
+                String message = "\"Errore durante la registrazione.\"";
+                GestioneServlet.inviaRisposta(response,500,message,false);
+            }else{
+                String registrazione = "\"Registrazione effettuata correttamente.\"";
+                GestioneServlet.inviaRisposta(response,201,registrazione,true);
+            }
+        }*/
+
         if (controller.insertObject(request0)) {
             String registrazione = "\"Registrazione effettuata correttamente.\"";
             GestioneServlet.inviaRisposta(response,201,registrazione,true);

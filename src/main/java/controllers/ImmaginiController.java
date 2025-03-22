@@ -43,4 +43,9 @@ public class ImmaginiController implements Controllers<Immagini> {
     public List<Immagini> getAllObjects() {
         return Database.getAllElements("immagini",new Immagini());
     }
+
+    @Override
+    public List<Immagini> executeQuery(String query) {
+        return null;
+    }
 }
