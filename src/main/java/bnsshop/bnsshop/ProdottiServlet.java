@@ -120,6 +120,7 @@ public class ProdottiServlet extends HttpServlet{
                 String fieldValue = new BufferedReader(new InputStreamReader(part.getInputStream()))
                         .lines().collect(Collectors.joining("\n"));
                 formData.put(fieldName, fieldValue);
+
             } else {
                 // Gestione dei file
                 String fileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
