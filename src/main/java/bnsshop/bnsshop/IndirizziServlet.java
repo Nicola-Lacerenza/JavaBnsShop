@@ -83,7 +83,6 @@ public class IndirizziServlet extends HttpServlet {
             id_utente = String.valueOf(user.get().getId());
         }
 
-
         String nome= object.getString("nome");
         String cognome= object.getString("cognome");
         String citta= object.getString("citta");
@@ -102,35 +101,6 @@ public class IndirizziServlet extends HttpServlet {
         request0.put(6,new RegisterServlet.RegisterFields("indirizzo",indirizzo));
         request0.put(7,new RegisterServlet.RegisterFields("email",email1));
         request0.put(8,new RegisterServlet.RegisterFields("numero_telefono",numero_telefono));
-
-
-        /*boolean isLogged = GestioneServlet.isLogged(request,response);
-        if (!isLogged){
-            boolean result = Database.insertElement(request0,"indirizzi");
-            if (!result){
-                String message = "\"Errore durante la registrazione.\"";
-                GestioneServlet.inviaRisposta(response,500,message,false);
-            }else{
-                String registrazione = "\"Registrazione effettuata correttamente.\"";
-                GestioneServlet.inviaRisposta(response,201,registrazione,true);
-            }
-        }else{
-            String email = GestioneServlet.validaToken(request,response);
-            controller = new IndirizziController(email);
-            String query1 = "INSERT INTO indirizzi(nome,cognome,citta,stato,cap,indirizzo,email,numero_telefono) VALUES ('"+nome+"','"+cognome+"''"+citta+"','"+stato+"''"+cap+"','"+indirizzo+"''"+email1+"','"+numero_telefono+"')";
-            String query2 = "INSERT INTO indirizzi_has_utenti(id_utente,id_indirizzo) VALUES ('"+1+"','"+2+"')";
-            List<String> queries = new LinkedList<>();
-            queries.add(query1);
-            queries.add(query2);
-            boolean result = Database.executeQueries(queries);
-            if (!result){
-                String message = "\"Errore durante la registrazione.\"";
-                GestioneServlet.inviaRisposta(response,500,message,false);
-            }else{
-                String registrazione = "\"Registrazione effettuata correttamente.\"";
-                GestioneServlet.inviaRisposta(response,201,registrazione,true);
-            }
-        }*/
 
         if (controller.insertObject(request0)) {
             String registrazione = "\"Registrazione effettuata correttamente.\"";
