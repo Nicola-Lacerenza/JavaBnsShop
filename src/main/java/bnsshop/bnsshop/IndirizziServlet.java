@@ -12,10 +12,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import models.Indirizzi;
 import models.Utenti;
 import org.json.JSONObject;
-import utility.Database;
 import utility.GestioneServlet;
 
-import javax.xml.crypto.Data;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.*;
@@ -145,15 +143,7 @@ public class IndirizziServlet extends HttpServlet {
 
     @Override
     public void doPut(HttpServletRequest request,HttpServletResponse response) throws ServletException,IOException{
-        String email = GestioneServlet.validaToken(request,response);
-        if (email.isEmpty()){
-            return;
-        }
-        String ruolo = GestioneServlet.controllaRuolo(email);
-        if(!ruolo.equals("admin")){
-            GestioneServlet.inviaRisposta(response,403,"\"Ruolo non corretto!\"",false);
-            return;
-        }
+
         int id= Integer.parseInt((String) request.getParameter("id"));
         BufferedReader reader=request.getReader();
         String row=reader.readLine();
