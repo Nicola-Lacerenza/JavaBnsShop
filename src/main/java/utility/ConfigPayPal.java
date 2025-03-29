@@ -12,7 +12,7 @@ public class ConfigPayPal {
 
     private ConfigPayPal(){}
 
-    public static Optional<APIContext> getContext(){
+    /*public static Optional<APIContext> getContext(){
 
         Map<String,String> paypalKeys = GestioneFileTesto.leggiFile("PaypalKeys.txt");
 
@@ -29,5 +29,5 @@ public class ConfigPayPal {
         }
 
         return Optional.of(context);
-    }
+    }*/
 }
