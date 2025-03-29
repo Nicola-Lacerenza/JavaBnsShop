@@ -12,8 +12,10 @@ public class GestioneFileTesto {
         Map<String,String> output = new HashMap<>();
         FileInputStream fis;
         try{
-            fis = new FileInputStream(nomeFile);
+            String directory = System.getProperty("user.home");
+            fis = new FileInputStream(directory+ "\\" +nomeFile);
         }catch (FileNotFoundException e){
+
             e.printStackTrace();
             return new HashMap<>();
         }

@@ -11,12 +11,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.json.JSONObject;
 import utility.ConfigPayPal;
-import utility.GestioneFileTesto;
+
 import utility.GestioneServlet;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 @WebServlet(name = "ConfermaPagamentoServlet", value = "/ConfermaPagamentoServlet")
@@ -35,7 +33,7 @@ public class ConfermaPagamentoServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-        Optional<APIContext> context = ConfigPayPal.getContext();
+        /*Optional<APIContext> context = ConfigPayPal.getContext();
         if (context.isEmpty()){
             GestioneServlet.inviaRisposta(response,500,"Errore Durante il Pagamento",false);
             return;
@@ -60,6 +58,6 @@ public class ConfermaPagamentoServlet extends HttpServlet {
             risposta.put("error","Pagamento non Completato");
             GestioneServlet.inviaRisposta(response,500,risposta.toString(4),false);
 
-        }
+        }*/
     }
 }
