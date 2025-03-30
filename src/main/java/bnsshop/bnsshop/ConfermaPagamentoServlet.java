@@ -1,21 +1,12 @@
 package bnsshop.bnsshop;
 
-import com.paypal.api.payments.Payment;
-import com.paypal.api.payments.PaymentExecution;
-import com.paypal.core.rest.APIContext;
-import com.paypal.core.rest.PayPalRESTException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.json.JSONObject;
-import utility.ConfigPayPal;
-
-import utility.GestioneServlet;
 
 import java.io.IOException;
-import java.util.Optional;
 
 @WebServlet(name = "ConfermaPagamentoServlet", value = "/ConfermaPagamentoServlet")
 

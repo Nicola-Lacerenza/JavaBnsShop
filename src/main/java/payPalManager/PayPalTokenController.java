@@ -1,14 +1,15 @@
-package controllers;
+package payPalManager;
 
 import bnsshop.bnsshop.RegisterServlet;
-import models.PaypalToken;
+import controllers.Controllers;
+import payPalManager.PaypalToken;
 import utility.Database;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class PayPalTokenController implements Controllers<PaypalToken>{
+public class PayPalTokenController implements Controllers<PaypalToken> {
 
     public PayPalTokenController(){
     }
@@ -44,24 +45,5 @@ public class PayPalTokenController implements Controllers<PaypalToken>{
         return null;
     }
 
-    public boolean isTokenValid(PaypalToken token){
 
-        int expiresIn = token.getExpiresIn();
-        String nonce = token.getNonce();
-        String timestamp = nonce.substring(0,20);
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'",Locale.UK);
-        Calendar now = new GregorianCalendar(Locale.UK);
-        Calendar calendar = new GregorianCalendar();
-        try {
-            calendar.setTime(sdf.parse(timestamp));
-
-        }catch (ParseException e){
-            e.printStackTrace();
-            return false;
-        }
-        if (now.getTimeInMillis() - calendar.getTimeInMillis()<(expiresIn*1000)){
-            return true;
-        }
-        return false;
-    }
 }
