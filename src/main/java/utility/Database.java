@@ -142,6 +142,70 @@ public class Database{
         return output;
     }
 
+    public static <T extends Oggetti<T>> int insertElementExtractId(Map<Integer, QueryFields> fields, String tableName){
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        String nomi = "";
+        String valori = "";
+        for (int i = 0;i<fields.size();i++){
+            QueryFields attuale = fields.get(i);
+            nomi+=attuale.getFieldName();
+            valori += "?";
+            if (i<(fields.size()-1)){
+                nomi+=",";
+                valori+=",";
+            }
+        }
+        String query="INSERT INTO "+tableName+"("+nomi+") VALUES("+valori+")";
+        int output;
+        Connection connection = null;
+        PreparedStatement statement = null;
+        try{
+            connection=DriverManager.getConnection(DATABASE_URL,DATABASE_USERNAME,DATABASE_PASSWORD);
+            statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            for (int index : fields.keySet()){
+                if (fields.get(index).getFieldType().equals(TipoVariabile.string)){
+                    statement.setString(index,(String)fields.get(index).getFieldValue());
+                } else if (fields.get(index).getFieldType().equals(TipoVariabile.longNumber)){
+                    statement.setInt(index,(Integer) fields.get(index).getFieldValue());
+                }
+            }
+
+            ResultSet rs = statement.executeQuery();
+            if (rs.next()) {
+                output = rs.getInt("id");
+            } else {
+                throw new SQLException("Id non estratto");
+            }
+            statement.executeUpdate();
+
+        }catch(SQLException exception){
+            exception.printStackTrace();
+            output = -1;
+        }finally {
+            if (statement != null) {
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    //Questo non é un errore è un warning
+                    e.printStackTrace();
+                }
+            }
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    //Questo non é un errore è un warning
+                    e.printStackTrace();
+                }
+            }
+        }
+        return output;
+    }
+
     public static boolean updateElement(int id,Map<Integer, RegisterServlet.RegisterFields> fields, String tablename){
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
