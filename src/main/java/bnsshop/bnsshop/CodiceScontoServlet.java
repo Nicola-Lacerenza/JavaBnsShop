@@ -92,7 +92,6 @@ public class CodiceScontoServlet extends HttpServlet{
         }
         String json=builder.toString();
         JSONObject object = new JSONObject(json);
-        //String id = object.getString("id");
         int idCategoria = object.getInt("categoria");
         String codice = object.getString("codice");
         int valore = object.getInt("valore");
@@ -116,7 +115,7 @@ public class CodiceScontoServlet extends HttpServlet{
         request0.put(7,new RegisterServlet.RegisterFields("uso_per_utente",String.valueOf(usoPerUtente)));
         request0.put(8,new RegisterServlet.RegisterFields("minimo_acquisto",String.valueOf(minimoAcquisto)));
         request0.put(9,new RegisterServlet.RegisterFields("attivo",String.valueOf(attivo)));
-        request0.put(10,new RegisterServlet.RegisterFields("categoria",String.valueOf(attivo)));
+        request0.put(10,new RegisterServlet.RegisterFields("categoria",String.valueOf(idCategoria)));
         if (controller.insertObject(request0)) {
             String registrazione = "\"Registrazione effettuata correttamente.\"";
             GestioneServlet.inviaRisposta(response,201,registrazione,true);
@@ -162,6 +161,7 @@ public class CodiceScontoServlet extends HttpServlet{
         data.put(7,new RegisterServlet.RegisterFields("uso_per_utente","" + object.getString("uso_per_utente")));
         data.put(8,new RegisterServlet.RegisterFields("minimo_acquisto","" + object.getString("minimo_acquisto")));
         data.put(9,new RegisterServlet.RegisterFields("attivo","" + object.getString("attivo")));
+        data.put(10,new RegisterServlet.RegisterFields("categoria","" + object.getString("categoria")));
         if (controller.updateObject(id,data)){
             String message="\"Product Updated Correctly.\"";
             GestioneServlet.inviaRisposta(response,200,message,true);

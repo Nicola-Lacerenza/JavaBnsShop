@@ -64,6 +64,7 @@ public class CodiceScontoController implements Controllers<CodiceSconto> {
             PreparedStatement preparedStatement2 = connection.prepareStatement(query2);
             preparedStatement2.setInt(1, Integer.parseInt(request.get(10).getValue()));
             preparedStatement2.setInt(2, idCodiceSconto);
+            preparedStatement2.executeUpdate();
 
 //endregion
 
@@ -103,8 +104,64 @@ public class CodiceScontoController implements Controllers<CodiceSconto> {
         if (objectid <= 0) {
             return false;
         }
-        return Database.deleteElement(objectid,"codice_sconto");
+
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Driver JDBC non trovato", e);
+        }
+
+        Connection connection = null;
+        List<PreparedStatement> statementList = new LinkedList<>();
+        boolean output = false;
+        try {
+
+            // APERTURA CONNESSIONE
+
+            connection = DriverManager.getConnection(Database.getDatabaseUrl(), Database.getDatabaseUsername(), Database.getDatabasePassword());
+            connection.setAutoCommit(false); // Avvia transazione
+
+            // ELIMINA I RIFERIMENTI DALLA TABELLA CODICESCONTO_HAS_CATEGORIA
+
+            String query1 = "DELETE FROM `codice_sconto_has_categoria` WHERE id_codicesconto = ?";
+            PreparedStatement preparedStatement1 = connection.prepareStatement(query1);
+            preparedStatement1.setInt(1, objectid);
+            preparedStatement1.executeUpdate();
+
+            // ELIMINA I RIFERIMENTI DALLA TABELLA CODICESCONTO_HAS_CATEGORIA
+
+            String query2 = "DELETE FROM `codice_sconto` WHERE id = ?";
+            PreparedStatement preparedStatement2 = connection.prepareStatement(query2);
+            preparedStatement2.setInt(1, objectid);
+            preparedStatement2.executeUpdate();
+
+            connection.commit();
+            output = true;
+        } catch (SQLException e) {
+
+            // Gestione errori e rollback in caso di fallimento
+            e.printStackTrace();
+            if (connection != null) {
+                try {
+                    connection.rollback();
+                } catch (SQLException rollbackEx) {
+                    rollbackEx.printStackTrace();
+                }
+            }
+            output = false;
+        } finally {
+            // Chiusura connessione e statement
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException closeEx) {
+                    closeEx.printStackTrace();
+                }
+            }
+        }
+        return output;
     }
+
 
     @Override
     public Optional<CodiceSconto> getObject(int objectid) {

@@ -4,7 +4,7 @@ import controllers.Controllers;
 import controllers.UtentiController;
 import models.ProdottiFull;
 import models.Utenti;
-import payPalManager.*;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -23,7 +23,7 @@ import java.util.*;
 @WebServlet(name = "CreaPagamento", value = "/CreaPagamento")
 public class CreaPagamentoServlet extends HttpServlet {
 
-    private Controllers<PaypalToken> controller;
+    /*private Controllers<PaypalToken> controller;
 
     @Override
     public void init() throws ServletException {
@@ -142,6 +142,6 @@ public class CreaPagamentoServlet extends HttpServlet {
             GestioneServlet.inviaRisposta(response,200,"\""+linkFiltrato.getFirst().getHref()+"\"",true);
         }
 
-    }
+    }*/
 
 }
