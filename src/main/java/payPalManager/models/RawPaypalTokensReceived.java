@@ -16,7 +16,7 @@ public final class RawPaypalTokensReceived implements Cloneable,Serializable,Com
     private final String scope;
     private final String tokenType;
     private final String appId;
-    private final long expiresIn;
+    private final int expiresIn;
     private final String nonce;
 
     public RawPaypalTokensReceived(){
@@ -57,7 +57,7 @@ public final class RawPaypalTokensReceived implements Cloneable,Serializable,Com
         return appId;
     }
 
-    public long getExpiresIn(){
+    public int getExpiresIn(){
         return expiresIn;
     }
 
@@ -135,14 +135,14 @@ public final class RawPaypalTokensReceived implements Cloneable,Serializable,Com
         String scope1;
         String tokenType1;
         String appId1;
-        long expiresIn1;
+        int expiresIn1;
         String nonce1;
         try{
             accessToken1 = json.getString("access_token");
             scope1 = json.getString("scope");
             tokenType1 = json.getString("token_type");
             appId1 = json.getString("app_id");
-            expiresIn1 = json.getLong("expires_in");
+            expiresIn1 = json.getInt("expires_in");
             nonce1 = json.getString("nonce");
         }catch(JSONException exception){
             exception.printStackTrace();
@@ -163,7 +163,7 @@ public final class RawPaypalTokensReceived implements Cloneable,Serializable,Com
         private String scope;
         private String tokenType;
         private String appId;
-        private long expiresIn;
+        private int expiresIn;
         private String nonce;
 
         public Builder(){
@@ -171,7 +171,7 @@ public final class RawPaypalTokensReceived implements Cloneable,Serializable,Com
             scope = "";
             tokenType = "";
             appId = "";
-            expiresIn = 0L;
+            expiresIn = 0;
             nonce = "";
         }
 
@@ -195,7 +195,7 @@ public final class RawPaypalTokensReceived implements Cloneable,Serializable,Com
             return this;
         }
 
-        public Builder setExpiresIn(long expiresIn){
+        public Builder setExpiresIn(int expiresIn){
             this.expiresIn = expiresIn;
             return this;
         }

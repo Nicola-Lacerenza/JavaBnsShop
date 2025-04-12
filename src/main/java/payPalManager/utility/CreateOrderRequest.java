@@ -77,14 +77,14 @@ public final class CreateOrderRequest extends PaypalAPIRequest<PaypalOrdersCreat
 
         Map<Integer, QueryFields<? extends Comparable<?>>> fields = new HashMap<>();
         try {
-            fields.put(0, new QueryFields<>("id_utente", userId, TipoVariabile.longNumber));
-            fields.put(1, new QueryFields<>("id_ordine_paypal", rawPaypalOrder.getId(), TipoVariabile.string));
-            fields.put(2, new QueryFields<>("id_pagamento",1, TipoVariabile.longNumber));
-            fields.put(3, new QueryFields<>("id_indirizzo", indirizzoId, TipoVariabile.longNumber));
-            fields.put(4, new QueryFields<>("stato_ordine", rawPaypalOrder.getStatus(), TipoVariabile.string));
-            fields.put(5, new QueryFields<>("importo", amount, TipoVariabile.realNumber));
-            fields.put(6, new QueryFields<>("valuta", currency, TipoVariabile.string));
-            fields.put(7, new QueryFields<>("locale_utente", locale, TipoVariabile.string));
+            fields.put(1, new QueryFields<>("id_utente", userId, TipoVariabile.longNumber));
+            fields.put(2, new QueryFields<>("id_ordine_paypal", rawPaypalOrder.getId(), TipoVariabile.string));
+            fields.put(3, new QueryFields<>("id_pagamento",1, TipoVariabile.longNumber));
+            fields.put(4, new QueryFields<>("id_indirizzo", indirizzoId, TipoVariabile.longNumber));
+            fields.put(5, new QueryFields<>("stato_ordine", rawPaypalOrder.getStatus(), TipoVariabile.string));
+            fields.put(6, new QueryFields<>("importo", amount, TipoVariabile.realNumber));
+            fields.put(7, new QueryFields<>("valuta", currency, TipoVariabile.string));
+            fields.put(8, new QueryFields<>("locale_utente", locale, TipoVariabile.string));
         }catch (SQLException e){
             e.printStackTrace();
             return Optional.empty();

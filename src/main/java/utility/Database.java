@@ -13,7 +13,7 @@ public class Database{
     //Variabili di servizio per interagire con il database
     private static final String DATABASE_NAME="mydb" ;
     private static final String DATABASE_USERNAME="root";
-    private static final String DATABASE_PASSWORD="root";
+    private static final String DATABASE_PASSWORD="";
     private static final String DATABASE_URL="jdbc:mysql://localhost:3306/" + DATABASE_NAME;
 
     private Database(){}
@@ -164,11 +164,13 @@ public class Database{
         try{
             connection=DriverManager.getConnection(DATABASE_URL,DATABASE_USERNAME,DATABASE_PASSWORD);
             statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            for (int index : fields.keySet()){
+            for (int index = 1;index <= fields.size();index++){
                 if (fields.get(index).getFieldType().equals(TipoVariabile.string)){
                     statement.setString(index,(String)fields.get(index).getFieldValue());
                 } else if (fields.get(index).getFieldType().equals(TipoVariabile.longNumber)){
                     statement.setInt(index,(Integer) fields.get(index).getFieldValue());
+                }else if (fields.get(index).getFieldType().equals(TipoVariabile.realNumber)){
+                    statement.setDouble(index,(Double)(fields.get(index).getFieldValue()));
                 }
             }
 

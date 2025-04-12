@@ -2,6 +2,7 @@ package payPalManager.utility;
 
 import bnsshop.bnsshop.RegisterServlet;
 import exceptions.ParserException;
+import org.json.JSONException;
 import org.json.JSONObject;
 import payPalManager.models.PaypalTokens;
 import payPalManager.models.RawPaypalTokensReceived;
@@ -67,16 +68,18 @@ public final class CreateAPIToken extends PaypalAPIRequest<PaypalTokens>{
             return Optional.empty();
         }
 
+        System.out.println("TOKEN RICEVUTO DALLE API DI PAYPAL: " + rawPaypalToken.printJSONObject().toString(4));
+
         Map<Integer, QueryFields<?extends Comparable<?>>> fields = new HashMap<>();
 
         try {
-            fields.put(0,new QueryFields<String>("access_token",jsonResponse.getString("access_token"), TipoVariabile.string));
-            fields.put(1,new QueryFields<String>("scope",jsonResponse.getString("scope"), TipoVariabile.string));
-            fields.put(2,new QueryFields<String>("token_type",jsonResponse.getString("token_type"), TipoVariabile.string));
-            fields.put(3,new QueryFields<String>("app_id",jsonResponse.getString("app_id"), TipoVariabile.string));
-            fields.put(4,new QueryFields<Integer>("expires_in",jsonResponse.getInt("expires_in"), TipoVariabile.longNumber));
-            fields.put(5,new QueryFields<String>("nonce",jsonResponse.getString("nonce"), TipoVariabile.string));
-        }catch (SQLException e){
+            fields.put(1,new QueryFields<>("access_token",jsonResponse.getString("access_token"), TipoVariabile.string));
+            fields.put(2,new QueryFields<>("scope",jsonResponse.getString("scope"), TipoVariabile.string));
+            fields.put(3,new QueryFields<>("token_type",jsonResponse.getString("token_type"), TipoVariabile.string));
+            fields.put(4,new QueryFields<>("app_id",jsonResponse.getString("app_id"), TipoVariabile.string));
+            fields.put(5,new QueryFields<>("expires_in",jsonResponse.getInt("expires_in"), TipoVariabile.longNumber));
+            fields.put(6,new QueryFields<>("nonce",jsonResponse.getString("nonce"), TipoVariabile.string));
+        }catch (SQLException | JSONException e){
             e.printStackTrace();
             return Optional.empty();
         }
