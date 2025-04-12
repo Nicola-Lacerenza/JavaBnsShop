@@ -84,4 +84,8 @@ public final class DateManagement{
         }
         return date;
     }
+
+    public static Timestamp fromCalendarToDatabase(Calendar calendar){
+        return new Timestamp(calendar.getTimeInMillis());
+    }
 }

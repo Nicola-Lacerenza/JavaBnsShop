@@ -54,33 +54,13 @@ public class TagliaServlet extends HttpServlet{
 
         if (taglia!=null || taglie!=null){
             if (taglia!=null){
-                PrintWriter writer= response.getWriter();
-                response.setContentLength(taglia.get().toString().length());
-                response.setContentType("application/json");
-                response.setStatus(200);
-                writer.println(taglia.get().toString());
-                writer.flush();
-                writer.close();
+                GestioneServlet.inviaRisposta(response,200,taglia.get().toString(),true);
             }else{
-                PrintWriter writer= response.getWriter();
-                response.setContentLength(taglie.toString().length());
-                response.setContentType("application/json");
-                response.setStatus(200);
-                writer.println(taglie.toString());
-                writer.flush();
-                writer.close();
+                GestioneServlet.inviaRisposta(response,200,taglie.toString(),true);
             }
         }else{
-            String message = "Internal server error";
-            JSONObject error = new JSONObject();
-            error.put("message", message);
-            PrintWriter writer= response.getWriter();
-            response.setContentLength(error.toString().length());
-            response.setContentType("application/json");
-            response.setStatus(500);
-            writer.println(error.toString());
-            writer.flush();
-            writer.close();
+            String message = "\"Internal server error\"";
+            GestioneServlet.inviaRisposta(response,500,message,false);
         }
     }
 

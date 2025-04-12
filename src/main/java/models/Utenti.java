@@ -18,9 +18,11 @@ public class Utenti implements Oggetti<Utenti> {
     private final String email;
     private final String telefono;
     private final String password;
+    private final int idTagliaPreferita;
+    private final int idColorePreferito;
     private final String ruolo;
 
-    public Utenti(int id, String nome, String cognome, Calendar dataNascita, String luogoNascita, String sesso, String email, String telefono, String password, String ruolo) {
+    public Utenti(int id, String nome, String cognome, Calendar dataNascita, String luogoNascita, String sesso, String email, String telefono, String password,int idTagliaPreferita,int idColorePreferito, String ruolo) {
         this.id = id;
         this.nome = nome;
         this.cognome = cognome;
@@ -30,11 +32,13 @@ public class Utenti implements Oggetti<Utenti> {
         this.email = email;
         this.telefono = telefono;
         this.password = password;
+        this.idTagliaPreferita = idTagliaPreferita;
+        this.idColorePreferito = idColorePreferito;
         this.ruolo = ruolo;
     }
 
     public Utenti(){
-        this(0,"","",Calendar.getInstance(),"","","","","","");
+        this(0,"","",Calendar.getInstance(),"","","","","",0,0,"");
     }
 
     public int getId() {
@@ -75,6 +79,15 @@ public class Utenti implements Oggetti<Utenti> {
 
     public String getRuolo() { return ruolo;}
 
+    public int getIdTagliaPreferita() {
+        return idTagliaPreferita;
+    }
+
+    public int getIdColorePreferito() {
+        return idColorePreferito;
+    }
+
+
     @Override
     public Optional<Utenti> convertDBToJava(ResultSet rs) {
         try{
@@ -88,8 +101,10 @@ public class Utenti implements Oggetti<Utenti> {
             String email1 = rs.getString("email");
             String telefono1 = rs.getString("telefono");
             String password1 = rs.getString("password");
+            int idTagliaPreferita1 = rs.getInt("id_taglia_preferita");
+            int idColorePreferito1 = rs.getInt("id_colore_preferito");
             String ruolo1 = rs.getString("ruolo");
-            return Optional.of(new Utenti(id1,nome1,cognome1,dataNascita1,luogoNascita1,sesso1,email1,telefono1,password1,ruolo1));
+            return Optional.of(new Utenti(id1,nome1,cognome1,dataNascita1,luogoNascita1,sesso1,email1,telefono1,password1,idTagliaPreferita1,idColorePreferito1,ruolo1));
         }catch (SQLException e){
             e.printStackTrace();
             return Optional.empty();
@@ -107,6 +122,8 @@ public class Utenti implements Oggetti<Utenti> {
         output.put("email",email);
         output.put("telefono",telefono);
         output.put("password",password);
+        output.put("id_taglia_preferita",idTagliaPreferita);
+        output.put("id_colore_preferito",idColorePreferito);
         output.put("ruolo",ruolo);
         return output.toString(4);
     }

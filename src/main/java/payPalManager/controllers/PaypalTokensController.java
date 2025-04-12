@@ -1,9 +1,9 @@
 package payPalManager.controllers;
 import bnsshop.bnsshop.RegisterServlet;
-import com.antoniotassone.paypal.models.PaypalTokens;
-import com.antoniotassone.paypal.models.PaypalTokensTableSchema;
 import controllers.Controllers;
-import org.json.JSONObject;
+import payPalManager.models.PaypalTokens;
+import utility.Database;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -38,7 +38,7 @@ public final class PaypalTokensController implements Controllers<PaypalTokens> {
 
     @Override
     public List<PaypalTokens> getAllObjects() {
-        return null;
+        return Database.getAllElements("paypal_token",new PaypalTokens());
     }
 
     @Override

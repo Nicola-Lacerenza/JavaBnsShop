@@ -3,8 +3,13 @@ package payPalManager.utility;
 import exceptions.ParserException;
 import org.json.JSONObject;
 import payPalManager.models.*;
+import utility.Database;
+import utility.QueryFields;
+import utility.TipoVariabile;
 
+import javax.xml.crypto.Data;
 import java.io.Serial;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -12,7 +17,8 @@ import java.util.Optional;
 public final class CreateOrderRequest extends PaypalAPIRequest<PaypalOrdersCreated>{
     @Serial
     private static final long serialVersionUID = 1L;
-    private final long userId;
+    private final int userId;
+    private final int indirizzoId;
     private final String currency;
     private final double amount;
     private final String locale;
@@ -22,6 +28,7 @@ public final class CreateOrderRequest extends PaypalAPIRequest<PaypalOrdersCreat
     private CreateOrderRequest(Builder builder){
         super(builder.apiBaseURL,builder.accessToken);
         this.userId = builder.userId;
+        this.indirizzoId = builder.indirizzoId;
         this.currency = builder.currency;
         this.amount = builder.amount;
         this.locale = builder.locale;
@@ -68,17 +75,24 @@ public final class CreateOrderRequest extends PaypalAPIRequest<PaypalOrdersCreat
             return Optional.empty();
         }
 
-        //creation of the json object to insert order created in the database.
-        JSONObject creationOrder = new JSONObject();
-        creationOrder.put("order_id",rawPaypalOrder.getId());
-        creationOrder.put("status",rawPaypalOrder.getStatus());
-        creationOrder.put("amount",amount);
-        creationOrder.put("currency",currency);
-        creationOrder.put("locale",locale);
-        creationOrder.put("user_id",userId);
+        Map<Integer, QueryFields<? extends Comparable<?>>> fields = new HashMap<>();
+        try {
+            fields.put(0, new QueryFields<>("id_utente", userId, TipoVariabile.longNumber));
+            fields.put(1, new QueryFields<>("id_ordine_paypal", rawPaypalOrder.getId(), TipoVariabile.string));
+            fields.put(2, new QueryFields<>("id_pagamento",1, TipoVariabile.longNumber));
+            fields.put(3, new QueryFields<>("id_indirizzo", indirizzoId, TipoVariabile.longNumber));
+            fields.put(4, new QueryFields<>("stato_ordine", rawPaypalOrder.getStatus(), TipoVariabile.string));
+            fields.put(5, new QueryFields<>("importo", amount, TipoVariabile.realNumber));
+            fields.put(6, new QueryFields<>("valuta", currency, TipoVariabile.string));
+            fields.put(7, new QueryFields<>("locale_utente", locale, TipoVariabile.string));
+        }catch (SQLException e){
+            e.printStackTrace();
+            return Optional.empty();
+        }
 
         //creation record in the database with the data arrived by PayPal or parameters of the method.
-        long id = DatabaseManagement.insertElement(new PaypalOrdersTableSchema(),creationOrder);
+        int id = Database.insertElementExtractId(fields,"ordine");
+
         if(id <= 0){
             System.err.println("Error inserting the order in the database.");
             return Optional.empty();
@@ -93,6 +107,7 @@ public final class CreateOrderRequest extends PaypalAPIRequest<PaypalOrdersCreat
                 .setCurrency(currency)
                 .setLocale(locale)
                 .setUserId(userId)
+                .setIdIndirizzo(indirizzoId)
                 .build();
         PaypalOrdersCreated orderCreated = new PaypalOrdersCreated(paypalOrder,rawPaypalOrder.getLinks());
         return Optional.of(orderCreated);
@@ -114,7 +129,8 @@ public final class CreateOrderRequest extends PaypalAPIRequest<PaypalOrdersCreat
     public static final class Builder{
         private String apiBaseURL;
         private String accessToken;
-        private long userId;
+        private int userId;
+        private int indirizzoId;
         private String currency;
         private double amount;
         private String locale;
@@ -124,7 +140,8 @@ public final class CreateOrderRequest extends PaypalAPIRequest<PaypalOrdersCreat
         public Builder(){
             apiBaseURL = "";
             accessToken = "";
-            userId = -1L;
+            userId = -1;
+            indirizzoId = -1;
             currency = "";
             amount = 0.0;
             locale = "";
@@ -142,8 +159,13 @@ public final class CreateOrderRequest extends PaypalAPIRequest<PaypalOrdersCreat
             return this;
         }
 
-        public Builder setUserId(long userId){
+        public Builder setUserId(int userId){
             this.userId = userId;
+            return this;
+        }
+
+        public Builder setIndirizzoId(int indirizzoId){
+            this.indirizzoId = indirizzoId;
             return this;
         }
 

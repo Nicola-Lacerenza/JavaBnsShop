@@ -67,21 +67,22 @@ public final class CreateAPIToken extends PaypalAPIRequest<PaypalTokens>{
             return Optional.empty();
         }
 
-        Map<Integer, QueryFields> fields = new HashMap<>();
+        Map<Integer, QueryFields<?extends Comparable<?>>> fields = new HashMap<>();
+
         try {
-            fields.put(1,new QueryFields<String>("access_token",jsonResponse.getString("access_token"), TipoVariabile.string));
-            fields.put(2,new QueryFields<String>("scope",jsonResponse.getString("scope"), TipoVariabile.string));
-            fields.put(3,new QueryFields<String>("token_type",jsonResponse.getString("token_type"), TipoVariabile.string));
-            fields.put(4,new QueryFields<String>("app_id",jsonResponse.getString("app_id"), TipoVariabile.string));
-            fields.put(5,new QueryFields<Integer>("expires_in",jsonResponse.getInt("expires_in"), TipoVariabile.longNumber));
-            fields.put(6,new QueryFields<String>("nonce",jsonResponse.getString("nonce"), TipoVariabile.string));
+            fields.put(0,new QueryFields<String>("access_token",jsonResponse.getString("access_token"), TipoVariabile.string));
+            fields.put(1,new QueryFields<String>("scope",jsonResponse.getString("scope"), TipoVariabile.string));
+            fields.put(2,new QueryFields<String>("token_type",jsonResponse.getString("token_type"), TipoVariabile.string));
+            fields.put(3,new QueryFields<String>("app_id",jsonResponse.getString("app_id"), TipoVariabile.string));
+            fields.put(4,new QueryFields<Integer>("expires_in",jsonResponse.getInt("expires_in"), TipoVariabile.longNumber));
+            fields.put(5,new QueryFields<String>("nonce",jsonResponse.getString("nonce"), TipoVariabile.string));
         }catch (SQLException e){
             e.printStackTrace();
             return Optional.empty();
         }
 
         //creation record in the database with the data arrived by PayPal.
-        long id = Database.insertElementExtractId(fields,"paypal_token");
+        int id = Database.insertElementExtractId(fields,"paypal_token");
         if(id <= 0){
             System.err.println("Error inserting the token in the database.");
             return Optional.empty();
@@ -106,8 +107,8 @@ public final class CreateAPIToken extends PaypalAPIRequest<PaypalTokens>{
             return Optional.empty();
         }
         Map<String,String> keysMap = keysRead.get();
-        String clientId = keysMap.get("clientId");
-        String secretKey = keysMap.get("secretKey");
+        String clientId = keysMap.get("ClientID");
+        String secretKey = keysMap.get("SecretID");
         String authorization = clientId + ":" + secretKey;
         String encodedAuthorization = Base64.getEncoder().encodeToString(authorization.getBytes());
         return Optional.of(encodedAuthorization);
@@ -122,6 +123,7 @@ public final class CreateAPIToken extends PaypalAPIRequest<PaypalTokens>{
             return Optional.empty();
         }
         if(keysList.get("ClientID").isEmpty() || keysList.get("SecretID").isEmpty()){
+
             return Optional.empty();
         }
         return Optional.of(keysList);

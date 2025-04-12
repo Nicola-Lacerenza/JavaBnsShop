@@ -13,8 +13,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import utility.Database;
-import utility.GestioneFileTesto;
+import payPalManager.CartItem;
+import payPalManager.controllers.PaypalTokensController;
+import payPalManager.models.LinksOrderCreated;
+import payPalManager.models.PaypalOrdersCreated;
+import payPalManager.models.PaypalTokens;
+import payPalManager.utility.PaypalManagement;
 import utility.GestioneServlet;
 
 import java.io.*;
@@ -22,13 +26,12 @@ import java.util.*;
 
 @WebServlet(name = "CreaPagamento", value = "/CreaPagamento")
 public class CreaPagamentoServlet extends HttpServlet {
-
-    /*private Controllers<PaypalToken> controller;
+    private Controllers<PaypalTokens> controller;
 
     @Override
     public void init() throws ServletException {
         super.init();
-        controller = new PayPalTokenController();
+        controller = new PaypalTokensController();
     }
 
     @Override
@@ -114,27 +117,29 @@ public class CreaPagamentoServlet extends HttpServlet {
         }
 
         //PayPalTokenController specificController = (PayPalTokenController)controller ;
-        List<PaypalToken> tokens = controller.getAllObjects();
+        List<PaypalTokens> tokens = controller.getAllObjects();
         String actualToken;
-        if (tokens.isEmpty() || !PayPalUtility.isTokenValid(tokens.getLast())){
+        if (tokens.isEmpty() || !PaypalManagement.isTokenValid(tokens.getLast())){
 
-            Optional<String> tmp = PayPalUtility.creaToken(controller,baseUrl);
+            Optional<PaypalTokens> tmp = PaypalManagement.createAPIToken(baseUrl);
             if (tmp.isPresent()){
-                actualToken = tmp.get();
+                actualToken = tmp.get().getAccessToken();
             }else{
                 actualToken="";
+                GestioneServlet.inviaRisposta(response,500,"\"Errore durante la creazione dell'ordine PayPal\"",false);
+                return;
             }
         }else{
             actualToken=tokens.getLast().getAccessToken();
         }
 
-        Optional<OrdineCreato> ordineCreato = PayPalUtility.creaOrdine(idUtente,actualToken,baseUrl,cartItemsList,"EUR",prezzoTotale,"it-IT",returnUrl,cancelUrl);
+        Optional<PaypalOrdersCreated> ordineCreato = PaypalManagement.createOrder(actualToken,idUtente,baseUrl,"EUR",prezzoTotale,"it-IT",returnUrl,cancelUrl);
         if (ordineCreato.isEmpty()){
             GestioneServlet.inviaRisposta(response,500,"\"Errore durante la creazione dell'ordine PayPal\"",false);
         }else{
-            System.out.println("Ordine con Id :" + ordineCreato.get().getOrderId() + " crato correttamente da PayPal!");
-            List<LinkCreato> links = ordineCreato.get().getLinks();
-            List<LinkCreato> linkFiltrato = links.stream().filter(link -> link.getRel().equals("payer-action")).toList();
+            System.out.println("Ordine con Id :" + ordineCreato.get().getPaypalOrder().getOrderId() + " crato correttamente da PayPal!");
+            List<LinksOrderCreated> links = ordineCreato.get().getLinks();
+            List<LinksOrderCreated> linkFiltrato = links.stream().filter(link -> link.getRel().equals("payer-action")).toList();
             if (linkFiltrato.isEmpty()){
                 GestioneServlet.inviaRisposta(response,500,"\"Errore durante la creazione dell'ordine PayPal\"",false);
                 return;
@@ -142,6 +147,6 @@ public class CreaPagamentoServlet extends HttpServlet {
             GestioneServlet.inviaRisposta(response,200,"\""+linkFiltrato.getFirst().getHref()+"\"",true);
         }
 
-    }*/
+    }
 
 }

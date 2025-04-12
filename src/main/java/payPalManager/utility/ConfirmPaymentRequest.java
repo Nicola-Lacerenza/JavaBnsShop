@@ -6,12 +6,14 @@ import payPalManager.models.LinksOrderCreated;
 import payPalManager.models.PaypalPayments;
 import payPalManager.models.PaypalPaymentsCreated;
 import payPalManager.models.RawPaypalPaymentsReceived;
+import utility.Database;
+import utility.DateManagement;
+import utility.QueryFields;
+import utility.TipoVariabile;
 
 import java.io.Serial;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.sql.*;
+import java.util.*;
 
 public final class ConfirmPaymentRequest extends PaypalAPIRequest<PaypalPaymentsCreated>{
     @Serial
@@ -74,43 +76,75 @@ public final class ConfirmPaymentRequest extends PaypalAPIRequest<PaypalPayments
             refundLink = links.get(i);
         }
 
-        //creation of the json object to insert payment created in the database.
-        JSONObject creationPayment = new JSONObject();
-        creationPayment.put("order_id",orderId);
-        creationPayment.put("payer_id",payerId);
-        creationPayment.put("payment_id",rawPaypalPayment.getPaymentId());
-        creationPayment.put("status",rawPaypalPayment.getPaymentStatus());
-        creationPayment.put("paypal_fee",rawPaypalPayment.getPaypalFee());
-        creationPayment.put("gross_amount",rawPaypalPayment.getGrossAmount());
-        creationPayment.put("net_amount",rawPaypalPayment.getNetAmount());
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Driver JDBC non trovato", e);
+        }
+        int idPayPalPagamentoCreato=-1;
+        Connection connection = null;
+        List<PreparedStatement> statementList = new LinkedList<>();
+        boolean output = false;
+        try {
+            connection = DriverManager.getConnection(Database.getDatabaseUrl(), Database.getDatabaseUsername(), Database.getDatabasePassword());
+            connection.setAutoCommit(false);
 
-        //creation record in the database with the data arrived by PayPal or parameters of the method.
-        long databaseId;
-        /*try(DatabaseExecutor database = new DatabaseExecutor("root","localhost",3306,"..............")){
-            try{
-                database.setAutoCommit();
-                String query = "UPDATE paypal_orders SET status = ?,updated_at = NOW() WHERE order_id = ?";
-                Map<Integer, QueryFields<? extends Comparable<?>>> fields = new HashMap<>();
-                QueryFields<String> field1 = new QueryFields<>("status",rawPaypalPayment.getOrderStatus(), ColumnType.string);
-                QueryFields<String> field2 = new QueryFields<>("order_id",orderId,ColumnType.string);
-                fields.put(1,field1);
-                fields.put(2,field2);
-                database.executeGenericUpdate(query,fields);
-                databaseId = database.insertElement(new PaypalPaymentsTableSchema(),creationPayment);
-                database.commitQueries();
-            }catch(SQLException exception){
-                database.rollbackTransaction();
-                exception.printStackTrace();
-                return Optional.empty();
+            String query1 = "INSERT INTO paypal_pagamento_creato(id_ordine_paypal,payer_id,payment_id,status,paypal_fee,gross_amount,net_amount) " +
+                    "VALUES (?,?,?,?,?,?,?)";
+            PreparedStatement preparedStatement1 = connection.prepareStatement(query1, Statement.RETURN_GENERATED_KEYS);
+            preparedStatement1.setString(1, orderId);
+            preparedStatement1.setString(2, payerId);
+            preparedStatement1.setString(3, rawPaypalPayment.getPaymentId());
+            preparedStatement1.setString(4, rawPaypalPayment.getPaymentStatus());
+            preparedStatement1.setDouble(5, rawPaypalPayment.getPaypalFee());
+            preparedStatement1.setDouble(6, rawPaypalPayment.getGrossAmount());
+            preparedStatement1.setDouble(7, rawPaypalPayment.getNetAmount());
+            preparedStatement1.executeUpdate();
+
+            ResultSet generatedKeys = preparedStatement1.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                idPayPalPagamentoCreato = generatedKeys.getInt(1);
+            } else {
+                throw new SQLException("Errore: Nessun ID prodotto generato.");
             }
-        }catch(DatabaseException exception){
-            exception.printStackTrace();
+
+            String query2 = "UPDATE ordine SET stato_ordine=?,data_aggiornamento_stato_ordine=? WHERE id_ordine_paypal = ?";
+            PreparedStatement preparedStatement2 = connection.prepareStatement(query2);
+            preparedStatement2.setString(1, rawPaypalPayment.getOrderStatus());
+            preparedStatement2.setTimestamp(2, DateManagement.fromCalendarToDatabase(new GregorianCalendar(Locale.UK)));
+            preparedStatement2.setString(3,rawPaypalPayment.getOrderId());
+
+            connection.commit();
+            output = true;
+
+        } catch(SQLException e){
+            // Gestione errori e rollback in caso di fallimento
+            e.printStackTrace();
+            if (connection != null) {
+                try {
+                    connection.rollback();
+                } catch (SQLException rollbackEx) {
+                    rollbackEx.printStackTrace();
+                }
+            }
+            output = false;
+        } finally {
+            // Chiusura connessione e statement
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException closeEx) {
+                    closeEx.printStackTrace();
+                }
+            }
+        }
+        if (idPayPalPagamentoCreato<=0 || !output){
             return Optional.empty();
-        }*/
+        }
 
         //creation output object and exit to the method.
         PaypalPayments paypalPayment = new PaypalPayments.Builder()
-                .setId(databaseId)
+                .setId(idPayPalPagamentoCreato)
                 .setOrderId(orderId)
                 .setPayerId(payerId)
                 .setPaymentId(rawPaypalPayment.getPaymentId())

@@ -16,7 +16,8 @@ import java.util.Optional;
 public final class PaypalOrders implements Cloneable,Serializable,Comparable<PaypalOrders>,PaypalModels<PaypalOrders>{
     @Serial
     private static final long serialVersionUID = 1L;
-    private final long id;
+    private final int id;
+    private final int idIndirizzo;
     private final String orderId;
     private final String status;
     private final double amount;
@@ -32,6 +33,7 @@ public final class PaypalOrders implements Cloneable,Serializable,Comparable<Pay
 
     private PaypalOrders(Builder builder){
         this.id = builder.id;
+        this.idIndirizzo = builder.idIndirizzo;
         this.orderId = builder.orderId;
         this.status = builder.status;
         this.amount = builder.amount;
@@ -44,6 +46,7 @@ public final class PaypalOrders implements Cloneable,Serializable,Comparable<Pay
 
     private PaypalOrders(PaypalOrders original){
         this.id = original.id;
+        this.idIndirizzo = original.idIndirizzo;
         this.orderId = original.orderId;
         this.status = original.status;
         this.amount = original.amount;
@@ -54,8 +57,11 @@ public final class PaypalOrders implements Cloneable,Serializable,Comparable<Pay
         this.updatedAt = DateManagement.copyCalendar(original.updatedAt);
     }
 
-    public long getId(){
+    public int getId(){
         return id;
+    }
+    public int getIdIndirizzo(){
+        return idIndirizzo;
     }
 
     public String getOrderId(){
@@ -151,6 +157,7 @@ public final class PaypalOrders implements Cloneable,Serializable,Comparable<Pay
     public JSONObject printJSONObject(){
         JSONObject output = new JSONObject();
         output.put("id",id);
+        output.put("idIndirizzo",idIndirizzo);
         output.put("orderId",orderId);
         output.put("status",status);
         output.put("amount",amount);
@@ -167,7 +174,8 @@ public final class PaypalOrders implements Cloneable,Serializable,Comparable<Pay
         if(row == null){
             return Optional.empty();
         }
-        long id1 = row.getLong("id");
+        int id1 = row.getInt("id");
+        int idIndirizzo1 = row.getInt("id_indirizzo");
         String orderId1 = row.getString("order_id");
         String status1 = row.getString("status");
         double amount1 = row.getDouble("amount");
@@ -178,6 +186,7 @@ public final class PaypalOrders implements Cloneable,Serializable,Comparable<Pay
         Timestamp updatedAt1 = row.getTimestamp("updated_at");
         PaypalOrders paypalOrder = new PaypalOrders.Builder()
                 .setId(id1)
+                .setId(idIndirizzo1)
                 .setOrderId(orderId1)
                 .setStatus(status1)
                 .setAmount(amount1)
@@ -196,7 +205,8 @@ public final class PaypalOrders implements Cloneable,Serializable,Comparable<Pay
     }
 
     public static final class Builder{
-        private long id;
+        private int id;
+        private int idIndirizzo;
         private String orderId;
         private String status;
         private double amount;
@@ -208,6 +218,7 @@ public final class PaypalOrders implements Cloneable,Serializable,Comparable<Pay
 
         public Builder(){
             id = 0;
+            idIndirizzo = 0;
             orderId = "";
             status = "";
             amount = 0.0;
@@ -218,8 +229,12 @@ public final class PaypalOrders implements Cloneable,Serializable,Comparable<Pay
             updatedAt = new GregorianCalendar();
         }
 
-        public Builder setId(long id){
+        public Builder setId(int id){
             this.id = id;
+            return this;
+        }
+        public Builder setIdIndirizzo(int idIndirizzo){
+            this.idIndirizzo = idIndirizzo;
             return this;
         }
 

@@ -30,9 +30,7 @@ public class Database{
         return DATABASE_PASSWORD;
     }
 
-    public static String getDatabaseUrl() {
-        return DATABASE_URL;
-    }
+    public static String getDatabaseUrl() { return DATABASE_URL; }
 
     /*public static <T extends Oggetti<T>> boolean insertElement1(Map<Integer, RegisterServlet.RegisterFields> fields, String tableName) {
         try {
@@ -142,7 +140,7 @@ public class Database{
         return output;
     }
 
-    public static <T extends Oggetti<T>> int insertElementExtractId(Map<Integer, QueryFields> fields, String tableName){
+    public static <T extends Oggetti<T>> int insertElementExtractId(Map<Integer, QueryFields<? extends Comparable<?>>> fields, String tableName){
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
         } catch (ClassNotFoundException e) {
@@ -297,7 +295,6 @@ public class Database{
         }
         return output;
     }
-
 
     public static <E extends Oggetti<E>> Optional<E> getElement(int id, String tablename,E model) {
         String query="SELECT * FROM "+tablename+" WHERE id='"+id+"'";
