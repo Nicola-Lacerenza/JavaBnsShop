@@ -73,12 +73,12 @@ public final class CreateAPIToken extends PaypalAPIRequest<PaypalTokens>{
         Map<Integer, QueryFields<?extends Comparable<?>>> fields = new HashMap<>();
 
         try {
-            fields.put(1,new QueryFields<>("access_token",jsonResponse.getString("access_token"), TipoVariabile.string));
-            fields.put(2,new QueryFields<>("scope",jsonResponse.getString("scope"), TipoVariabile.string));
-            fields.put(3,new QueryFields<>("token_type",jsonResponse.getString("token_type"), TipoVariabile.string));
-            fields.put(4,new QueryFields<>("app_id",jsonResponse.getString("app_id"), TipoVariabile.string));
-            fields.put(5,new QueryFields<>("expires_in",jsonResponse.getInt("expires_in"), TipoVariabile.longNumber));
-            fields.put(6,new QueryFields<>("nonce",jsonResponse.getString("nonce"), TipoVariabile.string));
+            fields.put(0,new QueryFields<>("access_token",jsonResponse.getString("access_token"), TipoVariabile.string));
+            fields.put(1,new QueryFields<>("scope",jsonResponse.getString("scope"), TipoVariabile.string));
+            fields.put(2,new QueryFields<>("token_type",jsonResponse.getString("token_type"), TipoVariabile.string));
+            fields.put(3,new QueryFields<>("app_id",jsonResponse.getString("app_id"), TipoVariabile.string));
+            fields.put(4,new QueryFields<>("expires_in",jsonResponse.getInt("expires_in"), TipoVariabile.longNumber));
+            fields.put(5,new QueryFields<>("nonce",jsonResponse.getString("nonce"), TipoVariabile.string));
         }catch (SQLException | JSONException e){
             e.printStackTrace();
             return Optional.empty();

@@ -37,11 +37,13 @@ public final class PaypalManagement{
         return creationAPIToken.execute();
     }
 
-    public static Optional<PaypalOrdersCreated> createOrder(String accessToken, int userId, String apiBaseURL, String currency, double amount, String locale, String returnUrl, String cancelUrl){
+    //public static Optional<PaypalOrdersCreated> createOrder(String accessToken, int userId,  int indirizzoId,String apiBaseURL, String currency, double amount, String locale, String returnUrl, String cancelUrl){
+    public static Optional<PaypalOrdersCreated> createOrder(String accessToken, int userId,String apiBaseURL, String currency, double amount, String locale, String returnUrl, String cancelUrl){
         PaypalAPIRequest<PaypalOrdersCreated> creationOrder = new CreateOrderRequest.Builder()
                 .setApiBaseURL(apiBaseURL)
                 .setAccessToken(accessToken)
                 .setUserId(userId)
+                //.setIndirizzoId(indirizzoId)
                 .setCurrency(currency)
                 .setAmount(amount)
                 .setLocale(locale)

@@ -13,7 +13,7 @@ public class Database{
     //Variabili di servizio per interagire con il database
     private static final String DATABASE_NAME="mydb" ;
     private static final String DATABASE_USERNAME="root";
-    private static final String DATABASE_PASSWORD="";
+    private static final String DATABASE_PASSWORD="root";
     private static final String DATABASE_URL="jdbc:mysql://localhost:3306/" + DATABASE_NAME;
 
     private Database(){}
@@ -140,57 +140,72 @@ public class Database{
         return output;
     }
 
-    public static <T extends Oggetti<T>> int insertElementExtractId(Map<Integer, QueryFields<? extends Comparable<?>>> fields, String tableName){
+    public static <T extends Oggetti<T>> int insertElementExtractId(Map<Integer, QueryFields<? extends Comparable<?>>> fields, String tableName) {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
-        String nomi = "";
-        String valori = "";
-        for (int i = 0;i<fields.size();i++){
+
+        StringBuilder nomi = new StringBuilder();
+        StringBuilder valori = new StringBuilder();
+        for (int i = 0; i < fields.size(); i++) {
             QueryFields attuale = fields.get(i);
-            nomi+=attuale.getFieldName();
-            valori += "?";
-            if (i<(fields.size()-1)){
-                nomi+=",";
-                valori+=",";
+            nomi.append(attuale.getFieldName());
+            valori.append("?");
+            if (i < fields.size() - 1) {
+                nomi.append(",");
+                valori.append(",");
             }
         }
-        String query="INSERT INTO "+tableName+"("+nomi+") VALUES("+valori+")";
-        int output;
+
+        String query = "INSERT INTO " + tableName + " (" + nomi.toString() + ") VALUES (" + valori.toString() + ")";
+        int output = -1;
+
         Connection connection = null;
         PreparedStatement statement = null;
-        try{
-            connection=DriverManager.getConnection(DATABASE_URL,DATABASE_USERNAME,DATABASE_PASSWORD);
+
+        try {
+            connection = DriverManager.getConnection(DATABASE_URL, DATABASE_USERNAME, DATABASE_PASSWORD);
             statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            for (int index = 1;index <= fields.size();index++){
-                if (fields.get(index).getFieldType().equals(TipoVariabile.string)){
-                    statement.setString(index,(String)fields.get(index).getFieldValue());
-                } else if (fields.get(index).getFieldType().equals(TipoVariabile.longNumber)){
-                    statement.setInt(index,(Integer) fields.get(index).getFieldValue());
-                }else if (fields.get(index).getFieldType().equals(TipoVariabile.realNumber)){
-                    statement.setDouble(index,(Double)(fields.get(index).getFieldValue()));
+
+            // Imposta i parametri correttamente
+            for (int index = 0; index < fields.size(); index++) {
+                QueryFields attuale = fields.get(index);
+                int parameterIndex = index + 1;
+                if (attuale.getFieldType().equals(TipoVariabile.string)) {
+                    statement.setString(parameterIndex, (String) attuale.getFieldValue());
+                } else if (attuale.getFieldType().equals(TipoVariabile.longNumber)) {
+                    statement.setInt(parameterIndex, (Integer) attuale.getFieldValue());
+                    // oppure, se necessario: statement.setLong(parameterIndex, (Long) attuale.getFieldValue());
+                } else if (attuale.getFieldType().equals(TipoVariabile.realNumber)) {
+                    statement.setDouble(parameterIndex, (Double) attuale.getFieldValue());
                 }
             }
 
-            ResultSet rs = statement.executeQuery();
-            if (rs.next()) {
-                output = rs.getInt("id");
-            } else {
-                throw new SQLException("Id non estratto");
+            // Esegue l'inserimento
+            int affectedRows = statement.executeUpdate();
+            if (affectedRows == 0) {
+                throw new SQLException("Inserimento fallito, nessuna riga modificata.");
             }
-            statement.executeUpdate();
 
-        }catch(SQLException exception){
+            // Recupera il generated key
+            try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    output = generatedKeys.getInt(1);
+                } else {
+                    throw new SQLException("Id non estratto");
+                }
+            }
+
+        } catch (SQLException exception) {
             exception.printStackTrace();
             output = -1;
-        }finally {
+        } finally {
             if (statement != null) {
                 try {
                     statement.close();
                 } catch (SQLException e) {
-                    //Questo non é un errore è un warning
                     e.printStackTrace();
                 }
             }
@@ -198,13 +213,13 @@ public class Database{
                 try {
                     connection.close();
                 } catch (SQLException e) {
-                    //Questo non é un errore è un warning
                     e.printStackTrace();
                 }
             }
         }
         return output;
     }
+
 
     public static boolean updateElement(int id,Map<Integer, RegisterServlet.RegisterFields> fields, String tablename){
         try {
