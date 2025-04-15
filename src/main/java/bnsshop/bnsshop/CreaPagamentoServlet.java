@@ -125,7 +125,6 @@ public class CreaPagamentoServlet extends HttpServlet {
             if (tmp.isPresent()){
                 actualToken = tmp.get().getAccessToken();
             }else{
-                System.out.println("errore1");
                 GestioneServlet.inviaRisposta(response,500,"\"Errore durante la creazione dell'ordine PayPal\"",false);
                 return;
             }
@@ -135,14 +134,12 @@ public class CreaPagamentoServlet extends HttpServlet {
 
         Optional<PaypalOrdersCreated> ordineCreato = PaypalManagement.createOrder(actualToken,idUtente,baseUrl,"EUR",prezzoTotale,"it-IT",returnUrl,cancelUrl);
         if (ordineCreato.isEmpty()){
-            System.out.println("errore2");
             GestioneServlet.inviaRisposta(response,500,"\"Errore durante la creazione dell'ordine PayPal\"",false);
         }else{
             System.out.println("Ordine con Id :" + ordineCreato.get().getPaypalOrder().getOrderId() + " crato correttamente da PayPal!");
             List<LinksOrderCreated> links = ordineCreato.get().getLinks();
             List<LinksOrderCreated> linkFiltrato = links.stream().filter(link -> link.getRel().equals("payer-action")).toList();
             if (linkFiltrato.isEmpty()){
-                System.out.println("errore3");
                 GestioneServlet.inviaRisposta(response,500,"\"Errore durante la creazione dell'ordine PayPal\"",false);
                 return;
             }
