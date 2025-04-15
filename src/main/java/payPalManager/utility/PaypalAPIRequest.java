@@ -1,10 +1,8 @@
 package payPalManager.utility;
 
-
 import org.json.JSONObject;
 import payPalManager.models.PaypalModels;
 import utility.RichiestaHttps;
-
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.Map;

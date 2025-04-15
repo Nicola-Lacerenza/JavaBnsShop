@@ -5,10 +5,10 @@ import org.json.JSONObject;
 import java.io.Serial;
 import java.io.Serializable;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Optional;
+
 public final class CalendarData implements Cloneable,Serializable,Comparable<CalendarData>, Oggetti<CalendarData> {
 
     @Serial

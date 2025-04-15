@@ -65,8 +65,8 @@ public class RegisterServlet extends HttpServlet{
         String email= object.getString("email");
         String telefono= object.getString("telefono");
         String password= object.getString("password");
-        Integer idTagliaPreferita= object.getInt("id_taglia_preferita");
-        Integer idColorePreferito = object.getInt("id_colore_preferito");
+        int idTagliaPreferita= object.getInt("id_taglia_preferita");
+        int idColorePreferito = object.getInt("id_colore_preferito");
         String ruolo= "cliente";
         Optional<String> passwordHashed= Crittografia.get_SHA_512_SecurePassword(password,"1234");
         if(controller.checkEmail(email)){
@@ -109,8 +109,8 @@ public class RegisterServlet extends HttpServlet{
     }
 
     public static class RegisterFields{
-        private String key;
-        private String value;
+        private final String key;
+        private final String value;
 
         public RegisterFields(String key, String value) {
             this.key = key;

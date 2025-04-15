@@ -4,9 +4,16 @@ import bnsshop.bnsshop.RegisterServlet;
 import models.Prodotti;
 import models.ProdottiFull;
 import utility.Database;
-
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public class ProdottiController implements Controllers<Prodotti> {
 
@@ -521,7 +528,7 @@ public class ProdottiController implements Controllers<Prodotti> {
             preparedStatement1.setInt(1, objectid);  // Impostiamo l'ID del prodotto
             ResultSet rs = preparedStatement1.executeQuery();
 
-            List<Integer> immaginiDaEliminare = new ArrayList<>();
+            List<Integer> immaginiDaEliminare = new LinkedList<>();
             while (rs.next()) {
                 immaginiDaEliminare.add(rs.getInt("id_immagine"));
             }

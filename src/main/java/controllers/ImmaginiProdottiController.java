@@ -1,10 +1,8 @@
 package controllers;
 
 import bnsshop.bnsshop.RegisterServlet;
-
 import models.ImmaginiProdotti;
 import utility.Database;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;

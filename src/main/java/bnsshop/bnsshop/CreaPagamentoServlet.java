@@ -4,7 +4,6 @@ import controllers.Controllers;
 import controllers.UtentiController;
 import models.ProdottiFull;
 import models.Utenti;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -12,7 +11,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
 import payPalManager.CartItem;
 import payPalManager.controllers.PaypalTokensController;
 import payPalManager.models.LinksOrderCreated;
@@ -20,9 +18,11 @@ import payPalManager.models.PaypalOrdersCreated;
 import payPalManager.models.PaypalTokens;
 import payPalManager.utility.PaypalManagement;
 import utility.GestioneServlet;
-
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
 
 @WebServlet(name = "CreaPagamento", value = "/CreaPagamento")
 public class CreaPagamentoServlet extends HttpServlet {
@@ -68,7 +68,7 @@ public class CreaPagamentoServlet extends HttpServlet {
 
         BufferedReader reader=request.getReader();
         String row=reader.readLine();
-        List<String> rows = new ArrayList<>();
+        List<String> rows = new LinkedList<>();
         while (row!=null){
             rows.add(row);
             row=reader.readLine();

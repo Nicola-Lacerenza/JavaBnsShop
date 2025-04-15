@@ -1,10 +1,8 @@
 package payPalManager.utility;
 
-
 import payPalManager.models.PaypalOrdersCreated;
 import payPalManager.models.PaypalPaymentsCreated;
 import payPalManager.models.PaypalTokens;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;

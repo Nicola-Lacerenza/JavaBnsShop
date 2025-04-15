@@ -1,6 +1,5 @@
 package payPalManager.utility;
 
-import bnsshop.bnsshop.RegisterServlet;
 import exceptions.ParserException;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -10,12 +9,10 @@ import utility.Database;
 import utility.GestioneFileTesto;
 import utility.QueryFields;
 import utility.TipoVariabile;
-
 import java.io.Serial;
 import java.sql.SQLException;
 import java.util.Base64;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 

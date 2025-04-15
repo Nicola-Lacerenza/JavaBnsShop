@@ -1,24 +1,21 @@
 package bnsshop.bnsshop;
 
-import controllers.ColoreController;
 import controllers.ModelloController;
-import controllers.TagliaController;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import models.Colore;
 import models.Modello;
-import models.Taglia;
 import org.json.JSONObject;
 import utility.GestioneServlet;
-
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @WebServlet(name = "ModelloServlet", value = "/ModelloServlet")
 public class ModelloServlet extends HttpServlet{
@@ -87,7 +84,7 @@ public class ModelloServlet extends HttpServlet{
         }
         BufferedReader reader=request.getReader();
         String row=reader.readLine();
-        List<String> rows = new ArrayList<>();
+        List<String> rows = new LinkedList<>();
         while (row!=null){
             rows.add(row);
             row=reader.readLine();
@@ -134,7 +131,7 @@ public class ModelloServlet extends HttpServlet{
         int id= Integer.parseInt((String) request.getParameter("id"));
         BufferedReader reader=request.getReader();
         String row=reader.readLine();
-        List<String> rows = new ArrayList<>();
+        List<String> rows = new LinkedList<>();
         while (row!=null){
             rows.add(row);
             row=reader.readLine();

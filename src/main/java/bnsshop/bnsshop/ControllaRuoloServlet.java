@@ -9,12 +9,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.json.JSONObject;
 import utility.GestioneServlet;
 import utility.GestioneToken;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.List;
 import java.util.LinkedList;
-
 
 @WebServlet(name = "ControllaRuoloServlet", value = "/ControllaRuoloServlet")
 public class ControllaRuoloServlet extends HttpServlet{

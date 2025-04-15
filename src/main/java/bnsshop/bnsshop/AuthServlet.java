@@ -11,7 +11,6 @@ import org.json.JSONObject;
 import utility.Crittografia;
 import utility.GestioneServlet;
 import utility.GestioneToken;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.List;

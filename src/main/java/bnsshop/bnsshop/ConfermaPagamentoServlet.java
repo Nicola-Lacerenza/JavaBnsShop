@@ -9,7 +9,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
 import payPalManager.controllers.PaypalTokensController;
-import payPalManager.models.LinksOrderCreated;
 import payPalManager.models.PaypalPaymentsCreated;
 import payPalManager.models.PaypalTokens;
 import payPalManager.utility.PaypalManagement;
@@ -58,6 +57,11 @@ public class ConfermaPagamentoServlet extends HttpServlet {
             GestioneServlet.inviaRisposta(response,500,"\"Errore durante la conferma del pagamento PayPal\"",false);
             return;
         }
+        if(data.length() != 2 || !data.has("token") || !data.has("payerId")){
+            //se l'oggetto json è malformato o mancante di qualche campo vado in errore.
+            GestioneServlet.inviaRisposta(response,500,"\"Errore durante la conferma del pagamento PayPal\"",false);
+            return;
+        }
 
         //variabili che servono per confermare il pagamento.
         String orderId;
@@ -92,13 +96,7 @@ public class ConfermaPagamentoServlet extends HttpServlet {
         if(pagamentoCreato.isEmpty()){
             GestioneServlet.inviaRisposta(response,500,"\"Errore durante la conferma del pagamento PayPal\"",false);
         }else{
-            LinksOrderCreated refundLink = pagamentoCreato.get().getRefundLink();
-
-            //Implementare in questo punto il salvataggio su file del link di rimborso (variabile refundLink qui sopra).
-            //In caso di rimborso effettuare una richiesta a quel link con i dati necessari (importo da rimborsare,ecc...).
-            //Per l'importo da rimborsare scegliere se rimborsare quello netto ricevuto o meno (importo totale - commissioni paypal).
-            System.out.println("LINK DI RIMBORSO: " + refundLink);
-
+            System.out.println("Pagamento \"" + pagamentoCreato.get().getPaypalPayment().getPaymentId() + "\" confermato correttamente.");
             GestioneServlet.inviaRisposta(response,200,"\"Pagamento andato a buon fine.\"",true);
         }
     }

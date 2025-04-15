@@ -17,13 +17,16 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import utility.GestioneServlet;
-
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @WebServlet(name = "ProdottiServlet", value = "/ProdottiServlet")
@@ -110,7 +113,7 @@ public class ProdottiServlet extends HttpServlet{
         Map<String, String> formData = new HashMap<>();
 
         // Lista per salvare gli URL dei file caricati
-        List<String> urls = new ArrayList<>();
+        List<String> urls = new LinkedList<>();
 
         // Gestione delle parti della richiesta
         for (Part part : request.getParts()) {
@@ -198,7 +201,7 @@ public class ProdottiServlet extends HttpServlet{
         String[] coloriArray = colori.split(",");
 
         // Lista per contenere gli ID dei colori
-        List<Integer> idColori = new ArrayList<>();
+        List<Integer> idColori = new LinkedList<>();
 
         // Itera su tutti i colori passati nella stringa
         for (String coloreString : coloriArray) {
@@ -323,7 +326,7 @@ public class ProdottiServlet extends HttpServlet{
         String[] coloriArray = colori.split(",");
 
         // Lista per contenere gli ID dei colori
-        List<Integer> idColori = new ArrayList<>();
+        List<Integer> idColori = new LinkedList<>();
 
         // Itera su tutti i colori passati nella stringa
         for (String coloreString : coloriArray) {
@@ -434,7 +437,7 @@ public class ProdottiServlet extends HttpServlet{
     }
 
     private List<String> processFileParts(HttpServletRequest request) throws IOException, ServletException {
-        List<String> urls = new ArrayList<>();
+        List<String> urls = new LinkedList<>();
         for (Part part : request.getParts()) {
             if (part.getContentType() != null) {
                 String fileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();

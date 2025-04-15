@@ -8,12 +8,19 @@ import payPalManager.models.PaypalPaymentsCreated;
 import payPalManager.models.RawPaypalPaymentsReceived;
 import utility.Database;
 import utility.DateManagement;
-import utility.QueryFields;
-import utility.TipoVariabile;
-
 import java.io.Serial;
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.sql.SQLException;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
 
 public final class ConfirmPaymentRequest extends PaypalAPIRequest<PaypalPaymentsCreated>{
     @Serial
@@ -83,14 +90,13 @@ public final class ConfirmPaymentRequest extends PaypalAPIRequest<PaypalPayments
         }
         int idPayPalPagamentoCreato=-1;
         Connection connection = null;
-        List<PreparedStatement> statementList = new LinkedList<>();
-        boolean output = false;
+        boolean output;
         try {
             connection = DriverManager.getConnection(Database.getDatabaseUrl(), Database.getDatabaseUsername(), Database.getDatabasePassword());
             connection.setAutoCommit(false);
 
-            String query1 = "INSERT INTO paypal_pagamento_creato(id_ordine_paypal,payer_id,payment_id,status,paypal_fee,gross_amount,net_amount) " +
-                    "VALUES (?,?,?,?,?,?,?)";
+            String query1 = "INSERT INTO paypal_pagamento_creato(id_ordine_paypal,payer_id,payment_id,status,paypal_fee,gross_amount,net_amount,refund_link_href,refund_link_request_method) " +
+                    "VALUES (?,?,?,?,?,?,?,?,?)";
             PreparedStatement preparedStatement1 = connection.prepareStatement(query1, Statement.RETURN_GENERATED_KEYS);
             preparedStatement1.setString(1, orderId);
             preparedStatement1.setString(2, payerId);
@@ -99,6 +105,8 @@ public final class ConfirmPaymentRequest extends PaypalAPIRequest<PaypalPayments
             preparedStatement1.setDouble(5, rawPaypalPayment.getPaypalFee());
             preparedStatement1.setDouble(6, rawPaypalPayment.getGrossAmount());
             preparedStatement1.setDouble(7, rawPaypalPayment.getNetAmount());
+            preparedStatement1.setString(8, refundLink.getHref());
+            preparedStatement1.setString(9, refundLink.getMethod());
             preparedStatement1.executeUpdate();
 
             ResultSet generatedKeys = preparedStatement1.getGeneratedKeys();

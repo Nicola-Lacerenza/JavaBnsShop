@@ -9,10 +9,13 @@ import jakarta.servlet.http.HttpServletResponse;
 import models.Brand;
 import org.json.JSONObject;
 import utility.GestioneServlet;
-
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @WebServlet(name = "BrandServlet", value = "/BrandServlet")
 public class BrandServlet extends HttpServlet{
@@ -82,7 +85,7 @@ public class BrandServlet extends HttpServlet{
 
         BufferedReader reader=request.getReader();
         String row=reader.readLine();
-        List<String> rows = new ArrayList<>();
+        List<String> rows = new LinkedList<>();
         while (row!=null){
             rows.add(row);
             row=reader.readLine();
@@ -121,7 +124,7 @@ public class BrandServlet extends HttpServlet{
         int id= Integer.parseInt((String) request.getParameter("id"));
         BufferedReader reader=request.getReader();
         String row=reader.readLine();
-        List<String> rows = new ArrayList<>();
+        List<String> rows = new LinkedList<>();
         while (row!=null){
             rows.add(row);
             row=reader.readLine();

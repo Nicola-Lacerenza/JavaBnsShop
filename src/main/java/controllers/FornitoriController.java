@@ -1,7 +1,6 @@
 package controllers;
 
 import bnsshop.bnsshop.RegisterServlet;
-import models.Brand;
 import models.Fornitori;
 import utility.Database;
 import java.util.List;
