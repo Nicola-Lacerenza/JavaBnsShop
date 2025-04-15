@@ -2,16 +2,14 @@ package payPalManager.controllers;
 
 import bnsshop.bnsshop.RegisterServlet;
 import controllers.Controllers;
-import payPalManager.models.PaypalTokens;
+import payPalManager.models.PaypalPaymentsCreated;
 import utility.Database;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public final class PaypalTokensController implements Controllers<PaypalTokens> {
-    public PaypalTokensController(){}
-
-
+public class PaypalPaymentController implements Controllers<PaypalPaymentsCreated>{
     @Override
     public boolean insertObject(Map<Integer, RegisterServlet.RegisterFields> request) {
         return false;
@@ -28,17 +26,17 @@ public final class PaypalTokensController implements Controllers<PaypalTokens> {
     }
 
     @Override
-    public Optional<PaypalTokens> getObject(int objectid) {
+    public Optional<PaypalPaymentsCreated> getObject(int objectid) {
         return Optional.empty();
     }
 
     @Override
-    public List<PaypalTokens> getAllObjects() {
-        return Database.getAllElements("paypal_token",new PaypalTokens());
+    public List<PaypalPaymentsCreated> getAllObjects() {
+        return new LinkedList<>();
     }
 
     @Override
-    public List<PaypalTokens> executeQuery(String query) {
-        return null;
+    public List<PaypalPaymentsCreated> executeQuery(String query) {
+        return Database.executeGenericQuery("paypal_pagamento_creato",new PaypalPaymentsCreated(),query);
     }
 }

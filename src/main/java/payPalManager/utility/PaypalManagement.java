@@ -1,6 +1,8 @@
 package payPalManager.utility;
 
+import payPalManager.models.Amount;
 import payPalManager.models.PaypalOrdersCreated;
+import payPalManager.models.PaypalPaymentRefunded;
 import payPalManager.models.PaypalPaymentsCreated;
 import payPalManager.models.PaypalTokens;
 import java.text.ParseException;
@@ -59,5 +61,14 @@ public final class PaypalManagement{
                 .setPayerId(payerId)
                 .build();
         return confirmPayment.execute();
+    }
+
+    public static Optional<PaypalPaymentRefunded> refundPayment(String accessToken,String refundLink,Amount amount){
+        PaypalAPIRequest<PaypalPaymentRefunded> refundPayment = new RefundPaymentRequest.Builder()
+                .setAccessToken(accessToken)
+                .setRefundLink(refundLink)
+                .setAmount(amount)
+                .build();
+        return refundPayment.execute();
     }
 }

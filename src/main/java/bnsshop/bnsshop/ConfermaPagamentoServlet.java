@@ -19,9 +19,8 @@ import java.util.List;
 import java.util.Optional;
 
 @WebServlet(name = "ConfermaPagamentoServlet", value = "/ConfermaPagamentoServlet")
-
 public class ConfermaPagamentoServlet extends HttpServlet {
-    Controllers<PaypalTokens> controller;
+    private Controllers<PaypalTokens> controller;
 
     @Override
     public void init() throws ServletException {
@@ -57,7 +56,7 @@ public class ConfermaPagamentoServlet extends HttpServlet {
             GestioneServlet.inviaRisposta(response,500,"\"Errore durante la conferma del pagamento PayPal\"",false);
             return;
         }
-        if(data.length() != 2 || !data.has("token") || !data.has("payerId")){
+        if(data.keySet().size() != 2 || !data.has("token") || !data.has("payerId")){
             //se l'oggetto json è malformato o mancante di qualche campo vado in errore.
             GestioneServlet.inviaRisposta(response,500,"\"Errore durante la conferma del pagamento PayPal\"",false);
             return;

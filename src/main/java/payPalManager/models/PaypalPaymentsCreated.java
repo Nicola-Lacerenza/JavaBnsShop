@@ -14,6 +14,10 @@ public final class PaypalPaymentsCreated implements Cloneable,Serializable,Compa
     private final PaypalPayments paypalPayment;
     private final LinksOrderCreated refundLink;
 
+    public PaypalPaymentsCreated(){
+        this(new PaypalPayments(),new LinksOrderCreated());
+    }
+
     public PaypalPaymentsCreated(PaypalPayments paypalPayment,LinksOrderCreated refundLink){
         this.paypalPayment = paypalPayment.copy();
         this.refundLink = refundLink.copy();
@@ -86,7 +90,29 @@ public final class PaypalPaymentsCreated implements Cloneable,Serializable,Compa
 
     @Override
     public Optional<PaypalPaymentsCreated> convertDBToJava(ResultSet row) throws SQLException {
-        throw new SQLException("For this class the method extractFromDatabase isn't implemented.");
+        int id = row.getInt("id");
+        String idOrdinePaypal = row.getString("id_ordine_paypal");
+        String payerId = row.getString("payer_id");
+        String paymentId = row.getString("payment_id");
+        String status = row.getString("status");
+        double paypalFee = row.getDouble("paypal_fee");
+        double grossAmount = row.getDouble("gross_amount");
+        double netAmount = row.getDouble("net_amount");
+        String refundLinkHref = row.getString("refund_link_href");
+        String refundLinkRequestMethod = row.getString("refund_link_request_method");
+        PaypalPayments payment = new PaypalPayments.Builder()
+                .setId(id)
+                .setOrderId(idOrdinePaypal)
+                .setPayerId(payerId)
+                .setPaymentId(paymentId)
+                .setStatus(status)
+                .setPaypalFee(paypalFee)
+                .setGrossAmount(grossAmount)
+                .setNetAmount(netAmount)
+                .build();
+        LinksOrderCreated refundLink = new LinksOrderCreated(refundLinkRequestMethod,"",refundLinkHref);
+        PaypalPaymentsCreated paymentCreated = new PaypalPaymentsCreated(payment,refundLink);
+        return Optional.of(paymentCreated);
     }
 
     @Override
