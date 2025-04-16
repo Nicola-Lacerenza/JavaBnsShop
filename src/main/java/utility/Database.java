@@ -224,7 +224,6 @@ public class Database{
         return output;
     }
 
-
     public static boolean updateElement(int id,Map<Integer, RegisterServlet.RegisterFields> fields, String tablename){
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
