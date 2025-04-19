@@ -51,19 +51,10 @@ public class OrdineServlet extends HttpServlet {
         }
         int idUtente = utenti.getFirst().getId();
 
-        Optional<Ordine> ordine=null;
-        List<Ordine> ordini=null;
+        OrdineController specific = (OrdineController)(controller);
+        List<Ordine> ordini = specific.getObjectByUserID(idUtente);
+        GestioneServlet.inviaRisposta(response,200,ordini.toString(),true);
 
-        if (ordine!=null || ordini!=null){
-            if (ordine!=null){
-                GestioneServlet.inviaRisposta(response,200,ordine.get().toString(),true);
-            }else{
-                GestioneServlet.inviaRisposta(response,200,ordini.toString(),true);
-            }
-        }else{
-            String message = "\"Internal server error\"";
-            GestioneServlet.inviaRisposta(response,500,message,false);
-        }
     }
 
 

@@ -63,11 +63,13 @@ public final class PaypalManagement{
         return confirmPayment.execute();
     }
 
-    public static Optional<PaypalPaymentRefunded> refundPayment(String accessToken,String refundLink,Amount amount){
+    public static Optional<PaypalPaymentRefunded> refundPayment(String accessToken,String refundLink,Amount amount,int idUtente, int idOrdine){
         PaypalAPIRequest<PaypalPaymentRefunded> refundPayment = new RefundPaymentRequest.Builder()
                 .setAccessToken(accessToken)
                 .setRefundLink(refundLink)
                 .setAmount(amount)
+                .setIdUtente(idUtente)
+                .setIdOrdine(idOrdine)
                 .build();
         return refundPayment.execute();
     }

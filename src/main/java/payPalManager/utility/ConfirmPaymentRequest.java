@@ -116,11 +116,11 @@ public final class ConfirmPaymentRequest extends PaypalAPIRequest<PaypalPayments
                 throw new SQLException("Errore: Nessun ID prodotto generato.");
             }
 
-            String query2 = "UPDATE ordine SET stato_ordine=?,data_aggiornamento_stato_ordine=? WHERE id_ordine_paypal = ?";
+            String query2 = "UPDATE ordine SET stato_ordine=?,data_aggiornamento_stato_ordine= NOW() WHERE id_ordine_paypal = ?";
             PreparedStatement preparedStatement2 = connection.prepareStatement(query2);
             preparedStatement2.setString(1, rawPaypalPayment.getOrderStatus());
-            preparedStatement2.setTimestamp(2, DateManagement.fromCalendarToDatabase(new GregorianCalendar(Locale.UK)));
-            preparedStatement2.setString(3,rawPaypalPayment.getOrderId());
+            preparedStatement2.setString(2,rawPaypalPayment.getOrderId());
+            preparedStatement2.executeUpdate();
 
             connection.commit();
             output = true;
