@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import models.FornitoriProdotti;
 import models.Ordine;
+import models.ProdottiFull;
 import models.Utenti;
 import utility.GestioneServlet;
 
@@ -42,20 +43,44 @@ public class OrdineServlet extends HttpServlet {
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException,IOException{
 
-        String email = GestioneServlet.validaToken(request,response);
-        Controllers<Utenti> controllerUtenti = new UtentiController();
-        List<Utenti> utenti = controllerUtenti.executeQuery("SELECT * FROM utenti WHERE email= '" + email + "'");
-        if (utenti.isEmpty()){
-            GestioneServlet.inviaRisposta(response,500,"\"Utente Non trovato!\"",false);
+
+        int id = readId(request);
+        if (id == -2) {
+            String email = GestioneServlet.validaToken(request, response);
+            Controllers<Utenti> controllerUtenti = new UtentiController();
+            List<Utenti> utenti = controllerUtenti.executeQuery("SELECT * FROM utenti WHERE email= '" + email + "'");
+            if (utenti.isEmpty()) {
+                GestioneServlet.inviaRisposta(response, 500, "\"Utente Non trovato!\"", false);
+                return;
+            }
+            int idUtente = utenti.getFirst().getId();
+
+            OrdineController specific = (OrdineController) (controller);
+            List<Ordine> ordini = specific.getObjectByUserID(idUtente);
+            GestioneServlet.inviaRisposta(response, 200, ordini.toString(), true);
             return;
         }
-        int idUtente = utenti.getFirst().getId();
 
-        OrdineController specific = (OrdineController)(controller);
-        List<Ordine> ordini = specific.getObjectByUserID(idUtente);
-        GestioneServlet.inviaRisposta(response,200,ordini.toString(),true);
-
+        if (id>0) {
+            Optional<Ordine> tmp = this.controller.getObject(id);
+            ///////  DA TERMINARE INSERENDO LA LETTURA DELL'ORDINE IN BASE ALL'ID ESTRAENDO ANCHE I PRODOTTI ///////
+        }
     }
 
-
+    private int readId(HttpServletRequest request){
+        String string = request.getParameter("id");
+        if(string==null){
+            //Entro qui se l'id è nullo
+            return -2;
+        }
+        int id;
+        try{
+            id = Integer.parseInt(string);
+        }catch (NumberFormatException e){
+            //Vado in errore con codice di errore -1 se il parametro id è presente ma non è un numero valido
+            e.printStackTrace();
+            id = -1;
+        }
+        return id;
+    }
 }
