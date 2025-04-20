@@ -27,7 +27,7 @@ public class ProdottiFull implements Oggetti<ProdottiFull>{
     private final List<String> url;
     private final List<String> nomeColore;
 
-    public ProdottiFull(int id,int idModello, String nomeModello, String descrizioneModello,int idCategoria, String nomeCategoria, String target,int idBrand,String nomeBrand, String descrizioneBrand, int statoPubblicazione, double prezzo, /*List<String> tagliaEu, List<String> tagliaUk, List<String> tagliaUs,List<String> quantita,*/List<ProdottiTaglieEstratte> list, List<String> url, List<String> nomeColore) {
+    public ProdottiFull(int id,int idModello, String nomeModello, String descrizioneModello,int idCategoria, String nomeCategoria, String target,int idBrand,String nomeBrand, String descrizioneBrand, int statoPubblicazione, double prezzo,List<ProdottiTaglieEstratte> list, List<String> url, List<String> nomeColore) {
         this.id = id;
         this.idModello = idModello;
         this.nomeModello = nomeModello;
