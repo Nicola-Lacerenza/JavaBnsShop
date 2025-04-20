@@ -63,6 +63,20 @@ public class OrdineServlet extends HttpServlet {
 
         if (id>0) {
             Optional<Ordine> tmp = this.controller.getObject(id);
+            if (tmp.isPresent()) {
+                // tmp.get().toString() restituisce il JSON indentato che hai costruito
+                String jsonOrdine = tmp.get().toString();
+                System.out.println("JSON inviato al client: " + jsonOrdine);
+
+                GestioneServlet.inviaRisposta(response, 200, jsonOrdine, true);
+            } else {
+                // ordine non trovato → 404 o messaggio di errore
+                String error = "{\"error\":\"Ordine con id=" + id + " non trovato\"}";
+                GestioneServlet.inviaRisposta(response, 404, error, true);
+            }
+
+            GestioneServlet.inviaRisposta(response, 200, tmp.toString(), true);
+
             ///////  DA TERMINARE INSERENDO LA LETTURA DELL'ORDINE IN BASE ALL'ID ESTRAENDO ANCHE I PRODOTTI ///////
         }
     }
