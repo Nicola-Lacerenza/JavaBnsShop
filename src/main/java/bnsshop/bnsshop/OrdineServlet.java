@@ -2,16 +2,13 @@ package bnsshop.bnsshop;
 
 import controllers.Controllers;
 import controllers.OrdineController;
-import controllers.ProdottiController;
 import controllers.UtentiController;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import models.FornitoriProdotti;
 import models.Ordine;
-import models.ProdottiFull;
 import models.Utenti;
 import utility.GestioneServlet;
 
@@ -41,45 +38,54 @@ public class OrdineServlet extends HttpServlet {
     }
 
     @Override
-    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException,IOException{
-
+    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         int id = readId(request);
-        if (id == -2) {
-            String email = GestioneServlet.validaToken(request, response);
-            Controllers<Utenti> controllerUtenti = new UtentiController();
-            List<Utenti> utenti = controllerUtenti.executeQuery("SELECT * FROM utenti WHERE email= '" + email + "'");
-            if (utenti.isEmpty()) {
-                GestioneServlet.inviaRisposta(response, 500, "\"Utente Non trovato!\"", false);
-                return;
-            }
-            int idUtente = utenti.getFirst().getId();
 
-            OrdineController specific = (OrdineController) (controller);
-            List<Ordine> ordini = specific.getObjectByUserID(idUtente);
+        String email = GestioneServlet.validaToken(request, response);
+        if (email == null) {
+            return;
+        }
+
+        Controllers<Utenti> controllerUtenti = new UtentiController();
+        List<Utenti> utenti = controllerUtenti.executeQuery(
+                "SELECT * FROM utenti WHERE email = '" + email + "'"
+        );
+        if (utenti.isEmpty()) {
+            GestioneServlet.inviaRisposta(response, 500, "{\"error\":\"Utente non trovato!\"}", false);
+            return;
+        }
+        int idUtente = utenti.getFirst().getId();
+
+        if (id == -2) {
+            OrdineController ordineCtrl = (OrdineController) controller;
+            List<Ordine> ordini = ordineCtrl.getObjectByUserID(idUtente);
             GestioneServlet.inviaRisposta(response, 200, ordini.toString(), true);
             return;
         }
 
-        if (id>0) {
-            Optional<Ordine> tmp = this.controller.getObject(id);
-            if (tmp.isPresent()) {
-                // tmp.get().toString() restituisce il JSON indentato che hai costruito
-                String jsonOrdine = tmp.get().toString();
-                System.out.println("JSON inviato al client: " + jsonOrdine);
+        if (id > 0) {
+            Optional<Ordine> tmp = ((OrdineController)controller).getObject(id);
 
-                GestioneServlet.inviaRisposta(response, 200, jsonOrdine, true);
-            } else {
-                // ordine non trovato → 404 o messaggio di errore
-                String error = "{\"error\":\"Ordine con id=" + id + " non trovato\"}";
-                GestioneServlet.inviaRisposta(response, 404, error, true);
+            if (!tmp.isPresent()) {
+                GestioneServlet.inviaRisposta(response, 404, "{\"error\":\"Ordine con id=" + id + " non trovato\"}", true);
+                return;
             }
 
-            GestioneServlet.inviaRisposta(response, 200, tmp.toString(), true);
+            Ordine ordine = tmp.get();
+            if (ordine.getIdUtente() != idUtente) {
+                GestioneServlet.inviaRisposta(response, 403, "{\"error\":\"Accesso negato\"}", true);
+                return;
+            }
 
-            ///////  DA TERMINARE INSERENDO LA LETTURA DELL'ORDINE IN BASE ALL'ID ESTRAENDO ANCHE I PRODOTTI ///////
+            String jsonOrdine = ordine.toString();
+            System.out.println("JSON inviato al client: " + jsonOrdine);
+            GestioneServlet.inviaRisposta(response, 200, jsonOrdine, true);
+            return;
         }
+        GestioneServlet.inviaRisposta(response, 400, "{\"error\":\"Parametro id non valido\"}", true);
     }
+
 
     private int readId(HttpServletRequest request){
         String string = request.getParameter("id");

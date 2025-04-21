@@ -4,10 +4,7 @@ import org.json.JSONObject;
 import utility.DateManagement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Calendar;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class Ordine implements Oggetti<Ordine>{
     private final int id;
@@ -87,6 +84,96 @@ public class Ordine implements Oggetti<Ordine>{
     @Override
     public Optional<Ordine> convertDBToJava(ResultSet rs) {
         try {
+            // ——— 1) Campi dell’ordine —————————————————————
+            int orderId       = rs.getInt("id");
+            int idUtente      = rs.getInt("id_utente");
+            int idPagamento   = rs.getInt("id_pagamento");
+            int idIndirizzo   = rs.getInt("id_indirizzo");
+            String stato      = rs.getString("stato_ordine");
+            Calendar crea     = DateManagement.fromDatabaseToCalendar(rs.getTimestamp("data_creazione_ordine"));
+            Calendar aggiorna = DateManagement.fromDatabaseToCalendar(rs.getTimestamp("data_aggiornamento_stato_ordine"));
+            double importo    = rs.getDouble("importo");
+            String valuta     = rs.getString("valuta");
+            String locale     = rs.getString("locale_utente");
+
+            // ——— 2) Map per raggruppare i ProdottiFull by id_prodotto ———
+            Map<Integer, ProdottiFull> prodottiMap = new LinkedHashMap<>();
+
+            // ——— 3) Ciclo su tutte le righe dell’ordine —————————
+            do {
+                int idProdotto = rs.getInt("id_prodotto");
+
+                ProdottiFull p = prodottiMap.get(idProdotto);
+                if (p == null) {
+                    int modelloId        = rs.getInt("id_modello");
+                    String nomeModello   = rs.getString("nome_modello");
+                    String descModello   = rs.getString("descrizione_modello");
+                    int catId            = rs.getInt("id_categoria");
+                    String nomeCat       = rs.getString("nome_categoria");
+                    String target        = rs.getString("target");
+                    int brandId          = rs.getInt("id_brand");
+                    String nomeBrand     = rs.getString("nome_brand");
+                    String descBrand     = rs.getString("descrizione_brand");
+                    int statoPub         = rs.getInt("stato_pubblicazione");
+                    double prezzo        = rs.getDouble("prezzo");
+
+                    // istanzio con liste vuote
+                    p = new ProdottiFull(
+                            idProdotto,
+                            modelloId,
+                            nomeModello,
+                            descModello,
+                            catId,
+                            nomeCat,
+                            target,
+                            brandId,
+                            nomeBrand,
+                            descBrand,
+                            statoPub,
+                            prezzo,
+                            new LinkedList<>(),
+                            new LinkedList<>(),
+                            new LinkedList<>()
+                    );
+                    prodottiMap.put(idProdotto, p);
+                }
+
+                // ——— 3a) Estrai la singola “combinazione” e aggiungila alle liste ———
+                String tagEu = rs.getString("taglia_Eu");
+                String tagUk = rs.getString("taglia_Uk");
+                String tagUs = rs.getString("taglia_Us");
+                int quantita = rs.getInt("quantita");
+                p.getTaglieProdotto().add(new ProdottiFull.ProdottiTaglieEstratte(
+                        new Taglia(0, tagEu, tagUk, tagUs),
+                        new TaglieProdotti(0, 0, idProdotto, quantita)
+                ));
+
+                String url    = rs.getString("url");
+                if (url != null) p.getUrl().add(url);
+
+                String colore = rs.getString("nome_colore");
+                if (colore != null) p.getNomeColore().add(colore);
+
+            } while (rs.next());
+
+            // ——— 4) Costruisci l’Ordine completo ————————————————
+            List<ProdottiFull> listaProdotti = new LinkedList<>(prodottiMap.values());
+            Ordine ordine = new Ordine(
+                    orderId, idUtente, idPagamento, idIndirizzo,
+                    stato, crea, aggiorna,
+                    importo, valuta, locale,
+                    listaProdotti
+            );
+            return Optional.of(ordine);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return Optional.empty();
+        }
+    }
+
+    /*public Optional<Ordine> convertDBToJava(ResultSet rs) {
+        try {
             // 1) Leggi i campi "ordine" dalla riga corrente
             int orderId = rs.getInt("id");
             int idUtente = rs.getInt("id_utente");
@@ -99,7 +186,7 @@ public class Ordine implements Oggetti<Ordine>{
             String valuta = rs.getString("valuta");
             String localeUtente = rs.getString("locale_utente");
 
-            // 2) Prepara la lista dei prodotti
+                    // 2) Prepara la lista dei prodotti
             List<ProdottiFull> listaProdotti = new LinkedList<>();
 
             // 3) Ciclo do–while: ogni riga con lo stesso orderId è un prodotto diverso
@@ -178,7 +265,7 @@ public class Ordine implements Oggetti<Ordine>{
             e.printStackTrace();
             return Optional.empty();
         }
-    }
+    }*/
 
     @Override
     public String toString() {
