@@ -2,10 +2,19 @@ package controllers;
 
 import bnsshop.bnsshop.RegisterServlet;
 import models.Ordine;
+import models.ProdottiFull;
 import utility.Database;
-
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public class OrdineController implements Controllers<Ordine>{
 
@@ -86,15 +95,33 @@ public class OrdineController implements Controllers<Ordine>{
 
             ps.setInt(1, objectId);
 
+            // 4) Se c'è almeno una riga, converti in Ordine
+            Ordine template = new Ordine();
+            List<Ordine> list = new LinkedList<>();
             try (ResultSet rs = ps.executeQuery()) {
-                // 4) Se c'è almeno una riga, converti in Ordine
-                Ordine template = new Ordine();
-                if (rs.next()) {
-                    return template.convertDBToJava(rs);
-                } else {
-                    return Optional.empty();
+                while (rs.next()) {
+                    Optional<Ordine> tmp = template.convertDBToJava(rs);
+                    tmp.ifPresent(list::add);
                 }
             }
+
+            List<Ordine> output = new LinkedList<>();
+            for(Ordine ordine:list){
+                if(!output.contains(ordine)){
+                    output.add(ordine);
+                }
+                List<ProdottiFull> prodotti = ordine.getProdotti();
+                int ordinePresente = output.indexOf(ordine);
+                for(ProdottiFull prodotto:prodotti){
+                    if(!output.get(ordinePresente).getProdotti().contains(prodotto)){
+                        output.get(ordinePresente).getProdotti().add(prodotto);
+                    }
+                }
+            }
+            if(output.isEmpty()){
+                return Optional.empty();
+            }
+            return Optional.of(output.getFirst());
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -163,7 +190,7 @@ public class OrdineController implements Controllers<Ordine>{
                         + "WHERE o.id_utente = ? "
                         + "ORDER BY o.id, d.id, m.id;";
 
-        List<Ordine> ordini = new LinkedList<>();
+        Map<Integer,Ordine> ordini = new HashMap<>();
 
         try (
                 Connection conn = DriverManager.getConnection(
@@ -174,11 +201,22 @@ public class OrdineController implements Controllers<Ordine>{
                 PreparedStatement ps = conn.prepareStatement(sql)
         ) {
             ps.setInt(1, userID);
+            Ordine template = new Ordine();
             try (ResultSet rs = ps.executeQuery()) {
-                Ordine template = new Ordine();
                 while (rs.next()) {
-                    template.convertDBToJava(rs)
-                            .ifPresent(ordini::add);
+                    Optional<Ordine> ordine = template.convertDBToJava(rs);
+                    if(ordine.isPresent()){
+                        if(!ordini.containsKey(ordine.get().getId())){
+                            ordini.put(ordine.get().getId(),ordine.get());
+                        }
+                        List<ProdottiFull> prodotti = ordine.get().getProdotti();
+                        Ordine ordinePresente = ordini.get(ordine.get().getId());
+                        for(ProdottiFull prodotto:prodotti){
+                            if(!ordinePresente.getProdotti().contains(prodotto)){
+                                ordinePresente.getProdotti().add(prodotto);
+                            }
+                        }
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -187,6 +225,11 @@ public class OrdineController implements Controllers<Ordine>{
             ordini.clear();
         }
 
-        return ordini;
+        List<Ordine> output = new LinkedList<>();
+        for(int idOrdine:ordini.keySet()){
+            output.add(ordini.get(idOrdine));
+        }
+
+        return output;
     }
 }

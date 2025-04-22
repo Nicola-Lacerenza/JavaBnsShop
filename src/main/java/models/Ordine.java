@@ -4,7 +4,10 @@ import org.json.JSONObject;
 import utility.DateManagement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Calendar;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
 
 public class Ordine implements Oggetti<Ordine>{
     private final int id;
@@ -97,14 +100,11 @@ public class Ordine implements Oggetti<Ordine>{
             String locale     = rs.getString("locale_utente");
 
             // ——— 2) Map per raggruppare i ProdottiFull by id_prodotto ———
-            Map<Integer, ProdottiFull> prodottiMap = new LinkedHashMap<>();
 
             // ——— 3) Ciclo su tutte le righe dell’ordine —————————
-            do {
                 int idProdotto = rs.getInt("id_prodotto");
 
-                ProdottiFull p = prodottiMap.get(idProdotto);
-                if (p == null) {
+                ProdottiFull p;
                     int modelloId        = rs.getInt("id_modello");
                     String nomeModello   = rs.getString("nome_modello");
                     String descModello   = rs.getString("descrizione_modello");
@@ -135,8 +135,6 @@ public class Ordine implements Oggetti<Ordine>{
                             new LinkedList<>(),
                             new LinkedList<>()
                     );
-                    prodottiMap.put(idProdotto, p);
-                }
 
                 // ——— 3a) Estrai la singola “combinazione” e aggiungila alle liste ———
                 String tagEu = rs.getString("taglia_Eu");
@@ -154,10 +152,9 @@ public class Ordine implements Oggetti<Ordine>{
                 String colore = rs.getString("nome_colore");
                 if (colore != null) p.getNomeColore().add(colore);
 
-            } while (rs.next());
-
             // ——— 4) Costruisci l’Ordine completo ————————————————
-            List<ProdottiFull> listaProdotti = new LinkedList<>(prodottiMap.values());
+            List<ProdottiFull> listaProdotti = new LinkedList<>();
+            listaProdotti.add(p);
             Ordine ordine = new Ordine(
                     orderId, idUtente, idPagamento, idIndirizzo,
                     stato, crea, aggiorna,
@@ -171,101 +168,6 @@ public class Ordine implements Oggetti<Ordine>{
             return Optional.empty();
         }
     }
-
-    /*public Optional<Ordine> convertDBToJava(ResultSet rs) {
-        try {
-            // 1) Leggi i campi "ordine" dalla riga corrente
-            int orderId = rs.getInt("id");
-            int idUtente = rs.getInt("id_utente");
-            int idPagamento = rs.getInt("id_pagamento");
-            int idIndirizzo = rs.getInt("id_indirizzo");
-            String statoOrdine = rs.getString("stato_ordine");
-            Calendar dataCreazione = DateManagement.fromDatabaseToCalendar(rs.getTimestamp("data_creazione_ordine"));
-            Calendar dataAggiornamento = DateManagement.fromDatabaseToCalendar(rs.getTimestamp("data_aggiornamento_stato_ordine"));
-            double importo = rs.getDouble("importo");
-            String valuta = rs.getString("valuta");
-            String localeUtente = rs.getString("locale_utente");
-
-                    // 2) Prepara la lista dei prodotti
-            List<ProdottiFull> listaProdotti = new LinkedList<>();
-
-            // 3) Ciclo do–while: ogni riga con lo stesso orderId è un prodotto diverso
-            do {
-                if (rs.getInt("id") != orderId) {
-                    // se l'id ordine cambia, torniamo indietro e usciamo
-                    rs.previous();
-                    break;
-                }
-
-                // 3a) Leggi i campi “prodotto” dalla riga corrente
-                int idProdFull =      rs.getInt("id");
-                int idModello =       rs.getInt("id_modello");
-                String nomeModello =  rs.getString("nome_modello");
-                String descModello =  rs.getString("descrizione_modello");
-                int idCategoria =     rs.getInt("id_categoria");
-                String nomeCategoria =rs.getString("nome_categoria");
-                String target =       rs.getString("target");
-                int idBrand =         rs.getInt("id_brand");
-                String nomeBrand =    rs.getString("nome_brand");
-                String descBrand =    rs.getString("descrizione_brand");
-                int statoPub =        rs.getInt("stato_pubblicazione");
-                double prezzo =       rs.getDouble("prezzo");
-
-                // 3b) Prepara le liste di taglie, url e colori per questo prodotto
-                List<ProdottiFull.ProdottiTaglieEstratte> taglie = new LinkedList<>();
-                List<String> urls    = new LinkedList<>();
-                List<String> colori  = new LinkedList<>();
-
-                String tagEu = rs.getString("taglia_Eu");
-                String tagUk = rs.getString("taglia_Uk");
-                String tagUs = rs.getString("taglia_Us");
-                int quantita = Integer.parseInt(rs.getString("quantita"));
-                String url1 = rs.getString("url");
-                String col1 = rs.getString("nome_colore");
-
-                taglie.add(new ProdottiFull.ProdottiTaglieEstratte(
-                        new Taglia(0, tagEu, tagUk, tagUs),
-                        new TaglieProdotti(0, 0, idProdFull, quantita)
-                ));
-                urls.add(url1);
-                colori.add(col1);
-
-                // 3c) Istanzia ProdottiFull col costruttore corretto (15 parametri)
-                ProdottiFull prod = new ProdottiFull(
-                        idProdFull,    // 1) id
-                        idModello,     // 2) idModello
-                        nomeModello,   // 3)
-                        descModello,   // 4)
-                        idCategoria,   // 5)
-                        nomeCategoria, // 6)
-                        target,        // 7)
-                        idBrand,       // 8)
-                        nomeBrand,     // 9)
-                        descBrand,     // 10)
-                        statoPub,      // 11)
-                        prezzo,        // 12)
-                        taglie,        // 13) List<ProdottiTaglieEstratte>
-                        urls,          // 14) List<String> url
-                        colori         // 15) List<String> nomeColore
-                );
-                listaProdotti.add(prod);
-
-            } while (rs.next());
-
-            // 4) Costruisci e ritorna l’oggetto Ordine completo di prodotti
-            Ordine ordine = new Ordine(
-                    orderId, idUtente, idPagamento, idIndirizzo,
-                    statoOrdine, dataCreazione, dataAggiornamento,
-                    importo, valuta, localeUtente,
-                    listaProdotti
-            );
-            return Optional.of(ordine);
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return Optional.empty();
-        }
-    }*/
 
     @Override
     public String toString() {
@@ -293,4 +195,23 @@ public class Ordine implements Oggetti<Ordine>{
         return output.toString(4);
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == null){
+            return false;
+        }
+        if(this == obj){
+            return true;
+        }
+        if(!(obj instanceof Ordine)){
+            return false;
+        }
+        Ordine ordine = (Ordine)(obj);
+        return id == ordine.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return id;
+    }
 }
