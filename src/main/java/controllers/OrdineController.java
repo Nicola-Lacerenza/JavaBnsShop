@@ -54,7 +54,7 @@ public class OrdineController implements Controllers<Ordine>{
                         "  d.id AS dettaglio_id," +
                         "  d.id_prodotto," +
                         "  d.quantita," +
-                        "  d.codice_sconto," +
+                        "  d.prezzo," +
                         "  m.id AS id_modello," +
                         "  m.nome AS nome_modello," +
                         "  m.descrizione AS descrizione_modello," +
@@ -158,7 +158,7 @@ public class OrdineController implements Controllers<Ordine>{
                         + "  d.id AS dettaglio_id, "
                         + "  d.id_prodotto, "
                         + "  d.quantita, "
-                        + "  d.codice_sconto, "
+                        + "  d.prezzo, "
                         + "  m.id AS id_modello, "
                         + "  m.nome AS nome_modello, "
                         + "  m.descrizione AS descrizione_modello, "
