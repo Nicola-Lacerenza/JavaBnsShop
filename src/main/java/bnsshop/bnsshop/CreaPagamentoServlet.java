@@ -1,6 +1,7 @@
 package bnsshop.bnsshop;
 
 import controllers.Controllers;
+import controllers.ProdottiController;
 import controllers.UtentiController;
 import models.ProdottiFull;
 import models.Utenti;
@@ -27,11 +28,13 @@ import java.util.Optional;
 @WebServlet(name = "CreaPagamento", value = "/CreaPagamento")
 public class CreaPagamentoServlet extends HttpServlet {
     private Controllers<PaypalTokens> controller;
+    private Controllers<ProdottiFull> prodottiControllers;
 
     @Override
     public void init() throws ServletException {
         super.init();
         controller = new PaypalTokensController();
+        prodottiControllers = new ProdottiController();
     }
 
     @Override
@@ -60,7 +63,6 @@ public class CreaPagamentoServlet extends HttpServlet {
             }
             idUtente = utenti.getFirst().getId();
         }
-
 
         String baseUrl = "https://api-m.sandbox.paypal.com";
         String returnUrl = "https://localhost:4200/checkout-success";
@@ -116,6 +118,13 @@ public class CreaPagamentoServlet extends HttpServlet {
             cartItemsList.add(new CartItem(prodottoFull,quantity,tagliaScelta));
         }
 
+        for (CartItem cartItem : cartItemsList){
+            if (!verificaProdotto(cartItem)){
+                GestioneServlet.inviaRisposta(response,500,"\"Errore durante la creazione dell'ordine PayPal\"",false);
+                return;
+            }
+        }
+
         //PayPalTokenController specificController = (PayPalTokenController)controller ;
         List<PaypalTokens> tokens = controller.getAllObjects();
         String actualToken;
@@ -132,7 +141,7 @@ public class CreaPagamentoServlet extends HttpServlet {
             actualToken=tokens.getLast().getAccessToken();
         }
 
-        Optional<PaypalOrdersCreated> ordineCreato = PaypalManagement.createOrder(actualToken,idUtente,baseUrl,"EUR",prezzoTotale,"it-IT",returnUrl,cancelUrl);
+        Optional<PaypalOrdersCreated> ordineCreato = PaypalManagement.createOrder(actualToken,idUtente,baseUrl,"EUR",prezzoTotale,"it-IT",returnUrl,cancelUrl,cartItemsList);
         if (ordineCreato.isEmpty()){
             GestioneServlet.inviaRisposta(response,500,"\"Errore durante la creazione dell'ordine PayPal\"",false);
         }else{
@@ -144,6 +153,15 @@ public class CreaPagamentoServlet extends HttpServlet {
                 return;
             }
             GestioneServlet.inviaRisposta(response,200,"\""+linkFiltrato.getFirst().getHref()+"\"",true);
+        }
+
+    }
+
+    private boolean verificaProdotto(CartItem cartItem){
+
+        Optional<ProdottiFull> controlloEsistenzaProdotto = prodottiControllers.getObject(cartItem.getProdottiFull().getId());
+        if (controlloEsistenzaProdotto.isEmpty()){
+            return false;
         }
 
     }

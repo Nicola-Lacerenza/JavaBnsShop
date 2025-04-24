@@ -2,6 +2,7 @@ package payPalManager.utility;
 
 import exceptions.ParserException;
 import org.json.JSONObject;
+import payPalManager.CartItem;
 import payPalManager.models.Amount;
 import payPalManager.models.ExperienceContext;
 import payPalManager.models.OrderData;
@@ -16,10 +17,8 @@ import utility.Database;
 import utility.QueryFields;
 import utility.TipoVariabile;
 import java.io.Serial;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.sql.*;
+import java.util.*;
 
 public final class CreateOrderRequest extends PaypalAPIRequest<PaypalOrdersCreated>{
     @Serial
@@ -32,6 +31,8 @@ public final class CreateOrderRequest extends PaypalAPIRequest<PaypalOrdersCreat
     private final String returnUrl;
     private final String cancelUrl;
 
+    private final List<CartItem> oggettiCarrello;
+
     private CreateOrderRequest(Builder builder){
         super(builder.apiBaseURL,builder.accessToken);
         this.userId = builder.userId;
@@ -41,6 +42,7 @@ public final class CreateOrderRequest extends PaypalAPIRequest<PaypalOrdersCreat
         this.locale = builder.locale;
         this.returnUrl = builder.returnUrl;
         this.cancelUrl = builder.cancelUrl;
+        this.oggettiCarrello = builder.oggettiCarrello;
     }
 
     @Override
@@ -82,33 +84,84 @@ public final class CreateOrderRequest extends PaypalAPIRequest<PaypalOrdersCreat
             return Optional.empty();
         }
 
-        Map<Integer, QueryFields<? extends Comparable<?>>> fields = new HashMap<>();
         try {
-            fields.put(0, new QueryFields<>("id_utente", userId, TipoVariabile.longNumber));
-            fields.put(1, new QueryFields<>("id_ordine_paypal", rawPaypalOrder.getId(), TipoVariabile.string));
-            fields.put(2, new QueryFields<>("id_pagamento",1, TipoVariabile.longNumber));
-            fields.put(3, new QueryFields<>("id_indirizzo", 1, TipoVariabile.longNumber));
-            //fields.put(3, new QueryFields<>("id_indirizzo", indirizzoId, TipoVariabile.longNumber));
-            fields.put(4, new QueryFields<>("stato_ordine", rawPaypalOrder.getStatus(), TipoVariabile.string));
-            fields.put(5, new QueryFields<>("importo", amount, TipoVariabile.realNumber));
-            fields.put(6, new QueryFields<>("valuta", currency, TipoVariabile.string));
-            fields.put(7, new QueryFields<>("locale_utente", locale, TipoVariabile.string));
-        }catch (SQLException e){
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Driver JDBC non trovato", e);
+        }
+        int idOrdine = -1;
+
+        Connection connection = null;
+        List<PreparedStatement> statementList = new LinkedList<>();
+        boolean output = false;
+        try {
+
+            // APERTURA CONNESSIONE
+
+            connection = DriverManager.getConnection(Database.getDatabaseUrl(), Database.getDatabaseUsername(), Database.getDatabasePassword());
+            connection.setAutoCommit(false); // Avvia transazione
+
+            String query1 = "INSERT INTO ordine(id_utente,id_ordine_paypal,id_pagamento,id_indirizzo,stato_ordine,importo,valuta,locale_utente) " +
+                    "VALUES(?,?,?,?,?,?,?,?);";
+            PreparedStatement preparedStatement1 = connection.prepareStatement(query1, Statement.RETURN_GENERATED_KEYS);
+            preparedStatement1.setInt(1, userId);
+            preparedStatement1.setString(2, rawPaypalOrder.getId());
+            preparedStatement1.setInt(3, 1);
+            preparedStatement1.setInt(4, 1);
+            preparedStatement1.setString(5, rawPaypalOrder.getStatus());
+            preparedStatement1.setDouble(6, amount);
+            preparedStatement1.setString(7, currency);
+            preparedStatement1.setString(8, locale);
+            preparedStatement1.executeUpdate();
+
+            ResultSet rs1 = preparedStatement1.getGeneratedKeys();
+            if (rs1.next()) {
+                idOrdine = rs1.getInt(1);
+            }else{
+                throw new SQLException("Errore Durante l'inserimento");
+            }
+
+            for (CartItem oggetto : oggettiCarrello){
+                String query2 = "INSERT INTO dettagli_ordine(id_ordine,id_prodotto,quantita,prezzo,taglia_scelta) " +
+                        "VALUES (?,?,?,?,?)";
+                PreparedStatement preparedStatement2 = connection.prepareStatement(query2);
+                preparedStatement2.setInt(1, idOrdine);
+                preparedStatement2.setInt(2, oggetto.getProdottiFull().getId() );
+                preparedStatement2.setInt(3, oggetto.getQuantity());
+                preparedStatement2.setDouble(4, oggetto.getProdottiFull().getPrezzo());
+                preparedStatement2.setString(5, oggetto.getTagliaScelta());
+                preparedStatement2.executeUpdate();
+
+            }
+
+            connection.commit();
+            output = true;
+        } catch (SQLException e) {
+
+            // Gestione errori e rollback in caso di fallimento
             e.printStackTrace();
-            return Optional.empty();
+            if (connection != null) {
+                try {
+                    connection.rollback();
+                } catch (SQLException rollbackEx) {
+                    rollbackEx.printStackTrace();
+                }
+            }
+            output = false;
+        } finally {
+            // Chiusura connessione e statement
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException closeEx) {
+                    closeEx.printStackTrace();
+                }
+            }
         }
 
-        //creation record in the database with the data arrived by PayPal or parameters of the method.
-        int id = Database.insertElementExtractId(fields,"ordine");
-
-        if(id <= 0){
-            System.err.println("Error inserting the order in the database.");
-            return Optional.empty();
-        }
-
-        //creation output object and exit to the method.
+            //creation output object and exit to the method.
         PaypalOrders paypalOrder = new PaypalOrders.Builder()
-                .setId(id)
+                .setId(idOrdine)
                 .setOrderId(rawPaypalOrder.getId())
                 .setStatus(rawPaypalOrder.getStatus())
                 .setAmount(amount)
@@ -144,6 +197,7 @@ public final class CreateOrderRequest extends PaypalAPIRequest<PaypalOrdersCreat
         private String locale;
         private String returnUrl;
         private String cancelUrl;
+        private List<CartItem> oggettiCarrello;
 
         public Builder(){
             apiBaseURL = "";
@@ -155,6 +209,7 @@ public final class CreateOrderRequest extends PaypalAPIRequest<PaypalOrdersCreat
             locale = "";
             returnUrl = "";
             cancelUrl = "";
+            oggettiCarrello = new LinkedList<>();
         }
 
         public Builder setApiBaseURL(String apiBaseURL){
@@ -199,6 +254,11 @@ public final class CreateOrderRequest extends PaypalAPIRequest<PaypalOrdersCreat
 
         public Builder setCancelUrl(String cancelUrl){
             this.cancelUrl = cancelUrl;
+            return this;
+        }
+
+        public Builder setOggettiCarrello(List<CartItem> oggettiCarrello){
+            this.oggettiCarrello = new LinkedList<>(oggettiCarrello);
             return this;
         }
 

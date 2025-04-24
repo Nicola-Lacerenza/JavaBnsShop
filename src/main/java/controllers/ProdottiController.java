@@ -1,7 +1,6 @@
 package controllers;
 
 import bnsshop.bnsshop.RegisterServlet;
-import models.Prodotti;
 import models.ProdottiFull;
 import utility.Database;
 import java.sql.Connection;
@@ -15,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class ProdottiController implements Controllers<Prodotti> {
+public class ProdottiController implements Controllers<ProdottiFull> {
 
     public ProdottiController() {
     }
@@ -626,11 +625,15 @@ public class ProdottiController implements Controllers<Prodotti> {
     }
 
     @Override
-    public Optional<Prodotti> getObject(int objectid) {
+    public Optional<ProdottiFull> getObject(int objectid) {
         if (objectid <= 0) {
             return Optional.empty();
         }
-        return Optional.empty();
+        List<ProdottiFull> list = getFullObject(objectid);
+        if (list.isEmpty()){
+            return Optional.empty();
+        }
+        return Optional.of(list.getFirst());
     }
 
     public List<ProdottiFull> getFullObject(int objectid){
@@ -703,12 +706,12 @@ public class ProdottiController implements Controllers<Prodotti> {
     }
 
     @Override
-    public List<Prodotti> getAllObjects() {
+    public List<ProdottiFull> getAllObjects() {
         return new LinkedList<>();
     }
 
     @Override
-    public List<Prodotti> executeQuery(String query) {
+    public List<ProdottiFull> executeQuery(String query) {
         return null;
     }
 }

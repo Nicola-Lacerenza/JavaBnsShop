@@ -1,5 +1,6 @@
 package payPalManager.utility;
 
+import payPalManager.CartItem;
 import payPalManager.models.Amount;
 import payPalManager.models.PaypalOrdersCreated;
 import payPalManager.models.PaypalPaymentRefunded;
@@ -7,10 +8,7 @@ import payPalManager.models.PaypalPaymentsCreated;
 import payPalManager.models.PaypalTokens;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
 
 public final class PaypalManagement{
     private PaypalManagement(){}
@@ -37,8 +35,7 @@ public final class PaypalManagement{
         return creationAPIToken.execute();
     }
 
-    //public static Optional<PaypalOrdersCreated> createOrder(String accessToken, int userId,  int indirizzoId,String apiBaseURL, String currency, double amount, String locale, String returnUrl, String cancelUrl){
-    public static Optional<PaypalOrdersCreated> createOrder(String accessToken, int userId,String apiBaseURL, String currency, double amount, String locale, String returnUrl, String cancelUrl){
+    public static Optional<PaypalOrdersCreated> createOrder(String accessToken, int userId, String apiBaseURL, String currency, double amount, String locale, String returnUrl, String cancelUrl, List<CartItem> oggettiCarrello){
         PaypalAPIRequest<PaypalOrdersCreated> creationOrder = new CreateOrderRequest.Builder()
                 .setApiBaseURL(apiBaseURL)
                 .setAccessToken(accessToken)
@@ -49,6 +46,7 @@ public final class PaypalManagement{
                 .setLocale(locale)
                 .setReturnUrl(returnUrl)
                 .setCancelUrl(cancelUrl)
+                .setOggettiCarrello(oggettiCarrello)
                 .build();
         return creationOrder.execute();
     }
