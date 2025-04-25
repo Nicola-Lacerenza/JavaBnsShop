@@ -127,7 +127,7 @@ public class RimborsiPaypalServlet extends HttpServlet{
                 "paypal_pagamento_creato.gross_amount," +
                 "paypal_pagamento_creato.net_amount," +
                 "paypal_pagamento_creato.refound_link_href," +
-                "paypal_pagamento_creato.refound_link_request_method," +
+                "paypal_pagamento_creato.refound_link_request_method" +
                 " FROM paypal_pagamento_creato JOIN ordine ON ordine.id = paypal_pagamento_creato.id_ordine_paypal WHERE ordine.id = ?";
         Map<Integer, QueryFields<? extends Comparable<?>>> fields = new HashMap<>();
         try{

@@ -7,20 +7,15 @@ import payPalManager.models.PaypalPayments;
 import payPalManager.models.PaypalPaymentsCreated;
 import payPalManager.models.RawPaypalPaymentsReceived;
 import utility.Database;
-import utility.DateManagement;
+import utility.QueryFields;
+import utility.TipoVariabile;
 import java.io.Serial;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
 import java.sql.SQLException;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public final class ConfirmPaymentRequest extends PaypalAPIRequest<PaypalPaymentsCreated>{
     @Serial
@@ -83,86 +78,60 @@ public final class ConfirmPaymentRequest extends PaypalAPIRequest<PaypalPayments
             refundLink = links.get(i);
         }
 
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Driver JDBC non trovato", e);
-        }
-        int idPayPalPagamentoCreato=-1;
-        Connection connection = null;
-        boolean output;
-        try {
-            connection = DriverManager.getConnection(Database.getDatabaseUrl(), Database.getDatabaseUsername(), Database.getDatabasePassword());
-            connection.setAutoCommit(false);
-
-            String query1 = "INSERT INTO paypal_pagamento_creato(id_ordine_paypal,payer_id,payment_id,status,paypal_fee,gross_amount,net_amount,refund_link_href,refund_link_request_method) " +
-                    "VALUES (?,?,?,?,?,?,?,?,?)";
-            PreparedStatement preparedStatement1 = connection.prepareStatement(query1, Statement.RETURN_GENERATED_KEYS);
-            preparedStatement1.setString(1, orderId);
-            preparedStatement1.setString(2, payerId);
-            preparedStatement1.setString(3, rawPaypalPayment.getPaymentId());
-            preparedStatement1.setString(4, rawPaypalPayment.getPaymentStatus());
-            preparedStatement1.setDouble(5, rawPaypalPayment.getPaypalFee());
-            preparedStatement1.setDouble(6, rawPaypalPayment.getGrossAmount());
-            preparedStatement1.setDouble(7, rawPaypalPayment.getNetAmount());
-            preparedStatement1.setString(8, refundLink.getHref());
-            preparedStatement1.setString(9, refundLink.getMethod());
-            preparedStatement1.executeUpdate();
-
-            ResultSet generatedKeys = preparedStatement1.getGeneratedKeys();
-            if (generatedKeys.next()) {
-                idPayPalPagamentoCreato = generatedKeys.getInt(1);
-            } else {
-                throw new SQLException("Errore: Nessun ID prodotto generato.");
-            }
-
-            String query2 = "UPDATE ordine SET stato_ordine=?,data_aggiornamento_stato_ordine= NOW() WHERE id_ordine_paypal = ?";
-            PreparedStatement preparedStatement2 = connection.prepareStatement(query2);
-            preparedStatement2.setString(1, rawPaypalPayment.getOrderStatus());
-            preparedStatement2.setString(2,rawPaypalPayment.getOrderId());
-            preparedStatement2.executeUpdate();
-
-            connection.commit();
-            output = true;
-
-        } catch(SQLException e){
-            // Gestione errori e rollback in caso di fallimento
-            e.printStackTrace();
-            if (connection != null) {
-                try {
-                    connection.rollback();
-                } catch (SQLException rollbackEx) {
-                    rollbackEx.printStackTrace();
-                }
-            }
-            output = false;
-        } finally {
-            // Chiusura connessione e statement
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException closeEx) {
-                    closeEx.printStackTrace();
-                }
-            }
-        }
-        if (idPayPalPagamentoCreato<=0 || !output){
+        //dati necessari per inserire il pagamento nel database (tabella paypal_pagamento_creato).
+        Map<Integer,QueryFields<? extends Comparable<?>>> fields1 = new HashMap<>();
+        try{
+            fields1.put(0,new QueryFields<>("id_ordine_paypal",orderId,TipoVariabile.string));
+            fields1.put(1,new QueryFields<>("payer_id",payerId,TipoVariabile.string));
+            fields1.put(2,new QueryFields<>("payment_id",rawPaypalPayment.getPaymentId(),TipoVariabile.string));
+            fields1.put(3,new QueryFields<>("status",rawPaypalPayment.getPaymentStatus(),TipoVariabile.string));
+            fields1.put(4,new QueryFields<>("paypal_fee",rawPaypalPayment.getPaypalFee(),TipoVariabile.realNumber));
+            fields1.put(5,new QueryFields<>("gross_amount",rawPaypalPayment.getGrossAmount(),TipoVariabile.realNumber));
+            fields1.put(6,new QueryFields<>("net_amount",rawPaypalPayment.getNetAmount(),TipoVariabile.realNumber));
+            fields1.put(7,new QueryFields<>("refund_link_href",refundLink.getHref(),TipoVariabile.string));
+            fields1.put(8,new QueryFields<>("refund_link_request_method",refundLink.getMethod(),TipoVariabile.string));
+        }catch(SQLException exception){
+            exception.printStackTrace();
             return Optional.empty();
         }
 
+        //dati da aggiornare nella tabella ordine dopo il pagamento.
+        String query2 = "UPDATE ordine SET stato_ordine = ?,data_aggiornamento_stato_ordine = NOW() WHERE id_ordine_paypal = ?";
+        Map<Integer,QueryFields<? extends Comparable<?>>> fields2 = new HashMap<>();
+        try{
+            fields2.put(0,new QueryFields<>("stato_ordine",rawPaypalPayment.getOrderStatus(),TipoVariabile.string));
+            fields2.put(1,new QueryFields<>("id_ordine_paypal",rawPaypalPayment.getOrderId(),TipoVariabile.string));
+        }catch(SQLException exception){
+            exception.printStackTrace();
+            return Optional.empty();
+        }
+
+        //transazione sul database
+        AtomicInteger idPayPalPagamentoCreato = new AtomicInteger();
+        boolean result = Database.executeTransaction(connection -> {
+            idPayPalPagamentoCreato.set(Database.insertElement(connection,"paypal_pagamento_creato",fields1));
+            if(idPayPalPagamentoCreato.get() <= 0){
+                return false;
+            }
+            return Database.executeGenericUpdate(connection,query2,fields2);
+        });
+
         //creation output object and exit to the method.
-        PaypalPayments paypalPayment = new PaypalPayments.Builder()
-                .setId(idPayPalPagamentoCreato)
-                .setOrderId(orderId)
-                .setPayerId(payerId)
-                .setPaymentId(rawPaypalPayment.getPaymentId())
-                .setStatus(rawPaypalPayment.getPaymentStatus())
-                .setPaypalFee(rawPaypalPayment.getPaypalFee())
-                .setGrossAmount(rawPaypalPayment.getGrossAmount())
-                .setNetAmount(rawPaypalPayment.getNetAmount())
-                .build();
-        PaypalPaymentsCreated paymentCreated = new PaypalPaymentsCreated(paypalPayment,refundLink);
-        return Optional.of(paymentCreated);
+        if(result){
+            PaypalPayments paypalPayment = new PaypalPayments.Builder()
+                    .setId(idPayPalPagamentoCreato.get())
+                    .setOrderId(orderId)
+                    .setPayerId(payerId)
+                    .setPaymentId(rawPaypalPayment.getPaymentId())
+                    .setStatus(rawPaypalPayment.getPaymentStatus())
+                    .setPaypalFee(rawPaypalPayment.getPaypalFee())
+                    .setGrossAmount(rawPaypalPayment.getGrossAmount())
+                    .setNetAmount(rawPaypalPayment.getNetAmount())
+                    .build();
+            PaypalPaymentsCreated paymentCreated = new PaypalPaymentsCreated(paypalPayment,refundLink);
+            return Optional.of(paymentCreated);
+        }
+        return Optional.empty();
     }
 
     public static final class Builder{

@@ -9,8 +9,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import models.Immagini;
 import org.json.JSONObject;
 import utility.GestioneServlet;
+import utility.QueryFields;
+import utility.TipoVariabile;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -49,7 +52,7 @@ public class ImmaginiServlet extends HttpServlet{
             }        }catch(NumberFormatException exception){
             id=-1;
         }
-        Optional<Immagini> immagine=null;
+        Optional<Immagini> immagine=Optional.empty();
         List<Immagini> immagini=null;
 
         if (id!=-1){
@@ -58,8 +61,8 @@ public class ImmaginiServlet extends HttpServlet{
             immagini = this.controller.getAllObjects();
         }
 
-        if (immagine!=null || immagini!=null){
-            if (immagine!=null){
+        if (immagine.isPresent() || immagini!=null){
+            if (immagine.isPresent()){
                 GestioneServlet.inviaRisposta(response,200,immagine.get().toString(),true);
             }else{
                 GestioneServlet.inviaRisposta(response,200,immagini.toString(),true);
@@ -95,9 +98,17 @@ public class ImmaginiServlet extends HttpServlet{
         String json=builder.toString();
         JSONObject object = new JSONObject(json);
         String url= object.getString("url");
-        Map<Integer, RegisterServlet.RegisterFields> request0= new HashMap<>();
-        request0.put(0,new RegisterServlet.RegisterFields("url",url));
-        if (controller.insertObject(request0)) {
+        Map<Integer, QueryFields<? extends Comparable<?>>> request0= new HashMap<>();
+        try{
+            request0.put(0,new QueryFields<>("url",url, TipoVariabile.string));
+        }catch(SQLException exception){
+            exception.printStackTrace();
+            String message = "\"Errore durante la registrazione.\"";
+            GestioneServlet.inviaRisposta(response,500,message,false);
+            return;
+        }
+        int idImmagine = controller.insertObject(request0);
+        if (idImmagine > 0) {
             String registrazione = "\"Registrazione effettuata correttamente.\"";
             GestioneServlet.inviaRisposta(response,201,registrazione,true);
         }else{
@@ -117,7 +128,7 @@ public class ImmaginiServlet extends HttpServlet{
             GestioneServlet.inviaRisposta(response,403,"\"Ruolo non corretto!\"",false);
             return;
         }
-        int id= Integer.parseInt((String) request.getParameter("id"));
+        int id= Integer.parseInt(request.getParameter("id"));
         BufferedReader reader=request.getReader();
         String row=reader.readLine();
         List<String> rows = new LinkedList<>();
@@ -131,8 +142,15 @@ public class ImmaginiServlet extends HttpServlet{
         }
         String json=builder.toString();
         JSONObject object = new JSONObject(json);
-        Map<Integer, RegisterServlet.RegisterFields> data = new HashMap<>();
-        data.put(0,new RegisterServlet.RegisterFields("url","" + object.getString("url")));
+        Map<Integer, QueryFields<? extends Comparable<?>>> data = new HashMap<>();
+        try{
+            data.put(0,new QueryFields<>("url",object.getString("url"),TipoVariabile.string));
+        }catch(SQLException exception){
+            exception.printStackTrace();
+            String message = "\"Errore durante la registrazione.\"";
+            GestioneServlet.inviaRisposta(response,500,message,false);
+            return;
+        }
         if (controller.updateObject(id,data)){
             String message="\"Product Updated Correctly.\"";
             GestioneServlet.inviaRisposta(response,200,message,true);

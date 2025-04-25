@@ -11,8 +11,11 @@ import models.Indirizzi;
 import models.Utenti;
 import org.json.JSONObject;
 import utility.GestioneServlet;
+import utility.QueryFields;
+import utility.TipoVariabile;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -92,18 +95,26 @@ public class IndirizziServlet extends HttpServlet {
         String indirizzo= object.getString("indirizzo");
         String email1 = object.getString("email");
         String numero_telefono= object.getString("numero_telefono");
-        Map<Integer, RegisterServlet.RegisterFields> request0= new HashMap<>();
-        request0.put(0,new RegisterServlet.RegisterFields("id_utente",id_utente));
-        request0.put(1,new RegisterServlet.RegisterFields("nome",nome));
-        request0.put(2,new RegisterServlet.RegisterFields("cognome",cognome));
-        request0.put(3,new RegisterServlet.RegisterFields("citta",citta));
-        request0.put(4,new RegisterServlet.RegisterFields("stato",stato));
-        request0.put(5,new RegisterServlet.RegisterFields("cap",cap));
-        request0.put(6,new RegisterServlet.RegisterFields("indirizzo",indirizzo));
-        request0.put(7,new RegisterServlet.RegisterFields("email",email1));
-        request0.put(8,new RegisterServlet.RegisterFields("numero_telefono",numero_telefono));
+        Map<Integer,QueryFields<? extends Comparable<?>>> request0= new HashMap<>();
+        try{
+            request0.put(0,new QueryFields<>("id_utente",id_utente,TipoVariabile.string));
+            request0.put(1,new QueryFields<>("nome",nome,TipoVariabile.string));
+            request0.put(2,new QueryFields<>("cognome",cognome,TipoVariabile.string));
+            request0.put(3,new QueryFields<>("citta",citta,TipoVariabile.string));
+            request0.put(4,new QueryFields<>("stato",stato,TipoVariabile.string));
+            request0.put(5,new QueryFields<>("cap",cap,TipoVariabile.string));
+            request0.put(6,new QueryFields<>("indirizzo",indirizzo,TipoVariabile.string));
+            request0.put(7,new QueryFields<>("email",email1,TipoVariabile.string));
+            request0.put(8,new QueryFields<>("numero_telefono",numero_telefono,TipoVariabile.string));
+        }catch(SQLException exception){
+            exception.printStackTrace();
+            String message = "\"Errore durante la registrazione.\"";
+            GestioneServlet.inviaRisposta(response,500,message,false);
+            return;
+        }
 
-        if (controller.insertObject(request0)) {
+        int idIndirizzo = controller.insertObject(request0);
+        if (idIndirizzo > 0) {
             String registrazione = "\"Registrazione effettuata correttamente.\"";
             GestioneServlet.inviaRisposta(response,201,registrazione,true);
         }else{
@@ -115,7 +126,7 @@ public class IndirizziServlet extends HttpServlet {
     @Override
     public void doPut(HttpServletRequest request,HttpServletResponse response) throws ServletException,IOException{
 
-        int id= Integer.parseInt((String) request.getParameter("id"));
+        int id= Integer.parseInt(request.getParameter("id"));
         BufferedReader reader=request.getReader();
         String row=reader.readLine();
         List<String> rows = new LinkedList<>();
@@ -129,15 +140,22 @@ public class IndirizziServlet extends HttpServlet {
         }
         String json=builder.toString();
         JSONObject object = new JSONObject(json);
-        Map<Integer, RegisterServlet.RegisterFields> data = new HashMap<>();
-        data.put(0,new RegisterServlet.RegisterFields("nome","" + object.getString("nome")));
-        data.put(1,new RegisterServlet.RegisterFields("cognome","" + object.getString("cognome")));
-        data.put(2,new RegisterServlet.RegisterFields("citta","" + object.getString("citta")));
-        data.put(3,new RegisterServlet.RegisterFields("stato","" + object.getString("stato")));
-        data.put(4,new RegisterServlet.RegisterFields("cap","" + object.getString("cap")));
-        data.put(5,new RegisterServlet.RegisterFields("indirizzo","" + object.getString("indirizzo")));
-        data.put(6,new RegisterServlet.RegisterFields("email","" + object.getString("email")));
-        data.put(7,new RegisterServlet.RegisterFields("numero_telefono","" + object.getString("numero_telefono")));
+        Map<Integer,QueryFields<? extends Comparable<?>>> data = new HashMap<>();
+        try{
+            data.put(0,new QueryFields<>("nome",object.getString("nome"),TipoVariabile.string));
+            data.put(1,new QueryFields<>("cognome",object.getString("cognome"),TipoVariabile.string));
+            data.put(2,new QueryFields<>("citta",object.getString("citta"),TipoVariabile.string));
+            data.put(3,new QueryFields<>("stato",object.getString("stato"),TipoVariabile.string));
+            data.put(4,new QueryFields<>("cap",object.getString("cap"),TipoVariabile.string));
+            data.put(5,new QueryFields<>("indirizzo",object.getString("indirizzo"),TipoVariabile.string));
+            data.put(6,new QueryFields<>("email",object.getString("email"),TipoVariabile.string));
+            data.put(7,new QueryFields<>("numero_telefono",object.getString("numero_telefono"),TipoVariabile.string));
+        }catch(SQLException exception){
+            exception.printStackTrace();
+            String message = "\"Errore durante la registrazione.\"";
+            GestioneServlet.inviaRisposta(response,500,message,false);
+            return;
+        }
         if (controller.updateObject(id,data)){
             String message="\"Product Updated Correctly.\"";
             GestioneServlet.inviaRisposta(response,200,message,true);
@@ -158,7 +176,7 @@ public class IndirizziServlet extends HttpServlet {
             GestioneServlet.inviaRisposta(response,403,"\"Ruolo non corretto!\"",false);
             return;
         }
-        int id = Integer.parseInt((String) request.getParameter("id"));
+        int id = Integer.parseInt(request.getParameter("id"));
         if (this.controller.deleteObject(id)){
             String message = "\"Product deleted Correctly.\"";
             GestioneServlet.inviaRisposta(response,200,message,true);

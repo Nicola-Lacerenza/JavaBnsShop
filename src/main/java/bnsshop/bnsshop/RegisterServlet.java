@@ -9,8 +9,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.json.JSONObject;
 import utility.Crittografia;
 import utility.GestioneServlet;
+import utility.QueryFields;
+import utility.TipoVariabile;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Map;
@@ -75,19 +78,27 @@ public class RegisterServlet extends HttpServlet{
             return;
         }
         if(passwordHashed.isPresent()){
-            Map<Integer,RegisterFields> request0= new HashMap<>();
-            request0.put(0,new RegisterFields("nome",nome));
-            request0.put(1,new RegisterFields("cognome",cognome));
-            request0.put(2,new RegisterFields("data_nascita",dataNascita));
-            request0.put(3,new RegisterFields("luogo_nascita",luogoNascita));
-            request0.put(4,new RegisterFields("sesso",sesso));
-            request0.put(5,new RegisterFields("email",email));
-            request0.put(6,new RegisterFields("telefono",telefono));
-            request0.put(7,new RegisterFields("password",passwordHashed.get()));
-            request0.put(8,new RegisterFields("id_taglia_preferita","" +idTagliaPreferita));
-            request0.put(9,new RegisterFields("id_colore_preferito","" +idColorePreferito));
-            request0.put(10,new RegisterFields("ruolo",ruolo));
-            if (controller.insertObject(request0)) {
+            Map<Integer, QueryFields<? extends Comparable<?>>> request0= new HashMap<>();
+            try{
+                request0.put(0,new QueryFields<>("nome",nome,TipoVariabile.string));
+                request0.put(1,new QueryFields<>("cognome",cognome,TipoVariabile.string));
+                request0.put(2,new QueryFields<>("data_nascita",dataNascita,TipoVariabile.string));
+                request0.put(3,new QueryFields<>("luogo_nascita",luogoNascita,TipoVariabile.string));
+                request0.put(4,new QueryFields<>("sesso",sesso,TipoVariabile.string));
+                request0.put(5,new QueryFields<>("email",email,TipoVariabile.string));
+                request0.put(6,new QueryFields<>("telefono",telefono,TipoVariabile.string));
+                request0.put(7,new QueryFields<>("password",passwordHashed.get(),TipoVariabile.string));
+                request0.put(8,new QueryFields<>("id_taglia_preferita",idTagliaPreferita,TipoVariabile.longNumber));
+                request0.put(9,new QueryFields<>("id_colore_preferito",idColorePreferito,TipoVariabile.longNumber));
+                request0.put(10,new QueryFields<>("ruolo",ruolo,TipoVariabile.string));
+            }catch(SQLException exception){
+                exception.printStackTrace();
+                String message = "\"Errore durante la registrazione.\"";
+                GestioneServlet.inviaRisposta(response,500,message,false);
+                return;
+            }
+            int idRegistrazione = controller.insertObject(request0);
+            if (idRegistrazione > 0) {
                 String registrazione = "\"Registrazione effettuata correttamente.\"";
                 GestioneServlet.inviaRisposta(response,201,registrazione,true);
             }else{

@@ -17,8 +17,13 @@ import utility.Database;
 import utility.QueryFields;
 import utility.TipoVariabile;
 import java.io.Serial;
-import java.sql.*;
-import java.util.*;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public final class CreateOrderRequest extends PaypalAPIRequest<PaypalOrdersCreated>{
     @Serial
@@ -84,94 +89,65 @@ public final class CreateOrderRequest extends PaypalAPIRequest<PaypalOrdersCreat
             return Optional.empty();
         }
 
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Driver JDBC non trovato", e);
-        }
-        int idOrdine = -1;
-
-        Connection connection = null;
-        List<PreparedStatement> statementList = new LinkedList<>();
-        boolean output = false;
-        try {
-
-            // APERTURA CONNESSIONE
-
-            connection = DriverManager.getConnection(Database.getDatabaseUrl(), Database.getDatabaseUsername(), Database.getDatabasePassword());
-            connection.setAutoCommit(false); // Avvia transazione
-
-            String query1 = "INSERT INTO ordine(id_utente,id_ordine_paypal,id_pagamento,id_indirizzo,stato_ordine,importo,valuta,locale_utente) " +
-                    "VALUES(?,?,?,?,?,?,?,?);";
-            PreparedStatement preparedStatement1 = connection.prepareStatement(query1, Statement.RETURN_GENERATED_KEYS);
-            preparedStatement1.setInt(1, userId);
-            preparedStatement1.setString(2, rawPaypalOrder.getId());
-            preparedStatement1.setInt(3, 1);
-            preparedStatement1.setInt(4, 1);
-            preparedStatement1.setString(5, rawPaypalOrder.getStatus());
-            preparedStatement1.setDouble(6, amount);
-            preparedStatement1.setString(7, currency);
-            preparedStatement1.setString(8, locale);
-            preparedStatement1.executeUpdate();
-
-            ResultSet rs1 = preparedStatement1.getGeneratedKeys();
-            if (rs1.next()) {
-                idOrdine = rs1.getInt(1);
-            }else{
-                throw new SQLException("Errore Durante l'inserimento");
-            }
-
-            for (CartItem oggetto : oggettiCarrello){
-                String query2 = "INSERT INTO dettagli_ordine(id_ordine,id_prodotto,quantita,prezzo,taglia_scelta) " +
-                        "VALUES (?,?,?,?,?)";
-                PreparedStatement preparedStatement2 = connection.prepareStatement(query2);
-                preparedStatement2.setInt(1, idOrdine);
-                preparedStatement2.setInt(2, oggetto.getProdottiFull().getId() );
-                preparedStatement2.setInt(3, oggetto.getQuantity());
-                preparedStatement2.setDouble(4, oggetto.getProdottiFull().getPrezzo());
-                preparedStatement2.setString(5, oggetto.getTagliaScelta());
-                preparedStatement2.executeUpdate();
-
-            }
-
-            connection.commit();
-            output = true;
-        } catch (SQLException e) {
-
-            // Gestione errori e rollback in caso di fallimento
-            e.printStackTrace();
-            if (connection != null) {
-                try {
-                    connection.rollback();
-                } catch (SQLException rollbackEx) {
-                    rollbackEx.printStackTrace();
-                }
-            }
-            output = false;
-        } finally {
-            // Chiusura connessione e statement
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException closeEx) {
-                    closeEx.printStackTrace();
-                }
-            }
+        //dati per inserimento nella tabella ordine
+        Map<Integer,QueryFields<? extends Comparable<?>>> fields1 = new HashMap<>();
+        try{
+            fields1.put(0,new QueryFields<>("id_utente",userId,TipoVariabile.longNumber));
+            fields1.put(1,new QueryFields<>("id_ordine_paypal",rawPaypalOrder.getId(),TipoVariabile.string));
+            fields1.put(2,new QueryFields<>("id_pagamento",1,TipoVariabile.longNumber));
+            fields1.put(3,new QueryFields<>("id_indirizzo",1,TipoVariabile.longNumber));
+            fields1.put(4,new QueryFields<>("stato_ordine",rawPaypalOrder.getStatus(),TipoVariabile.string));
+            fields1.put(5,new QueryFields<>("importo",amount,TipoVariabile.realNumber));
+            fields1.put(6,new QueryFields<>("valuta",currency,TipoVariabile.string));
+            fields1.put(7,new QueryFields<>("locale_utente",locale,TipoVariabile.string));
+        }catch(SQLException exception){
+            exception.printStackTrace();
+            return Optional.empty();
         }
 
-            //creation output object and exit to the method.
-        PaypalOrders paypalOrder = new PaypalOrders.Builder()
-                .setId(idOrdine)
-                .setOrderId(rawPaypalOrder.getId())
-                .setStatus(rawPaypalOrder.getStatus())
-                .setAmount(amount)
-                .setCurrency(currency)
-                .setLocale(locale)
-                .setUserId(userId)
-                .setIdIndirizzo(indirizzoId)
-                .build();
-        PaypalOrdersCreated orderCreated = new PaypalOrdersCreated(paypalOrder,rawPaypalOrder.getLinks());
-        return Optional.of(orderCreated);
+        //transazione sul database (creazione ordine e inserimenti dei prodotti dell'ordine)
+        AtomicInteger idOrdine = new AtomicInteger();
+        boolean result = Database.executeTransaction(connection -> {
+            idOrdine.set(Database.insertElement(connection,"ordine",fields1));
+            if(idOrdine.get() <= 0){
+                return false;
+            }
+            for(CartItem oggetto:oggettiCarrello){
+                Map<Integer,QueryFields<? extends Comparable<?>>> fields2 = new HashMap<>();
+                try{
+                    fields2.put(0,new QueryFields<>("id_ordine",idOrdine.get(),TipoVariabile.longNumber));
+                    fields2.put(1,new QueryFields<>("id_prodotto",oggetto.getProdottiFull().getId(),TipoVariabile.longNumber));
+                    fields2.put(2,new QueryFields<>("quantita",oggetto.getQuantity(),TipoVariabile.longNumber));
+                    fields2.put(3,new QueryFields<>("prezzo",oggetto.getProdottiFull().getPrezzo(),TipoVariabile.realNumber));
+                    fields2.put(4,new QueryFields<>("taglia_scelta",oggetto.getTagliaScelta(),TipoVariabile.string));
+                }catch(SQLException exception){
+                    exception.printStackTrace();
+                    return false;
+                }
+                int idDettaglio = Database.insertElement(connection,"dettagli_ordine",fields2);
+                if(idDettaglio <= 0){
+                    return false;
+                }
+            }
+            return true;
+        });
+
+        //creation output object and exit to the method.
+        if(result){
+            PaypalOrders paypalOrder = new PaypalOrders.Builder()
+                    .setId(idOrdine.get())
+                    .setOrderId(rawPaypalOrder.getId())
+                    .setStatus(rawPaypalOrder.getStatus())
+                    .setAmount(amount)
+                    .setCurrency(currency)
+                    .setLocale(locale)
+                    .setUserId(userId)
+                    .setIdIndirizzo(indirizzoId)
+                    .build();
+            PaypalOrdersCreated orderCreated = new PaypalOrdersCreated(paypalOrder,rawPaypalOrder.getLinks());
+            return Optional.of(orderCreated);
+        }
+        return Optional.empty();
     }
 
     private OrderData createOrderData(){

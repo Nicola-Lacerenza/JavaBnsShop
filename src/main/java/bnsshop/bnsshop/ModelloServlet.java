@@ -9,8 +9,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import models.Modello;
 import org.json.JSONObject;
 import utility.GestioneServlet;
+import utility.QueryFields;
+import utility.TipoVariabile;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -50,7 +53,7 @@ public class ModelloServlet extends HttpServlet{
         }catch(NumberFormatException exception){
             id=-1;
         }
-        Optional<Modello> modello=null;
+        Optional<Modello> modello=Optional.empty();
         List<Modello> modelli=null;
 
         if (id!=-1){
@@ -59,8 +62,8 @@ public class ModelloServlet extends HttpServlet{
             modelli = this.controller.getAllObjects();
         }
 
-        if (modello!=null || modelli!=null){
-            if (modello!=null){
+        if (modello.isPresent() || modelli!=null){
+            if (modello.isPresent()){
                 GestioneServlet.inviaRisposta(response,200,modello.get().toString(),true);
             }else{
                 GestioneServlet.inviaRisposta(response,200,modelli.toString(),true);
@@ -95,20 +98,28 @@ public class ModelloServlet extends HttpServlet{
         }
         String json=builder.toString();
         JSONObject object = new JSONObject(json);
-        String idCategoria= object.getString("id_categoria");
-        String idBrand= object.getString("id_brand");
+        int idCategoria= object.getInt("id_categoria");
+        int idBrand= object.getInt("id_brand");
         String colore= object.getString("colore");
         String nome= object.getString("nome");
         String descrizione= object.getString("descrizione");
 
-         Map<Integer, RegisterServlet.RegisterFields> request0= new HashMap<>();
-        request0.put(0,new RegisterServlet.RegisterFields("id_categoria",idCategoria));
-        request0.put(1,new RegisterServlet.RegisterFields("id_brand",idBrand));
-        request0.put(2,new RegisterServlet.RegisterFields("nome",nome));
-        request0.put(3,new RegisterServlet.RegisterFields("descrizione",descrizione));
-        request0.put(4,new RegisterServlet.RegisterFields("colore",colore));
+         Map<Integer,QueryFields<? extends Comparable<?>>> request0= new HashMap<>();
+         try{
+            request0.put(0,new QueryFields<>("id_categoria",idCategoria,TipoVariabile.longNumber));
+            request0.put(1,new QueryFields<>("id_brand",idBrand,TipoVariabile.longNumber));
+            request0.put(2,new QueryFields<>("nome",nome,TipoVariabile.string));
+            request0.put(3,new QueryFields<>("descrizione",descrizione,TipoVariabile.string));
+            request0.put(4,new QueryFields<>("colore",colore,TipoVariabile.string));
+         }catch(SQLException exception){
+             exception.printStackTrace();
+             String message = "\"Errore durante la registrazione.\"";
+             GestioneServlet.inviaRisposta(response,500,message,false);
+             return;
+         }
 
-        if (controller.insertObject(request0)) {
+         int idModello = controller.insertObject(request0);
+        if (idModello > 0) {
             String registrazione = "\"Registrazione effettuata correttamente.\"";
             GestioneServlet.inviaRisposta(response,201,registrazione,true);
         }else{
@@ -128,7 +139,7 @@ public class ModelloServlet extends HttpServlet{
             GestioneServlet.inviaRisposta(response,403,"\"Ruolo non corretto!\"",false);
             return;
         }
-        int id= Integer.parseInt((String) request.getParameter("id"));
+        int id= Integer.parseInt(request.getParameter("id"));
         BufferedReader reader=request.getReader();
         String row=reader.readLine();
         List<String> rows = new LinkedList<>();
@@ -142,11 +153,18 @@ public class ModelloServlet extends HttpServlet{
         }
         String json=builder.toString();
         JSONObject object = new JSONObject(json);
-        Map<Integer, RegisterServlet.RegisterFields> data = new HashMap<>();
-        data.put(0,new RegisterServlet.RegisterFields("id_categoria","" + object.getString("id_categoria")));
-        data.put(1,new RegisterServlet.RegisterFields("id_brand","" + object.getString("id_brand")));
-        data.put(2,new RegisterServlet.RegisterFields("nome","" + object.getString("nome")));
-        data.put(3,new RegisterServlet.RegisterFields("descrizione","" + object.getString("descrizione")));
+        Map<Integer,QueryFields<? extends Comparable<?>>> data = new HashMap<>();
+        try{
+            data.put(0,new QueryFields<>("id_categoria",object.getInt("id_categoria"),TipoVariabile.longNumber));
+            data.put(1,new QueryFields<>("id_brand",object.getInt("id_brand"),TipoVariabile.longNumber));
+            data.put(2,new QueryFields<>("nome",object.getString("nome"),TipoVariabile.string));
+            data.put(3,new QueryFields<>("descrizione",object.getString("descrizione"),TipoVariabile.string));
+        }catch(SQLException exception){
+            exception.printStackTrace();
+            String message = "\"Errore durante la registrazione.\"";
+            GestioneServlet.inviaRisposta(response,500,message,false);
+            return;
+        }
         if (controller.updateObject(id,data)){
             String message="\"Product Updated Correctly.\"";
             GestioneServlet.inviaRisposta(response,200,message,true);
@@ -167,7 +185,7 @@ public class ModelloServlet extends HttpServlet{
             GestioneServlet.inviaRisposta(response,403,"\"Ruolo non corretto!\"",false);
             return;
         }
-        int id= Integer.parseInt((String) request.getParameter("id"));
+        int id= Integer.parseInt(request.getParameter("id"));
         if (this.controller.deleteObject(id)){
             String message = "\"Product deleted Correctly.\"";
             GestioneServlet.inviaRisposta(response,200,message,true);

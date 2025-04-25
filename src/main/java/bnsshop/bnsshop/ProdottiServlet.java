@@ -17,7 +17,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import utility.GestioneServlet;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.InputStreamReader;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -164,8 +167,8 @@ public class ProdottiServlet extends HttpServlet{
         String colori= formData.get("colori");
         String nome= formData.get("nome");
         String descrizione= formData.get("descrizione");
-        Integer prezzo = Integer.parseInt(formData.get("prezzo"));
-        Boolean statoPubblicazione = Boolean.parseBoolean(formData.get("stato_pubblicazione"));
+        int prezzo = Integer.parseInt(formData.get("prezzo"));
+        boolean statoPubblicazione = Boolean.parseBoolean(formData.get("stato_pubblicazione"));
         int statoPubblicazioneInt = statoPubblicazione ? 1 : 0;
         String taglie = formData.get("taglie");
 
@@ -283,14 +286,14 @@ public class ProdottiServlet extends HttpServlet{
         JSONArray imageUrls = new JSONArray(imageUrls1);
 
         // Recupera i valori dal form
-        Integer id = Integer.parseInt(formData.get("id"));
+        int id = Integer.parseInt(formData.get("id"));
         String idCategoria= formData.get("id_categoria");
         String idBrand= formData.get("id_brand");
          String colori= formData.get("colori");
         String nome= formData.get("nome");
         String descrizione= formData.get("descrizione");
-        Integer prezzo = Integer.parseInt(formData.get("prezzo"));
-        Boolean statoPubblicazione = Boolean.parseBoolean(formData.get("stato_pubblicazione"));
+        int prezzo = Integer.parseInt(formData.get("prezzo"));
+        boolean statoPubblicazione = Boolean.parseBoolean(formData.get("stato_pubblicazione"));
         int statoPubblicazioneInt = statoPubblicazione ? 1 : 0;
         String taglie = formData.get("taglie");
 

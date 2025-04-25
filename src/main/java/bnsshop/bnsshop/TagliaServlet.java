@@ -9,9 +9,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import models.Taglia;
 import org.json.JSONObject;
 import utility.GestioneServlet;
+import utility.QueryFields;
+import utility.TipoVariabile;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -46,7 +48,7 @@ public class TagliaServlet extends HttpServlet{
         }catch(NumberFormatException exception){
             idTaglia=-1;
         }
-        Optional<Taglia> taglia=null;
+        Optional<Taglia> taglia=Optional.empty();
         List<Taglia> taglie=null;
 
         if (idTaglia!=-1){
@@ -55,8 +57,8 @@ public class TagliaServlet extends HttpServlet{
             taglie = this.controller.getAllObjects();
         }
 
-        if (taglia!=null || taglie!=null){
-            if (taglia!=null){
+        if (taglia.isPresent() || taglie!=null){
+            if (taglia.isPresent()){
                 GestioneServlet.inviaRisposta(response,200,taglia.get().toString(),true);
             }else{
                 GestioneServlet.inviaRisposta(response,200,taglie.toString(),true);
@@ -105,7 +107,7 @@ public class TagliaServlet extends HttpServlet{
             GestioneServlet.inviaRisposta(response,403,"\"Ruolo non corretto!\"",false);
             return;
         }
-        int id= Integer.parseInt((String) request.getParameter("id"));
+        int id= Integer.parseInt(request.getParameter("id"));
         BufferedReader reader=request.getReader();
         String row=reader.readLine();
         List<String> rows = new LinkedList<>();
@@ -119,30 +121,20 @@ public class TagliaServlet extends HttpServlet{
         }
         String json=builder.toString();
         JSONObject object = new JSONObject(json);
-        Map<Integer, RegisterServlet.RegisterFields> data = new HashMap<>();
-        data.put(0,new RegisterServlet.RegisterFields("tagliaEu","" + object.getString("tagliaEu")));
-        data.put(1,new RegisterServlet.RegisterFields("tagliaUk","" + object.getString("tagliaUk")));
-        data.put(2,new RegisterServlet.RegisterFields("tagliaUs","" + object.getString("tagliaUs")));
+        Map<Integer,QueryFields<? extends Comparable<?>>> data = new HashMap<>();
+        try{
+            data.put(0,new QueryFields<>("tagliaEu",object.getString("tagliaEu"),TipoVariabile.string));
+            data.put(1,new QueryFields<>("tagliaUk",object.getString("tagliaUk"),TipoVariabile.string));
+            data.put(2,new QueryFields<>("tagliaUs",object.getString("tagliaUs"),TipoVariabile.string));
+        }catch(SQLException exception){
+            exception.printStackTrace();
+            GestioneServlet.inviaRisposta(response,500,"\"Internal server error.\"",false);
+            return;
+        }
         if (controller.updateObject(id,data)){
-            String message="Product Updated Correctly.";
-            PrintWriter writer= response.getWriter();
-            response.setContentLength(message.length());
-            response.setContentType("application/json");
-            response.setStatus(200);
-            writer.println(message);
-            writer.flush();
-            writer.close();
+            GestioneServlet.inviaRisposta(response,200,"\"Product updated correctly.\"",true);
         }else{
-            String message = "Internal server error";
-            JSONObject error = new JSONObject();
-            error.put("message", message);
-            PrintWriter writer= response.getWriter();
-            response.setContentLength(error.toString().length());
-            response.setContentType("application/json");
-            response.setStatus(500);
-            writer.println(error.toString());
-            writer.flush();
-            writer.close();
+            GestioneServlet.inviaRisposta(response,500,"\"Internal server error.\"",false);
         }
     }
 
@@ -159,25 +151,9 @@ public class TagliaServlet extends HttpServlet{
         }
         int idTaglia= Integer.parseInt((String) request.getAttribute("idtaglia"));
         if (this.controller.deleteObject(idTaglia)){
-            String message = "Product deleted Correctly.";
-            PrintWriter writer= response.getWriter();
-            response.setContentLength(message.length());
-            response.setContentType("application/json");
-            response.setStatus(200);
-            writer.println(message);
-            writer.flush();
-            writer.close();
+            GestioneServlet.inviaRisposta(response,200,"\"Product deleted correctly.\"",true);
         }else{
-            String message = "Internal server error";
-            JSONObject error = new JSONObject();
-            error.put("message", message);
-            PrintWriter writer= response.getWriter();
-            response.setContentLength(error.toString().length());
-            response.setContentType("application/json");
-            response.setStatus(500);
-            writer.println(error.toString());
-            writer.flush();
-            writer.close();
+            GestioneServlet.inviaRisposta(response,500,"\"Internal server error.\"",false);
         }
     }
 
