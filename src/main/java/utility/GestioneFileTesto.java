@@ -5,7 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,19 +20,10 @@ public class GestioneFileTesto {
             String directory = System.getProperty("user.home");
             fis = new FileInputStream(directory+ "\\" +nomeFile);
         }catch (FileNotFoundException e){
-
             e.printStackTrace();
             return new HashMap<>();
         }
-
-        InputStreamReader isr = null;
-        try {
-            isr = new InputStreamReader(fis,"UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-            return new HashMap<>();
-        }
-
+        InputStreamReader isr = new InputStreamReader(fis,StandardCharsets.UTF_8);
         BufferedReader in = new BufferedReader(isr);
         try {
             String line = in.readLine();
@@ -61,7 +52,6 @@ public class GestioneFileTesto {
                 e.printStackTrace();
             }
         }
-
         return output;
     }
 }

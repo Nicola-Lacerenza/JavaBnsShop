@@ -9,8 +9,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import models.Colore;
 import org.json.JSONObject;
 import utility.GestioneServlet;
+import utility.QueryFields;
+import utility.TipoVariabile;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -50,7 +53,7 @@ public class ColoreServlet extends HttpServlet{
         }catch(NumberFormatException exception){
             idColore=-1;
         }
-        Optional<Colore> colore=null;
+        Optional<Colore> colore=Optional.empty();
         List<Colore> colori=null;
 
         if (idColore!=-1){
@@ -59,8 +62,8 @@ public class ColoreServlet extends HttpServlet{
             colori = this.controller.getAllObjects();
         }
 
-        if (colore!=null || colori!=null){
-            if (colore!=null){
+        if (colore.isPresent() || colori!=null){
+            if (colore.isPresent()){
                 GestioneServlet.inviaRisposta(response,200,colore.get().toString(),true);
             }else{
                 GestioneServlet.inviaRisposta(response,200,colori.toString(),true);
@@ -98,11 +101,19 @@ public class ColoreServlet extends HttpServlet{
         String nome= object.getString("nome");
         String rgb= object.getString("rgb");
         String hex= object.getString("hex");
-        Map<Integer, RegisterServlet.RegisterFields> request0= new HashMap<>();
-        request0.put(0,new RegisterServlet.RegisterFields("nome",nome));
-        request0.put(1,new RegisterServlet.RegisterFields("rgb",rgb));
-        request0.put(2,new RegisterServlet.RegisterFields("hex",hex));
-        if (controller.insertObject(request0)) {
+        Map<Integer, QueryFields<? extends Comparable<?>>> request0= new HashMap<>();
+        try{
+            request0.put(0,new QueryFields<>("nome",nome, TipoVariabile.string));
+            request0.put(1,new QueryFields<>("rgb",rgb,TipoVariabile.string));
+            request0.put(2,new QueryFields<>("hex",hex,TipoVariabile.string));
+        }catch (SQLException exception){
+            exception.printStackTrace();
+            String message = "\"Errore durante la registrazione.\"";
+            GestioneServlet.inviaRisposta(response,500,message,false);
+            return;
+        }
+        int idColore = controller.insertObject(request0);
+        if (idColore > 0) {
             String registrazione = "\"Registrazione effettuata correttamente.\"";
             GestioneServlet.inviaRisposta(response,201,registrazione,true);
         }else{
@@ -122,7 +133,7 @@ public class ColoreServlet extends HttpServlet{
             GestioneServlet.inviaRisposta(response,403,"\"Ruolo non corretto!\"",false);
             return;
         }
-        int id= Integer.parseInt((String) request.getParameter("id"));
+        int id= Integer.parseInt(request.getParameter("id"));
         BufferedReader reader=request.getReader();
         String row=reader.readLine();
         List<String> rows = new LinkedList<>();
@@ -136,10 +147,17 @@ public class ColoreServlet extends HttpServlet{
         }
         String json=builder.toString();
         JSONObject object = new JSONObject(json);
-        Map<Integer, RegisterServlet.RegisterFields> data = new HashMap<>();
-        data.put(0,new RegisterServlet.RegisterFields("nome","" + object.getString("nome")));
-        data.put(1,new RegisterServlet.RegisterFields("rgb","" + object.getString("rgb")));
-        data.put(2,new RegisterServlet.RegisterFields("hex","" + object.getString("hex")));
+        Map<Integer, QueryFields<? extends Comparable<?>>> data = new HashMap<>();
+        try{
+            data.put(0,new QueryFields<>("nome",object.getString("nome"),TipoVariabile.string));
+            data.put(1,new QueryFields<>("rgb",object.getString("rgb"),TipoVariabile.string));
+            data.put(2,new QueryFields<>("hex",object.getString("hex"),TipoVariabile.string));
+        }catch (SQLException exception){
+            exception.printStackTrace();
+            String message = "\"Errore durante la registrazione.\"";
+            GestioneServlet.inviaRisposta(response,500,message,false);
+            return;
+        }
         if (controller.updateObject(id,data)){
             String message="\"Product Updated Correctly.\"";
             GestioneServlet.inviaRisposta(response,200,message,true);
@@ -160,7 +178,7 @@ public class ColoreServlet extends HttpServlet{
             GestioneServlet.inviaRisposta(response,403,"\"Ruolo non corretto!\"",false);
             return;
         }
-        int id= Integer.parseInt((String) request.getParameter("id"));
+        int id= Integer.parseInt(request.getParameter("id"));
         if (this.controller.deleteObject(id)){
             String message = "\"Product deleted Correctly.\"";
             GestioneServlet.inviaRisposta(response,200,message,true);

@@ -19,7 +19,6 @@ import java.util.Optional;
 
 @WebServlet(name = "LoginServlet", value = "/LoginServlet")
 public class AuthServlet extends HttpServlet{
-
     private UtentiController controller;
 
     @Override
@@ -61,12 +60,11 @@ public class AuthServlet extends HttpServlet{
         String username= object.getString("username");
         String password= object.getString("password");
 
-        String query = "SELECT * FROM utenti WHERE email='"+username+"'";
-        List<Utenti> utenti = controller.executeQuery(query);
-        if (utenti.isEmpty()){
+        Optional<Utenti> utenteOptional = controller.getUserByEmail(username);
+        if (utenteOptional.isEmpty()){
             GestioneServlet.inviaRisposta(response,404,"\"Utente non trovato!\"",false);
         }else{
-            Utenti utente = utenti.getFirst();
+            Utenti utente = utenteOptional.get();
             Optional<String> passwordHashed= Crittografia.get_SHA_512_SecurePassword(password,"1234");
             if (passwordHashed.isPresent()){
                 if (!passwordHashed.get().equals(utente.getPassword())){

@@ -17,11 +17,15 @@ import payPalManager.models.PaypalPaymentRefunded;
 import payPalManager.models.PaypalPaymentsCreated;
 import payPalManager.models.PaypalTokens;
 import payPalManager.utility.PaypalManagement;
-import utility.Database;
 import utility.GestioneServlet;
+import utility.QueryFields;
+import utility.TipoVariabile;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @WebServlet(name = "RimborsiPaypalServlet", value = "/RimborsiPaypalServlet")
@@ -49,18 +53,18 @@ public class RimborsiPaypalServlet extends HttpServlet{
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         int idUtente;
-        boolean logged = GestioneServlet.isLogged(request,response);
+        boolean logged = GestioneServlet.isLogged(request);
         if (!logged) {
             idUtente=-1;
         }else{
             String email = GestioneServlet.validaToken(request,response);
-            Controllers<Utenti> controllerUtenti = new UtentiController();
-            List<Utenti> utenti = controllerUtenti.executeQuery("SELECT * FROM utenti WHERE email= '" + email + "'");
+            UtentiController controllerUtenti = new UtentiController();
+            Optional<Utenti> utenti = controllerUtenti.getUserByEmail(email);
             if (utenti.isEmpty()){
                 GestioneServlet.inviaRisposta(response,500,"\"Utente Non trovato!\"",false);
                 return;
             }
-            idUtente = utenti.getFirst().getId();
+            idUtente = utenti.get().getId();
         }
 
         //lettura dati json provenienti dal client (paymentId cioè id del pagamento da rimborsare).
@@ -124,8 +128,16 @@ public class RimborsiPaypalServlet extends HttpServlet{
                 "paypal_pagamento_creato.net_amount," +
                 "paypal_pagamento_creato.refound_link_href," +
                 "paypal_pagamento_creato.refound_link_request_method," +
-                " FROM paypal_pagamento_creato JOIN ordine ON ordine.id = paypal_pagamento_creato.id_ordine_paypal WHERE ordine.id ='"+idOrdine+"'";
-        List<PaypalPaymentsCreated> payments = paymentController.executeQuery(query);
+                " FROM paypal_pagamento_creato JOIN ordine ON ordine.id = paypal_pagamento_creato.id_ordine_paypal WHERE ordine.id = ?";
+        Map<Integer, QueryFields<? extends Comparable<?>>> fields = new HashMap<>();
+        try{
+            fields.put(0,new QueryFields<>("id",idOrdine,TipoVariabile.longNumber));
+        }catch(SQLException exception){
+            exception.printStackTrace();
+            GestioneServlet.inviaRisposta(response,500,"\"Errore durante elaborazione del rimborso PayPal\"",false);
+            return;
+        }
+        List<PaypalPaymentsCreated> payments = paymentController.executeQuery(query,fields);
 
         if(payments.isEmpty()){
             GestioneServlet.inviaRisposta(response,500,"\"Errore durante elaborazione del rimborso PayPal\"",false);

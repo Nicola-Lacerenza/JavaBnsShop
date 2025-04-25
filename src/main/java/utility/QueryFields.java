@@ -116,7 +116,6 @@ public final class QueryFields<T extends Comparable<T>> implements Serializable,
     private void checkTypeConsistency(T value,TipoVariabile type) throws SQLException{
         switch(type){
             case string:
-            case date:
                 if(!(value instanceof String)){
                     throw new SQLException("For type " + type + " the value of the field must be a String.");
                 }

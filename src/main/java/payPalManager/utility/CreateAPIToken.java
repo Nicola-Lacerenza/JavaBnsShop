@@ -67,10 +67,8 @@ public final class CreateAPIToken extends PaypalAPIRequest<PaypalTokens>{
         }
 
         //creation record in the database with the data arrived by PayPal.
-        Connection connection;
         Map<Integer, QueryFields<?extends Comparable<?>>> fields = new HashMap<>();
         try {
-            connection = Database.createConnection();
             fields.put(0,new QueryFields<>("access_token",jsonResponse.getString("access_token"), TipoVariabile.string));
             fields.put(1,new QueryFields<>("scope",jsonResponse.getString("scope"), TipoVariabile.string));
             fields.put(2,new QueryFields<>("token_type",jsonResponse.getString("token_type"), TipoVariabile.string));
@@ -81,7 +79,13 @@ public final class CreateAPIToken extends PaypalAPIRequest<PaypalTokens>{
             e.printStackTrace();
             return Optional.empty();
         }
-        int id = Database.insertElement(connection,"paypal_token",fields);
+        int id;
+        try(Connection connection = Database.createConnection()){
+            id = Database.insertElement(connection,"paypal_token",fields);
+        }catch (SQLException e){
+            e.printStackTrace();
+            id = -1;
+        }
         if(id <= 0){
             System.err.println("Error inserting the token in the database.");
             return Optional.empty();
@@ -122,7 +126,6 @@ public final class CreateAPIToken extends PaypalAPIRequest<PaypalTokens>{
             return Optional.empty();
         }
         if(keysList.get("ClientID").isEmpty() || keysList.get("SecretID").isEmpty()){
-
             return Optional.empty();
         }
         return Optional.of(keysList);

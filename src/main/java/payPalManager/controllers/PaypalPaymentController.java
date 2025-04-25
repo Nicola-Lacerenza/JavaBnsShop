@@ -39,13 +39,13 @@ public class PaypalPaymentController implements Controllers<PaypalPaymentsCreate
 
     @Override
     public List<PaypalPaymentsCreated> executeQuery(String query,Map<Integer,QueryFields<? extends Comparable<?>>> fields) {
-        Connection connection;
-        try{
-            connection = Database.createConnection();
+        List<PaypalPaymentsCreated> output;
+        try(Connection connection = Database.createConnection()){
+            output = Database.executeGenericQuery(connection,query,fields,new PaypalPaymentsCreated());
         }catch (SQLException exception){
             exception.printStackTrace();
-            return new LinkedList<>();
+            output = new LinkedList<>();
         }
-        return Database.executeGenericQuery(connection,query,fields,new PaypalPaymentsCreated());
+        return output;
     }
 }

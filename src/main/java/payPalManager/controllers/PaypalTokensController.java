@@ -14,7 +14,6 @@ import java.util.Optional;
 public final class PaypalTokensController implements Controllers<PaypalTokens> {
     public PaypalTokensController(){}
 
-
     @Override
     public int insertObject(Map<Integer, QueryFields<? extends Comparable<?>>> request) {
         return -1;
@@ -37,18 +36,18 @@ public final class PaypalTokensController implements Controllers<PaypalTokens> {
 
     @Override
     public List<PaypalTokens> getAllObjects() {
-        Connection connection;
-        try{
-            connection = Database.createConnection();
+        List<PaypalTokens> output;
+        try(Connection connection = Database.createConnection()){
+            output = Database.getAllElements(connection,"paypal_token",new PaypalTokens());
         }catch (SQLException exception){
             exception.printStackTrace();
-            return new LinkedList<>();
+            output = new LinkedList<>();
         }
-        return Database.getAllElements(connection,"paypal_token",new PaypalTokens());
+        return output;
     }
 
     @Override
     public List<PaypalTokens> executeQuery(String query, Map<Integer, QueryFields<? extends Comparable<?>>> fields) {
-        return List.of();
+        return new LinkedList<>();
     }
 }

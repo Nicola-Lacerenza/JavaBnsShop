@@ -11,7 +11,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import models.Ordine;
 import models.Utenti;
 import utility.GestioneServlet;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -47,15 +46,13 @@ public class OrdineServlet extends HttpServlet {
             return;
         }
 
-        Controllers<Utenti> controllerUtenti = new UtentiController();
-        List<Utenti> utenti = controllerUtenti.executeQuery(
-                "SELECT * FROM utenti WHERE email = '" + email + "'"
-        );
+        UtentiController controllerUtenti = new UtentiController();
+        Optional<Utenti> utenti = controllerUtenti.getUserByEmail(email);
         if (utenti.isEmpty()) {
             GestioneServlet.inviaRisposta(response, 500, "{\"error\":\"Utente non trovato!\"}", false);
             return;
         }
-        int idUtente = utenti.getFirst().getId();
+        int idUtente = utenti.get().getId();
 
         if (id == -2) {
             OrdineController ordineCtrl = (OrdineController) controller;
@@ -65,9 +62,9 @@ public class OrdineServlet extends HttpServlet {
         }
 
         if (id > 0) {
-            Optional<Ordine> tmp = ((OrdineController)controller).getObject(id);
+            Optional<Ordine> tmp = controller.getObject(id);
 
-            if (!tmp.isPresent()) {
+            if (tmp.isEmpty()) {
                 GestioneServlet.inviaRisposta(response, 404, "{\"error\":\"Ordine con id=" + id + " non trovato\"}", true);
                 return;
             }

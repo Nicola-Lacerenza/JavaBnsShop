@@ -53,7 +53,7 @@ public class CodiceScontoServlet extends HttpServlet{
         }catch(NumberFormatException exception){
             id=-1;
         }
-        Optional<CodiceSconto> codiceSconto=null;
+        Optional<CodiceSconto> codiceSconto=Optional.empty();
         List<CodiceSconto> codiciSconto=null;
 
         if (id!=-1){
@@ -62,8 +62,8 @@ public class CodiceScontoServlet extends HttpServlet{
             codiciSconto = this.controller.getAllObjects();
         }
 
-        if (codiceSconto!=null || codiciSconto!=null){
-            if (codiceSconto!=null){
+        if (codiceSconto.isPresent() || codiciSconto!=null){
+            if (codiceSconto.isPresent()){
                 GestioneServlet.inviaRisposta(response,200,codiceSconto.get().toString(),true);
             }else{
                 GestioneServlet.inviaRisposta(response,200,codiciSconto.toString(),true);
@@ -128,7 +128,8 @@ public class CodiceScontoServlet extends HttpServlet{
             GestioneServlet.inviaRisposta(response,500,"\"Internal server error.\"",false);
             return;
         }
-        if (controller.insertObject(request0)) {
+        int idCodiceSconto = controller.insertObject(request0);
+        if (idCodiceSconto > 0) {
             String registrazione = "\"Registrazione effettuata correttamente.\"";
             GestioneServlet.inviaRisposta(response,201,registrazione,true);
         }else{
@@ -148,7 +149,7 @@ public class CodiceScontoServlet extends HttpServlet{
             GestioneServlet.inviaRisposta(response,403,"\"Ruolo non corretto!\"",false);
             return;
         }
-        int id= Integer.parseInt((String) request.getParameter("id"));
+        int id= Integer.parseInt(request.getParameter("id"));
         BufferedReader reader=request.getReader();
         String row=reader.readLine();
         List<String> rows = new LinkedList<>();
@@ -162,18 +163,25 @@ public class CodiceScontoServlet extends HttpServlet{
         }
         String json=builder.toString();
         JSONObject object = new JSONObject(json);
-        Map<Integer, RegisterServlet.RegisterFields> data = new HashMap<>();
-        data.put(0,new RegisterServlet.RegisterFields("codice","" + object.getString("codice")));
-        data.put(1,new RegisterServlet.RegisterFields("valore","" + object.getString("valore")));
-        data.put(2,new RegisterServlet.RegisterFields("descrizione","" + object.getString("descrizione")));
-        data.put(3,new RegisterServlet.RegisterFields("tipo","" + object.getString("tipo")));
-        data.put(4,new RegisterServlet.RegisterFields("data_inizio","" + object.getString("data_inizio")));
-        data.put(5,new RegisterServlet.RegisterFields("data_fine","" + object.getString("data_fine")));
-        data.put(6,new RegisterServlet.RegisterFields("uso_massimo","" + object.getString("uso_massimo")));
-        data.put(7,new RegisterServlet.RegisterFields("uso_per_utente","" + object.getString("uso_per_utente")));
-        data.put(8,new RegisterServlet.RegisterFields("minimo_acquisto","" + object.getString("minimo_acquisto")));
-        data.put(9,new RegisterServlet.RegisterFields("attivo","" + object.getString("attivo")));
-        data.put(10,new RegisterServlet.RegisterFields("categoria","" + object.getString("categoria")));
+        Map<Integer,QueryFields<? extends Comparable<?>>> data = new HashMap<>();
+        try{
+            data.put(0,new QueryFields<>("codice",object.getString("codice"),TipoVariabile.string));
+            data.put(1,new QueryFields<>("valore",object.getInt("valore"),TipoVariabile.longNumber));
+            data.put(2,new QueryFields<>("descrizione",object.getString("descrizione"),TipoVariabile.string));
+            data.put(3,new QueryFields<>("tipo",object.getString("tipo"),TipoVariabile.string));
+            data.put(4,new QueryFields<>("data_inizio",object.getString("data_inizio"),TipoVariabile.string));
+            data.put(5,new QueryFields<>("data_fine",object.getString("data_fine"),TipoVariabile.string));
+            data.put(6,new QueryFields<>("uso_massimo",object.getInt("uso_massimo"),TipoVariabile.longNumber));
+            data.put(7,new QueryFields<>("uso_per_utente",object.getInt("uso_per_utente"),TipoVariabile.longNumber));
+            data.put(8,new QueryFields<>("minimo_acquisto",object.getInt("minimo_acquisto"),TipoVariabile.longNumber));
+            data.put(9,new QueryFields<>("attivo",object.getInt("attivo"),TipoVariabile.longNumber));
+            data.put(10,new QueryFields<>("categoria",object.getString("categoria"),TipoVariabile.string));
+        }catch (SQLException exception){
+            exception.printStackTrace();
+            String message = "\"Internal server error\"";
+            GestioneServlet.inviaRisposta(response,500,message,false);
+            return;
+        }
         if (controller.updateObject(id,data)){
             String message="\"Product Updated Correctly.\"";
             GestioneServlet.inviaRisposta(response,200,message,true);
@@ -194,7 +202,7 @@ public class CodiceScontoServlet extends HttpServlet{
             GestioneServlet.inviaRisposta(response,403,"\"Ruolo non corretto!\"",false);
             return;
         }
-        int id = Integer.parseInt((String) request.getParameter("id"));
+        int id = Integer.parseInt(request.getParameter("id"));
         if (this.controller.deleteObject(id)){
             String message = "\"Product deleted Correctly.\"";
             GestioneServlet.inviaRisposta(response,200,message,true);

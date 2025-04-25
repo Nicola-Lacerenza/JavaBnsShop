@@ -15,26 +15,26 @@ public class FornitoriController implements Controllers<Fornitori> {
 
     @Override
     public int insertObject(Map<Integer, QueryFields<? extends Comparable<?>>> request) {
-        Connection connection;
-        try{
-            connection = Database.createConnection();
-            return Database.insertElement(connection,"fornitori",request);
+        int output;
+        try(Connection connection = Database.createConnection()){
+            output = Database.insertElement(connection,"fornitori",request);
         }catch(SQLException exception){
             exception.printStackTrace();
-            return -1;
+            output = -1;
         }
+        return output;
     }
 
     @Override
     public boolean updateObject(int id,Map<Integer,QueryFields<? extends Comparable<?>>> request) {
-        Connection connection;
-        try {
-            connection = Database.createConnection();
+        boolean output;
+        try(Connection connection = Database.createConnection()){
+            output = Database.updateElement(connection, "fornitori", id, request);
         }catch(SQLException exception){
             exception.printStackTrace();
-            return false;
+            output = false;
         }
-        return Database.updateElement(connection, "fornitori", id, request);
+        return output;
     }
 
     @Override
@@ -42,14 +42,14 @@ public class FornitoriController implements Controllers<Fornitori> {
         if (objectid <= 0) {
             return false;
         }
-        Connection connection;
-        try {
-            connection = Database.createConnection();
+        boolean output;
+        try(Connection connection = Database.createConnection()){
+            output = Database.deleteElement(connection,"fornitori",objectid);
         }catch(SQLException exception){
             exception.printStackTrace();
-            return false;
+            output = false;
         }
-        return Database.deleteElement(connection,"fornitori",objectid);
+        return output;
     }
 
     @Override
@@ -57,26 +57,26 @@ public class FornitoriController implements Controllers<Fornitori> {
         if (objectid<=0){
             return Optional.empty();
         }
-        Connection connection;
-        try {
-            connection = Database.createConnection();
+        Optional<Fornitori> output;
+        try(Connection connection = Database.createConnection()){
+            output = Database.getElement(connection,"fornitori",objectid,new Fornitori());
         }catch(SQLException exception){
             exception.printStackTrace();
-            return Optional.empty();
+            output = Optional.empty();
         }
-        return Database.getElement(connection,"fornitori",objectid,new Fornitori());
+        return output;
     }
 
     @Override
     public List<Fornitori> getAllObjects() {
-        Connection connection;
-        try {
-            connection = Database.createConnection();
+        List<Fornitori> output;
+        try(Connection connection = Database.createConnection()){
+            output = Database.getAllElements(connection,"fornitori",new Fornitori());
         }catch(SQLException exception){
             exception.printStackTrace();
-            return new LinkedList<>();
+            output = new LinkedList<>();
         }
-        return Database.getAllElements(connection,"fornitori",new Fornitori());
+        return output;
     }
 
     @Override

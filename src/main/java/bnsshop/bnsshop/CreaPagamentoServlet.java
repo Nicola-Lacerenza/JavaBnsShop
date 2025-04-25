@@ -50,18 +50,18 @@ public class CreaPagamentoServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         int idUtente;
-        boolean logged = GestioneServlet.isLogged(request,response);
+        boolean logged = GestioneServlet.isLogged(request);
         if (!logged) {
             idUtente=-1;
         }else{
             String email = GestioneServlet.validaToken(request,response);
-            Controllers<Utenti> controllerUtenti = new UtentiController();
-            List<Utenti> utenti = controllerUtenti.executeQuery("SELECT * FROM utenti WHERE email= '" + email + "'");
+            UtentiController controllerUtenti = new UtentiController();
+            Optional<Utenti> utenti = controllerUtenti.getUserByEmail(email);
             if (utenti.isEmpty()){
                 GestioneServlet.inviaRisposta(response,500,"\"Utente Non trovato!\"",false);
                 return;
             }
-            idUtente = utenti.getFirst().getId();
+            idUtente = utenti.get().getId();
         }
 
         String baseUrl = "https://api-m.sandbox.paypal.com";
@@ -158,12 +158,12 @@ public class CreaPagamentoServlet extends HttpServlet {
     }
 
     private boolean verificaProdotto(CartItem cartItem){
-
         Optional<ProdottiFull> controlloEsistenzaProdotto = prodottiControllers.getObject(cartItem.getProdottiFull().getId());
         if (controlloEsistenzaProdotto.isEmpty()){
             return false;
         }
 
+        return true;
     }
 
 }

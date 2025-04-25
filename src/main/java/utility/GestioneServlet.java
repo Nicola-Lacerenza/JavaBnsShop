@@ -25,20 +25,16 @@ public class GestioneServlet{
         writer.close();
     }
 
-    public static boolean isLogged(HttpServletRequest request,HttpServletResponse response) throws  IOException{
+    public static boolean isLogged(HttpServletRequest request){
         String token = request.getHeader("Authorization");
         if (token==null){
             return false;
         }
         String[] auth = token.split(" ");
-        if (auth.length<2){
-            return false;
-        }
-        return true;
+        return auth.length >= 2;
     }
 
-    public static String extractEmail(HttpServletRequest request,HttpServletResponse response) throws IOException{
-
+    public static String extractEmail(HttpServletRequest request){
         String token = request.getHeader("Authorization");
         if (token==null){
             return "";
@@ -49,7 +45,7 @@ public class GestioneServlet{
         }
         String auth1 = auth[1];
         String email = GestioneToken.validateToken(auth1);
-        if (email.equals("")){
+        if (email.isEmpty()){
             return "";
         }
         return email;
@@ -69,7 +65,7 @@ public class GestioneServlet{
         }
         String auth1 = auth[1];
         String email = GestioneToken.validateToken(auth1);
-        if (email.equals("")){
+        if (email.isEmpty()){
             GestioneServlet.inviaRisposta(response,403,"\"Token Incorrect\"",false);
             return "";
         }

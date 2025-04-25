@@ -1,5 +1,5 @@
 package utility;
 
 public enum TipoVariabile {
-        string,longNumber,realNumber,date
+        string,longNumber,realNumber
 }

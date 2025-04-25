@@ -41,7 +41,7 @@ public class IndirizziServlet extends HttpServlet {
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException,IOException{
 
-        boolean logged = GestioneServlet.isLogged(request,response);
+        boolean logged = GestioneServlet.isLogged(request);
         if (!logged) {
             GestioneServlet.inviaRisposta(response,200,"[]",true);
             return;
@@ -68,13 +68,13 @@ public class IndirizziServlet extends HttpServlet {
         }
         String json=builder.toString();
         JSONObject object = new JSONObject(json);
-        boolean isLogged = GestioneServlet.isLogged(request,response);
+        boolean isLogged = GestioneServlet.isLogged(request);
         String id_utente;
         if (!isLogged){
             id_utente = "";
         }else{
             UtentiController controllerUtenti = new UtentiController();
-            String email = GestioneServlet.extractEmail(request,response);
+            String email = GestioneServlet.extractEmail(request);
             Optional<Utenti> user = controllerUtenti.getUserByEmail(email);
             if (user.isEmpty()){
                 String message = "\"Errore durante la registrazione.\"";

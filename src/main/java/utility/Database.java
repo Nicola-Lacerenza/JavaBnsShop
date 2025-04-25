@@ -29,7 +29,7 @@ public class Database{
     }
 
     public static boolean executeTransaction(TransactionOperation operations){
-        boolean success = false;
+        boolean success;
         try(Connection connection = createConnection()){
             connection.setAutoCommit(false);
             success = operations.execute(connection);
@@ -198,10 +198,7 @@ public class Database{
                 Double numero = (Double)(attuale.getFieldValue());
                 statement.setDouble(index + 1,numero);
             }else{
-
-                //date non implementate (type=date)
-                throw new SQLException("Date type doesn't available.");
-
+                throw new SQLException("Type of the data isn't available.");
             }
         }
     }

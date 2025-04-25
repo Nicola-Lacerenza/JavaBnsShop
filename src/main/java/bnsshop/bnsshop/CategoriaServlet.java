@@ -53,7 +53,7 @@ public class CategoriaServlet extends HttpServlet{
         }catch(NumberFormatException exception){
             idCategoria=-1;
         }
-        Optional<Categoria> categoria=null;
+        Optional<Categoria> categoria = Optional.empty();
         List<Categoria> categorie=null;
 
         if (idCategoria!=-1){
@@ -62,8 +62,8 @@ public class CategoriaServlet extends HttpServlet{
             categorie = this.controller.getAllObjects();
         }
 
-        if (categoria!=null || categorie!=null){
-            if (categoria!=null){
+        if (categoria.isPresent() || categorie!=null){
+            if (categoria.isPresent()){
                 GestioneServlet.inviaRisposta(response,200,categoria.get().toString(),true);
             }else{
                 GestioneServlet.inviaRisposta(response,200,categorie.toString(),true);
@@ -109,7 +109,8 @@ public class CategoriaServlet extends HttpServlet{
             GestioneServlet.inviaRisposta(response,500,"\"Internal server error.\"",false);
             return;
         }
-        if (controller.insertObject(request0)) {
+        int idCategoria = controller.insertObject(request0);
+        if (idCategoria > 0) {
             String registrazione = "\"Registrazione effettuata correttamente.\"";
             GestioneServlet.inviaRisposta(response,201,registrazione,true);
         }else{
@@ -129,7 +130,7 @@ public class CategoriaServlet extends HttpServlet{
             GestioneServlet.inviaRisposta(response,403,"\"Ruolo non corretto!\"",false);
             return;
         }
-        int id= Integer.parseInt((String) request.getParameter("id"));
+        int id= Integer.parseInt(request.getParameter("id"));
         BufferedReader reader=request.getReader();
         String row=reader.readLine();
         List<String> rows = new LinkedList<>();
@@ -172,7 +173,7 @@ public class CategoriaServlet extends HttpServlet{
             GestioneServlet.inviaRisposta(response,403,"\"Ruolo non corretto!\"",false);
             return;
         }
-        int id= Integer.parseInt((String) request.getParameter("id"));
+        int id= Integer.parseInt(request.getParameter("id"));
         if (this.controller.deleteObject(id)){
             String message = "\"Product deleted Correctly.\"";
             GestioneServlet.inviaRisposta(response,200,message,true);

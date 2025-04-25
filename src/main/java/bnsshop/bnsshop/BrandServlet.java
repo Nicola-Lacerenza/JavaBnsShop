@@ -53,8 +53,8 @@ public class BrandServlet extends HttpServlet{
         } catch (NumberFormatException exception) {
             idBrand = -1;
         }
-        Optional<Brand> brand=null;
-        List<Brand> brands=null;
+        Optional<Brand> brand = Optional.empty();
+        List<Brand> brands = null;
 
         if (idBrand!=-1){
             brand = this.controller.getObject(idBrand);
@@ -62,8 +62,8 @@ public class BrandServlet extends HttpServlet{
             brands = this.controller.getAllObjects();
         }
 
-        if (brand!=null || brands!=null){
-            if (brand!=null){
+        if (brand.isPresent() || brands != null){
+            if (brand.isPresent()){
                 GestioneServlet.inviaRisposta(response,200,brand.get().toString(),true);
             }else{
                 GestioneServlet.inviaRisposta(response,200,brands.toString(),true);
@@ -111,7 +111,8 @@ public class BrandServlet extends HttpServlet{
             GestioneServlet.inviaRisposta(response,500,message,false);
             return;
         }
-        if (controller.insertObject(request0)) {
+        int idBrand = controller.insertObject(request0);
+        if (idBrand > 0) {
             String registrazione = "\"Registrazione effettuata correttamente.\"";
             GestioneServlet.inviaRisposta(response,201,registrazione,true);
         }else{
@@ -131,7 +132,7 @@ public class BrandServlet extends HttpServlet{
             GestioneServlet.inviaRisposta(response,403,"\"Ruolo non corretto!\"",false);
             return;
         }
-        int id= Integer.parseInt((String) request.getParameter("id"));
+        int id= Integer.parseInt(request.getParameter("id"));
         BufferedReader reader=request.getReader();
         String row=reader.readLine();
         List<String> rows = new LinkedList<>();
@@ -175,7 +176,7 @@ public class BrandServlet extends HttpServlet{
             GestioneServlet.inviaRisposta(response,403,"\"Ruolo non corretto!\"",false);
             return;
         }
-        int id= Integer.parseInt((String) request.getParameter("id"));
+        int id= Integer.parseInt(request.getParameter("id"));
         if (this.controller.deleteObject(id)){
             String message = "\"Product deleted Correctly.\"";
             GestioneServlet.inviaRisposta(response,200,message,true);

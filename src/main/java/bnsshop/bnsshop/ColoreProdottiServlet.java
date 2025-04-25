@@ -9,8 +9,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import models.ColoreProdotti;
 import org.json.JSONObject;
 import utility.GestioneServlet;
+import utility.QueryFields;
+import utility.TipoVariabile;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -50,7 +53,7 @@ public class ColoreProdottiServlet extends HttpServlet{
         }catch(NumberFormatException exception){
             idColoreModello=-1;
         }
-        Optional<ColoreProdotti> coloreprodotto=null;
+        Optional<ColoreProdotti> coloreprodotto=Optional.empty();
         List<ColoreProdotti> coloriprodotti=null;
 
         if (idColoreModello!=-1){
@@ -59,8 +62,8 @@ public class ColoreProdottiServlet extends HttpServlet{
             coloriprodotti = this.controller.getAllObjects();
         }
 
-        if (coloreprodotto!=null || coloriprodotti!=null){
-            if (coloreprodotto!=null){
+        if (coloreprodotto.isPresent() || coloriprodotti!=null){
+            if (coloreprodotto.isPresent()){
                 GestioneServlet.inviaRisposta(response,200,coloreprodotto.get().toString(),true);
             }else{
                 GestioneServlet.inviaRisposta(response,200,coloriprodotti.toString(),true);
@@ -95,12 +98,20 @@ public class ColoreProdottiServlet extends HttpServlet{
         }
         String json=builder.toString();
         JSONObject object = new JSONObject(json);
-        String idColore= object.getString("id_colore");
-        String idProdotto= object.getString("id_prodotto");
-        Map<Integer, RegisterServlet.RegisterFields> request0= new HashMap<>();
-        request0.put(0,new RegisterServlet.RegisterFields("id_colore",idColore));
-        request0.put(1,new RegisterServlet.RegisterFields("id_prodotto",idProdotto));
-        if (controller.insertObject(request0)) {
+        int idColore= object.getInt("id_colore");
+        int idProdotto= object.getInt("id_prodotto");
+        Map<Integer, QueryFields<? extends Comparable<?>>> request0= new HashMap<>();
+        try{
+            request0.put(0,new QueryFields<>("id_colore",idColore, TipoVariabile.longNumber));
+            request0.put(1,new QueryFields<>("id_prodotto",idProdotto,TipoVariabile.longNumber));
+        }catch (SQLException exception){
+            exception.printStackTrace();
+            String message = "\"Errore durante la registrazione.\"";
+            GestioneServlet.inviaRisposta(response,500,message,false);
+            return;
+        }
+        int idColoreProdotto = controller.insertObject(request0);
+        if (idColoreProdotto > 0) {
             String registrazione = "\"Registrazione effettuata correttamente.\"";
             GestioneServlet.inviaRisposta(response,201,registrazione,true);
         }else{
@@ -120,7 +131,7 @@ public class ColoreProdottiServlet extends HttpServlet{
             GestioneServlet.inviaRisposta(response,403,"\"Ruolo non corretto!\"",false);
             return;
         }
-        int idCategoria= Integer.parseInt((String) request.getParameter("id"));
+        int idCategoria= Integer.parseInt(request.getParameter("id"));
         BufferedReader reader=request.getReader();
         String row=reader.readLine();
         List<String> rows = new LinkedList<>();
@@ -134,9 +145,16 @@ public class ColoreProdottiServlet extends HttpServlet{
         }
         String json=builder.toString();
         JSONObject object = new JSONObject(json);
-        Map<Integer, RegisterServlet.RegisterFields> data = new HashMap<>();
-        data.put(0,new RegisterServlet.RegisterFields("id_colore","" + object.getString("id_colore")));
-        data.put(1,new RegisterServlet.RegisterFields("id_prodotto","" + object.getString("id_prodotto")));
+        Map<Integer,QueryFields<? extends Comparable<?>>> data = new HashMap<>();
+        try{
+            data.put(0,new QueryFields<>("id_colore",object.getInt("id_colore"),TipoVariabile.longNumber));
+            data.put(1,new QueryFields<>("id_prodotto",object.getInt("id_prodotto"),TipoVariabile.longNumber));
+        }catch(SQLException exception){
+            exception.printStackTrace();
+            String message = "\"Internal server error\"";
+            GestioneServlet.inviaRisposta(response,500,message,false);
+            return;
+        }
         if (controller.updateObject(idCategoria,data)){
             String message="\"Product Updated Correctly.\"";
             GestioneServlet.inviaRisposta(response,200,message,true);
@@ -157,7 +175,7 @@ public class ColoreProdottiServlet extends HttpServlet{
             GestioneServlet.inviaRisposta(response,403,"\"Ruolo non corretto!\"",false);
             return;
         }
-        int id= Integer.parseInt((String) request.getParameter("id"));
+        int id= Integer.parseInt(request.getParameter("id"));
         if (this.controller.deleteObject(id)){
             String message = "\"Product deleted Correctly.\"";
             GestioneServlet.inviaRisposta(response,200,message,true);

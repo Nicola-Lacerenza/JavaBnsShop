@@ -1,6 +1,5 @@
 package bnsshop.bnsshop;
 
-import controllers.UtentiController;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -16,13 +15,9 @@ import java.util.LinkedList;
 
 @WebServlet(name = "ControllaRuoloServlet", value = "/ControllaRuoloServlet")
 public class ControllaRuoloServlet extends HttpServlet{
-
-    private UtentiController controller;
-
     @Override
     public void init() throws ServletException{
         super.init();
-        controller = new UtentiController();
     }
 
     // Gestione richiesta preflight (OPTIONS)
@@ -37,7 +32,6 @@ public class ControllaRuoloServlet extends HttpServlet{
 
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException,IOException{
-
         BufferedReader reader=request.getReader();
         String row=reader.readLine();
         List<String> rows = new LinkedList<>();
