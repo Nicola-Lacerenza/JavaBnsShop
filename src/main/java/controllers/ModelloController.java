@@ -1,8 +1,8 @@
 package controllers;
 
-import bnsshop.bnsshop.RegisterServlet;
 import models.Modello;
 import utility.Database;
+import utility.QueryFields;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -14,12 +14,12 @@ public class ModelloController implements Controllers<Modello> {
     }
 
     @Override
-    public boolean insertObject(Map<Integer, RegisterServlet.RegisterFields> request) {
+    public int insertObject(Map<Integer,QueryFields<? extends Comparable<?>>> request) {
         return Database.insertElement(request,"modello");
     }
 
     @Override
-    public boolean updateObject(int id,Map<Integer, RegisterServlet.RegisterFields> request) {
+    public boolean updateObject(int id,Map<Integer,QueryFields<? extends Comparable<?>>> request) {
         return Database.updateElement(id,request, "modello");
     }
 
@@ -45,7 +45,7 @@ public class ModelloController implements Controllers<Modello> {
     }
 
     @Override
-    public List<Modello> executeQuery(String query) {
-        return null;
+    public List<Modello> executeQuery(String query, Map<Integer, QueryFields<? extends Comparable<?>>> fields) {
+        return List.of();
     }
 }

@@ -1,445 +1,213 @@
 package utility;
 
-import bnsshop.bnsshop.RegisterServlet;
 import models.Oggetti;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 public class Database{
-    //Variabili di servizio per interagire con il database
-    private static final String DATABASE_NAME="mydb" ;
-    private static final String DATABASE_USERNAME="root";
-    private static final String DATABASE_PASSWORD="root";
-    private static final String DATABASE_URL="jdbc:mysql://localhost:3306/" + DATABASE_NAME;
+    private static final String DATABASE_NAME = "mydb" ;
+    private static final String DATABASE_USERNAME = "root";
+    private static final String DATABASE_PASSWORD = "root";
+    private static final String DATABASE_URL = "jdbc:mysql://localhost:3306/" + DATABASE_NAME;
 
     private Database(){}
 
-    public static String getDatabaseName() {
-        return DATABASE_NAME;
-    }
-
-    public static String getDatabaseUsername() {
-        return DATABASE_USERNAME;
-    }
-
-    public static String getDatabasePassword() {
-        return DATABASE_PASSWORD;
-    }
-
-    public static String getDatabaseUrl() { return DATABASE_URL; }
-
-    /*public static <T extends Oggetti<T>> boolean insertElement1(Map<Integer, RegisterServlet.RegisterFields> fields, String tableName) {
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-        String nomi = "";
-        String valori = "";
-        for (int i = 0;i<fields.size();i++){
-            RegisterServlet.RegisterFields attuale = fields.get(i);
-            nomi+=attuale.getKey();
-            valori+= "?";
-            if (i<(fields.size()-1)){
-                nomi+=",";
-                valori+=",";
-            }
-        }
-
-        String query="INSERT INTO "+tableName+"("+nomi+") VALUES("+valori+")";
-        boolean output;
-        Connection connection = null;
-        PreparedStatement statement = null;
+    public static Connection createConnection() throws SQLException{
         try{
-            connection=DriverManager.getConnection(DATABASE_URL,DATABASE_USERNAME,DATABASE_PASSWORD);
-            statement=connection.prepareStatement(query);
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        }catch(ClassNotFoundException exception){
+            throw new SQLException(exception.getMessage(),exception);
+        }
+        return DriverManager.getConnection(DATABASE_URL,DATABASE_USERNAME,DATABASE_PASSWORD);
+    }
 
-            for (int i = 0;i<fields.size();i++){
-                RegisterServlet.RegisterFields attuale = fields.get(i);
-                statement.setString(i+1,attuale.getValue());
-
+    public static boolean executeTransaction(TransactionOperation operations){
+        boolean success = false;
+        try(Connection connection = createConnection()){
+            connection.setAutoCommit(false);
+            success = operations.execute(connection);
+            if(success){
+                System.out.println("Queries executed correctly in the database.");
+                connection.commit();
+            }else{
+                System.err.println("Error executing the queries in the database.");
+                connection.rollback();
             }
+        }catch(SQLException exception){
+            exception.printStackTrace();
+            success = false;
+        }
+        return success;
+    }
+
+    public static int insertElement(Connection connection,String tableName,Map<Integer,QueryFields<? extends Comparable<?>>> fields){
+        StringBuilder nomi = new StringBuilder();
+        StringBuilder valori = new StringBuilder();
+        for(int i = 0;i < fields.size();i++){
+            QueryFields<? extends Comparable<?>> attuale = fields.get(i);
+            nomi.append(attuale.getFieldName());
+            valori.append("?");
+            if(i < (fields.size() - 1)){
+                nomi.append(",");
+                valori.append(",");
+            }
+        }
+        String query = "INSERT INTO " + tableName + "(" + nomi + ") VALUES (" + valori + ")";
+        int output;
+        try(PreparedStatement statement = connection.prepareStatement(query,PreparedStatement.RETURN_GENERATED_KEYS)){
+            loadQueryParameters(statement,fields);
+            statement.executeUpdate();
+            try(ResultSet generatedKeys = statement.getGeneratedKeys()){
+                if(generatedKeys.next()){
+                    output = generatedKeys.getInt(1);
+                }else{
+                    throw new SQLException("Error extracting the generated key of the inserted row.");
+                }
+            }
+        }catch(SQLException exception){
+            exception.printStackTrace();
+            output = -1;
+        }
+        return output;
+    }
+
+    public static boolean updateElement(Connection connection,String tableName,int id,Map<Integer,QueryFields<? extends Comparable<?>>> fields){
+        StringBuilder campi = new StringBuilder();
+        for(int i = 0;i < fields.size();i++){
+            QueryFields<? extends Comparable<?>> attuale = fields.get(i);
+            campi.append(attuale.getFieldName());
+            campi.append(" = ");
+            campi.append("?");
+            if(i < (fields.size() - 1)){
+                campi.append(",");
+            }
+        }
+        String query = "UPDATE " + tableName + " SET " + campi + " WHERE id = ?";
+        boolean output;
+        try(PreparedStatement statement = connection.prepareStatement(query)){
+            loadQueryParameters(statement,fields);
+            statement.setInt(fields.size() + 1,id);
             statement.executeUpdate();
             output = true;
         }catch(SQLException exception){
             exception.printStackTrace();
             output = false;
-        }finally {
-            if (statement != null) {
-                try {
-                    statement.close();
-                } catch (SQLException e) {
-                    //Questo non é un errore è un warning
-                    e.printStackTrace();
-                }
-            }
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    //Questo non é un errore è un warning
-                    e.printStackTrace();
-                }
-            }
         }
         return output;
+    }
 
-    }*/
-
-    public static <T extends Oggetti<T>> boolean insertElement(Map<Integer, RegisterServlet.RegisterFields> fields, String tableName){
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-        String nomi = "";
-        String valori = "";
-        for (int i = 0;i<fields.size();i++){
-            RegisterServlet.RegisterFields attuale = fields.get(i);
-            nomi+=attuale.getKey();
-            valori+="'" + attuale.getValue()+"'";
-            if (i<(fields.size()-1)){
-                nomi+=",";
-                valori+=",";
-            }
-        }
-        String query="INSERT INTO "+tableName+"("+nomi+") VALUES("+valori+")";
+    public static boolean deleteElement(Connection connection,String tableName,int id){
+        String query = "DELETE FROM " + tableName + " WHERE id = ?";
         boolean output;
-        Connection connection = null;
-        Statement statement = null;
-        try{
-            connection=DriverManager.getConnection(DATABASE_URL,DATABASE_USERNAME,DATABASE_PASSWORD);
-            statement=connection.createStatement();
-            statement.execute(query);
+        try(PreparedStatement statement = connection.prepareStatement(query)){
+            statement.setInt(1,id);
+            statement.executeUpdate();
             output = true;
         }catch(SQLException exception){
             exception.printStackTrace();
             output = false;
-        }finally {
-            if (statement != null) {
-                try {
-                    statement.close();
-                } catch (SQLException e) {
-                    //Questo non é un errore è un warning
-                    e.printStackTrace();
-                }
-            }
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    //Questo non é un errore è un warning
-                    e.printStackTrace();
-                }
-            }
         }
         return output;
     }
 
-    public static <T extends Oggetti<T>> int insertElementExtractId(Map<Integer, QueryFields<? extends Comparable<?>>> fields, String tableName) {
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-
-        StringBuilder nomi = new StringBuilder();
-        StringBuilder valori = new StringBuilder();
-        for (int i = 0; i < fields.size(); i++) {
-            QueryFields attuale = fields.get(i);
-            nomi.append(attuale.getFieldName());
-            valori.append("?");
-            if (i < fields.size() - 1) {
-                nomi.append(",");
-                valori.append(",");
-            }
-        }
-
-        String query = "INSERT INTO " + tableName + " (" + nomi.toString() + ") VALUES (" + valori.toString() + ")";
-        int output = -1;
-
-        Connection connection = null;
-        PreparedStatement statement = null;
-
-        try {
-            connection = DriverManager.getConnection(DATABASE_URL, DATABASE_USERNAME, DATABASE_PASSWORD);
-            statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-
-            // Imposta i parametri correttamente
-            for (int index = 0; index < fields.size(); index++) {
-                QueryFields attuale = fields.get(index);
-                int parameterIndex = index + 1;
-                if (attuale.getFieldType().equals(TipoVariabile.string)) {
-                    statement.setString(parameterIndex, (String) attuale.getFieldValue());
-                } else if (attuale.getFieldType().equals(TipoVariabile.longNumber)) {
-                    statement.setInt(parameterIndex, (Integer) attuale.getFieldValue());
-                    // oppure, se necessario: statement.setLong(parameterIndex, (Long) attuale.getFieldValue());
-                } else if (attuale.getFieldType().equals(TipoVariabile.realNumber)) {
-                    statement.setDouble(parameterIndex, (Double) attuale.getFieldValue());
+    public static <T extends Oggetti<T>> Optional<T> getElement(Connection connection,String tableName,int id,T templateModel){
+        List<T> output= new LinkedList<>();
+        String query = "SELECT * FROM " + tableName + " WHERE id = ?";
+        try(PreparedStatement statement = connection.prepareStatement(query)){
+            statement.setInt(1,id);
+            try(ResultSet result = statement.executeQuery()){
+                while(result.next()){
+                    Optional<T> object = templateModel.convertDBToJava(result);
+                    object.ifPresent(output::add);
                 }
-            }
-
-            // Esegue l'inserimento
-            int affectedRows = statement.executeUpdate();
-            if (affectedRows == 0) {
-                throw new SQLException("Inserimento fallito, nessuna riga modificata.");
-            }
-
-            // Recupera il generated key
-            try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    output = generatedKeys.getInt(1);
-                } else {
-                    throw new SQLException("Id non estratto");
-                }
-            }
-
-        } catch (SQLException exception) {
-            exception.printStackTrace();
-            output = -1;
-        } finally {
-            if (statement != null) {
-                try {
-                    statement.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return output;
-    }
-
-    public static boolean updateElement(int id,Map<Integer, RegisterServlet.RegisterFields> fields, String tablename){
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-        StringBuilder query = new StringBuilder("UPDATE "+tablename+" SET ");
-        int actualField = 0;
-        for(int i=0;i<fields.size();i++){
-            RegisterServlet.RegisterFields field=fields.get(i);
-            query.append(field.getKey());
-            query.append("='");
-            query.append(field.getValue());
-            query.append("'");
-            if(actualField < (fields.size()-1)){
-                query.append(",");
-            }
-            actualField++;
-        }
-        query.append(" WHERE id='");
-        query.append(id);
-        query.append("'");
-        boolean output;
-        Connection connection = null;
-        Statement statement = null;
-        try{
-            connection=DriverManager.getConnection(DATABASE_URL,DATABASE_USERNAME,DATABASE_PASSWORD);
-            statement=connection.createStatement();
-            statement.execute(query.toString());
-            output = true;
-        }catch(SQLException exception){
-            exception.printStackTrace();
-            output = false;
-        }finally {
-            if (statement != null) {
-                try {
-                    statement.close();
-                } catch (SQLException exception) {
-                    //Questo non é un errore è un warning
-                    exception.printStackTrace();
-                }
-            }
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException exception) {
-                    //Questo non é un errore è un warning
-                    exception.printStackTrace();
-                }
-            }
-        }
-        return output;
-    }
-
-    public static boolean deleteElement(int id, String tablename) {
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-        String query="DELETE FROM "+tablename+" WHERE id='"+id+"'";
-        boolean output;
-        Connection connection = null;
-        Statement statement = null;
-        try{
-            connection=DriverManager.getConnection(DATABASE_URL,DATABASE_USERNAME,DATABASE_PASSWORD);
-            statement=connection.createStatement();
-            statement.execute(query);
-            output = true;
-        }catch(SQLException exception){
-            output = false;
-        }finally {
-            if (statement != null) {
-                try {
-                    statement.close();
-                } catch (SQLException exception) {
-                    //Questo non é un errore è un warning
-                    exception.printStackTrace();
-                }
-            }
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException exception) {
-                    //Questo non é un errore è un warning
-                    exception.printStackTrace();
-                }
-            }
-        }
-        return output;
-    }
-
-    public static <E extends Oggetti<E>> Optional<E> getElement(int id, String tablename,E model) {
-        String query="SELECT * FROM "+tablename+" WHERE id='"+id+"'";
-        List<E> list = executeGenericQuery(tablename,model,query);
-        if (list.isEmpty()){
-            return Optional.empty();
-        }
-        return Optional.of(list.getFirst());
-    }
-
-    public static <E extends Oggetti<E>> List<E> getAllElements(String tablename,E model) {
-        String query="SELECT * FROM " + tablename;
-        return executeGenericQuery(tablename,model,query);
-    }
-
-    public static <E extends Oggetti<E>> List<E> executeGenericQuery(String tablename,E model,String query) {
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-
-        List<E> output= new LinkedList<>();
-        Connection connection = null;
-        Statement statement = null;
-        ResultSet results = null;
-
-        try{
-            connection=DriverManager.getConnection(DATABASE_URL,DATABASE_USERNAME,DATABASE_PASSWORD);
-            statement=connection.createStatement();
-            results=statement.executeQuery(query);
-            while (results.next()){
-                Optional<E> object = model.convertDBToJava(results);
-                object.ifPresent(output::add);
             }
         }catch(SQLException exception){
             exception.printStackTrace();
             output.clear();
-        }finally {
-            if(results != null){
-                try{
-                    results.close();
-                }catch(SQLException exception){
-                    //Questo non é un errore è un warning
-                    exception.printStackTrace();
+        }
+        if(output.isEmpty()){
+            return Optional.empty();
+        }
+        return Optional.of(output.getFirst());
+    }
+
+    public static <T extends Oggetti<T>> List<T> getAllElements(Connection connection,String tableName,T templateModel){
+        List<T> output= new LinkedList<>();
+        String query = "SELECT * FROM " + tableName;
+        try(PreparedStatement statement = connection.prepareStatement(query)){
+            try(ResultSet result = statement.executeQuery()){
+                while(result.next()){
+                    Optional<T> object = templateModel.convertDBToJava(result);
+                    object.ifPresent(output::add);
                 }
             }
-            if (statement != null) {
-                try {
-                    statement.close();
-                } catch (SQLException exception) {
-                    //Questo non é un errore è un warning
-                    exception.printStackTrace();
-                }
-            }
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException exception) {
-                    //Questo non é un errore è un warning
-                    exception.printStackTrace();
-                }
-            }
+        }catch(SQLException exception){
+            exception.printStackTrace();
+            output.clear();
         }
         return output;
     }
 
-    public static boolean executeQueries(List<String> queries) {
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Driver JDBC non trovato", e);
-        }
-
-        Connection connection = null;
-        List<PreparedStatement> statementList = new LinkedList<>();
-
-        boolean output = false;
-        try {
-            // Apertura connessione
-            connection = DriverManager.getConnection(DATABASE_URL, DATABASE_USERNAME, DATABASE_PASSWORD);
-            connection.setAutoCommit(false); // Avvia transazione
-
-            // Prepara ed esegue le query
-            for (String query : queries) {
-                PreparedStatement preparedStatement = connection.prepareStatement(query);
-                statementList.add(preparedStatement);
-                preparedStatement.executeUpdate(); // Esegue la query
-            }
-
-            connection.commit(); // Commit delle modifiche solo se tutte le query hanno successo
-            output = true;
-        } catch (SQLException e) {
-            // Gestione errori e rollback in caso di fallimento
-            e.printStackTrace();
-            if (connection != null) {
-                try {
-                    connection.rollback();
-                } catch (SQLException rollbackEx) {
-                    rollbackEx.printStackTrace();
+    public static <T extends Oggetti<T>> List<T> executeGenericQuery(Connection connection,String query,Map<Integer,QueryFields<? extends Comparable<?>>> fields,T templateModel){
+        List<T> output= new LinkedList<>();
+        try(PreparedStatement statement = connection.prepareStatement(query)){
+            loadQueryParameters(statement,fields);
+            try(ResultSet result = statement.executeQuery()){
+                while(result.next()){
+                    Optional<T> object = templateModel.convertDBToJava(result);
+                    object.ifPresent(output::add);
                 }
             }
-            output = false;
-        } finally {
-            // Chiusura connessione e statement
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException closeEx) {
-                    closeEx.printStackTrace();
-                }
-            }
+        }catch(SQLException exception){
+            exception.printStackTrace();
+            output.clear();
         }
-
-        // Chiude tutti i PreparedStatement
-        for (PreparedStatement stmt : statementList) {
-            if (stmt != null) {
-                try {
-                    stmt.close();
-                } catch (SQLException closeEx) {
-                    closeEx.printStackTrace();
-                }
-            }
-        }
-
         return output;
+    }
+
+    public static boolean executeGenericUpdate(Connection connection,String query,Map<Integer,QueryFields<? extends Comparable<?>>> fields){
+        boolean output;
+        try(PreparedStatement statement = connection.prepareStatement(query)){
+            loadQueryParameters(statement,fields);
+            statement.executeUpdate();
+            output = true;
+        }catch(SQLException exception){
+            exception.printStackTrace();
+            output = false;
+        }
+        return output;
+    }
+
+    private static void loadQueryParameters(PreparedStatement statement,Map<Integer,QueryFields<? extends Comparable<?>>> fields) throws SQLException{
+        for(int index = 0;index < fields.size();index++){
+            QueryFields<? extends Comparable<?>> attuale = fields.get(index);
+            if(attuale.getFieldType().equals(TipoVariabile.string)){
+                String stringa = (String)(attuale.getFieldValue());
+                statement.setString(index + 1,stringa);
+            }else if(attuale.getFieldType().equals(TipoVariabile.longNumber)){
+                Integer numero = (Integer)(attuale.getFieldValue());
+                statement.setInt(index + 1,numero);
+            }else if(attuale.getFieldType().equals(TipoVariabile.realNumber)){
+                Double numero = (Double)(attuale.getFieldValue());
+                statement.setDouble(index + 1,numero);
+            }else{
+
+                //date non implementate (type=date)
+                throw new SQLException("Date type doesn't available.");
+
+            }
+        }
+    }
+
+    @FunctionalInterface
+    public interface TransactionOperation{
+        boolean execute(Connection connection);
     }
 }

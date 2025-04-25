@@ -1,9 +1,9 @@
 package controllers;
 
-import bnsshop.bnsshop.RegisterServlet;
 import models.Ordine;
 import models.ProdottiFull;
 import utility.Database;
+import utility.QueryFields;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -20,12 +20,12 @@ public class OrdineController implements Controllers<Ordine>{
 
 
     @Override
-    public boolean insertObject(Map<Integer, RegisterServlet.RegisterFields> request) {
+    public int insertObject(Map<Integer, QueryFields<? extends Comparable<?>>> request) {
         return false;
     }
 
     @Override
-    public boolean updateObject(int id, Map<Integer, RegisterServlet.RegisterFields> request) {
+    public boolean updateObject(int id,Map<Integer, QueryFields<? extends Comparable<?>>> request) {
         return false;
     }
 
@@ -137,8 +137,8 @@ public class OrdineController implements Controllers<Ordine>{
     }
 
     @Override
-    public List<Ordine> executeQuery(String query) {
-        return null;
+    public List<Ordine> executeQuery(String query, Map<Integer, QueryFields<? extends Comparable<?>>> fields) {
+        return List.of();
     }
 
     public List<Ordine> getObjectByUserID(int userID) {

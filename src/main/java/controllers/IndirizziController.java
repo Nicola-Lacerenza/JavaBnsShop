@@ -1,9 +1,9 @@
 package controllers;
 
-import bnsshop.bnsshop.RegisterServlet;
 import models.Indirizzi;
 import models.Utenti;
 import utility.Database;
+import utility.QueryFields;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -24,7 +24,7 @@ public class IndirizziController  implements Controllers<Indirizzi>{
     }
 
     @Override
-    public boolean insertObject(Map<Integer, RegisterServlet.RegisterFields> request) {
+    public int insertObject(Map<Integer, QueryFields<? extends Comparable<?>>> request) {
         String userId = request.get(0).getValue();
         if (userId.isEmpty()){
             return Database.insertElement(request,"indirizzi");
@@ -99,7 +99,7 @@ public class IndirizziController  implements Controllers<Indirizzi>{
     }
 
     @Override
-    public boolean updateObject(int id,Map<Integer, RegisterServlet.RegisterFields> request) {
+    public boolean updateObject(int id,Map<Integer,QueryFields<? extends Comparable<?>>> request) {
         return Database.updateElement(id,request, "indirizzi");
     }
 
@@ -139,7 +139,7 @@ public class IndirizziController  implements Controllers<Indirizzi>{
     }
 
     @Override
-    public List<Indirizzi> executeQuery(String query) {
-        return null;
+    public List<Indirizzi> executeQuery(String query, Map<Integer, QueryFields<? extends Comparable<?>>> fields) {
+        return List.of();
     }
 }

@@ -1,8 +1,8 @@
 package controllers;
 
-import bnsshop.bnsshop.RegisterServlet;
 import models.Utenti;
 import utility.Database;
+import utility.QueryFields;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -13,12 +13,12 @@ public class UtentiController implements Controllers<Utenti> {
     }
 
     @Override
-    public boolean insertObject(Map<Integer, RegisterServlet.RegisterFields> request) {
+    public int insertObject(Map<Integer,QueryFields<? extends Comparable<?>>> request) {
         return Database.insertElement(request,"utenti");
     }
 
     @Override
-    public boolean updateObject(int id,Map<Integer, RegisterServlet.RegisterFields> request) {
+    public boolean updateObject(int id,Map<Integer,QueryFields<? extends Comparable<?>>> request) {
         return Database.updateElement(id,request, "utenti");
     }
 
@@ -67,9 +67,9 @@ public class UtentiController implements Controllers<Utenti> {
         return Optional.of(user.getFirst());
     }
 
-
-    public List<Utenti> executeQuery(String query){
-        return Database.executeGenericQuery("utenti",new Utenti(),query);
+    @Override
+    public List<Utenti> executeQuery(String query, Map<Integer, QueryFields<? extends Comparable<?>>> fields) {
+        return List.of();
     }
 }
 

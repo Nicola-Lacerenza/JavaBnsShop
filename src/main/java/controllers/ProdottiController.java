@@ -3,6 +3,7 @@ package controllers;
 import bnsshop.bnsshop.RegisterServlet;
 import models.ProdottiFull;
 import utility.Database;
+import utility.QueryFields;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -20,7 +21,7 @@ public class ProdottiController implements Controllers<ProdottiFull> {
     }
 
     @Override
-    public boolean insertObject(Map<Integer, RegisterServlet.RegisterFields> request) {
+    public int insertObject(Map<Integer, QueryFields<? extends Comparable<?>>> request) {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
         } catch (ClassNotFoundException e) {
@@ -232,7 +233,7 @@ public class ProdottiController implements Controllers<ProdottiFull> {
     }
 
     @Override
-    public boolean updateObject(int objectid, Map<Integer, RegisterServlet.RegisterFields> request) {
+    public boolean updateObject(int objectid,Map<Integer,QueryFields<? extends Comparable<?>>> request) {
         if (objectid <= 0) {
             return false;
         }
@@ -711,7 +712,7 @@ public class ProdottiController implements Controllers<ProdottiFull> {
     }
 
     @Override
-    public List<ProdottiFull> executeQuery(String query) {
-        return null;
+    public List<ProdottiFull> executeQuery(String query, Map<Integer, QueryFields<? extends Comparable<?>>> fields) {
+        return List.of();
     }
 }

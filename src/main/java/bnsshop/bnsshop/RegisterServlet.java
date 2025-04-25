@@ -107,22 +107,4 @@ public class RegisterServlet extends HttpServlet{
     @Override
     public void doDelete(HttpServletRequest request,HttpServletResponse response) throws ServletException,IOException{
     }
-
-    public static class RegisterFields{
-        private final String key;
-        private final String value;
-
-        public RegisterFields(String key, String value) {
-            this.key = key;
-            this.value = value;
-        }
-
-        public String getKey() {
-            return key;
-        }
-
-        public String getValue() {
-            return value;
-        }
-    }
 }

@@ -1,8 +1,8 @@
 package controllers;
 
-import bnsshop.bnsshop.RegisterServlet;
 import models.ColoreProdotti;
 import utility.Database;
+import utility.QueryFields;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -14,12 +14,12 @@ public class ColoreProdottiController implements Controllers<ColoreProdotti> {
     }
 
     @Override
-    public boolean insertObject(Map<Integer, RegisterServlet.RegisterFields> request) {
+    public int insertObject(Map<Integer, QueryFields<? extends Comparable<?>>> request) {
         return Database.insertElement(request,"colore_has_prodotti");
     }
 
     @Override
-    public boolean updateObject(int id,Map<Integer, RegisterServlet.RegisterFields> request) {
+    public boolean updateObject(int id,Map<Integer, QueryFields<? extends Comparable<?>>> request) {
         return Database.updateElement(id,request, "colore_has_prodotti");
     }
 
@@ -45,7 +45,7 @@ public class ColoreProdottiController implements Controllers<ColoreProdotti> {
     }
 
     @Override
-    public List<ColoreProdotti> executeQuery(String query) {
-        return null;
+    public List<ColoreProdotti> executeQuery(String query, Map<Integer, QueryFields<? extends Comparable<?>>> fields) {
+        return List.of();
     }
 }

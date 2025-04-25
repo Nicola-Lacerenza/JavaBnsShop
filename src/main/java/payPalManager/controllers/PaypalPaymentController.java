@@ -1,9 +1,11 @@
 package payPalManager.controllers;
 
-import bnsshop.bnsshop.RegisterServlet;
 import controllers.Controllers;
 import payPalManager.models.PaypalPaymentsCreated;
 import utility.Database;
+import utility.QueryFields;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -11,12 +13,12 @@ import java.util.Optional;
 
 public class PaypalPaymentController implements Controllers<PaypalPaymentsCreated>{
     @Override
-    public boolean insertObject(Map<Integer, RegisterServlet.RegisterFields> request) {
-        return false;
+    public int insertObject(Map<Integer, QueryFields<? extends Comparable<?>>> request) {
+        return -1;
     }
 
     @Override
-    public boolean updateObject(int id, Map<Integer, RegisterServlet.RegisterFields> request) {
+    public boolean updateObject(int id, Map<Integer, QueryFields<? extends Comparable<?>>> request) {
         return false;
     }
 
@@ -36,7 +38,14 @@ public class PaypalPaymentController implements Controllers<PaypalPaymentsCreate
     }
 
     @Override
-    public List<PaypalPaymentsCreated> executeQuery(String query) {
-        return Database.executeGenericQuery("paypal_pagamento_creato",new PaypalPaymentsCreated(),query);
+    public List<PaypalPaymentsCreated> executeQuery(String query,Map<Integer,QueryFields<? extends Comparable<?>>> fields) {
+        Connection connection;
+        try{
+            connection = Database.createConnection();
+        }catch (SQLException exception){
+            exception.printStackTrace();
+            return new LinkedList<>();
+        }
+        return Database.executeGenericQuery(connection,query,fields,new PaypalPaymentsCreated());
     }
 }

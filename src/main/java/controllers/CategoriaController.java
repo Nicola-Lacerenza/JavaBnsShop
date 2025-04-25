@@ -1,8 +1,8 @@
 package controllers;
 
-import bnsshop.bnsshop.RegisterServlet;
 import models.Categoria;
 import utility.Database;
+import utility.QueryFields;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -12,12 +12,12 @@ public class CategoriaController implements Controllers<Categoria> {
     }
 
     @Override
-    public boolean insertObject(Map<Integer, RegisterServlet.RegisterFields> request) {
+    public int insertObject(Map<Integer, QueryFields<? extends Comparable<?>>> request) {
         return Database.insertElement(request,"categoria");
     }
 
     @Override
-    public boolean updateObject(int id,Map<Integer, RegisterServlet.RegisterFields> request) {
+    public boolean updateObject(int id,Map<Integer, QueryFields<? extends Comparable<?>>> request) {
         return Database.updateElement(id,request, "categoria");
     }
 
@@ -44,7 +44,7 @@ public class CategoriaController implements Controllers<Categoria> {
     }
 
     @Override
-    public List<Categoria> executeQuery(String query) {
-        return null;
+    public List<Categoria> executeQuery(String query, Map<Integer, QueryFields<? extends Comparable<?>>> fields) {
+        return List.of();
     }
 }

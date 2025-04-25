@@ -5,12 +5,15 @@ import org.json.JSONObject;
 import payPalManager.models.Amount;
 import payPalManager.models.PaypalPaymentRefunded;
 import utility.Database;
-
+import utility.QueryFields;
+import utility.TipoVariabile;
 import java.io.Serial;
-import java.sql.*;
+import java.sql.SQLException;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class RefundPaymentRequest extends PaypalAPIRequest<PaypalPaymentRefunded>{
     @Serial
@@ -64,79 +67,52 @@ public class RefundPaymentRequest extends PaypalAPIRequest<PaypalPaymentRefunded
 
     @Override
     public Optional<PaypalPaymentRefunded> parseResponse(JSONObject jsonResponse) {
-
+        //estrazione dei parametri dalla risposta json ricevuta dal server.
         String refundId = jsonResponse.getString("id");
         String status = jsonResponse.getString("status");
         JSONObject amountObject = jsonResponse.getJSONObject("amount");
         double amount = amountObject.getDouble("value");
         String currency = amountObject.getString("currency_code");
 
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Driver JDBC non trovato", e);
+        //parametri per inserire il reso nel database.
+        Map<Integer, QueryFields<? extends Comparable<?>>> fields1 = new HashMap<>();
+        try{
+            fields1.put(0,new QueryFields<>("id_utente",idUtente,TipoVariabile.longNumber));
+            fields1.put(1,new QueryFields<>("id_ordine",idOrdine,TipoVariabile.longNumber));
+            fields1.put(2,new QueryFields<>("importo",amount, TipoVariabile.realNumber));
+            fields1.put(3,new QueryFields<>("refund_id",refundId,TipoVariabile.string));
+            fields1.put(4,new QueryFields<>("valuta",currency,TipoVariabile.string));
+            fields1.put(5,new QueryFields<>("stato_reso",status,TipoVariabile.string));
+        }catch(SQLException exception){
+            exception.printStackTrace();
+            return Optional.empty();
         }
 
-        int idReso=-1;
-        Connection connection = null;
-        boolean output;
-        try {
-            connection = DriverManager.getConnection(Database.getDatabaseUrl(), Database.getDatabaseUsername(), Database.getDatabasePassword());
-            connection.setAutoCommit(false);
-
-            String query1 = "INSERT INTO resi(id_utente,id_ordine,importo,refund_id,valuta,stato_reso) " +
-                    "VALUES (?,?,?,?,?,?)";
-            PreparedStatement preparedStatement1 = connection.prepareStatement(query1, Statement.RETURN_GENERATED_KEYS);
-            preparedStatement1.setInt(1,idUtente);
-            preparedStatement1.setInt(2, idOrdine);
-            preparedStatement1.setDouble(3,amount);
-            preparedStatement1.setString(4, refundId);
-            preparedStatement1.setString(5, currency);
-            preparedStatement1.setString(6, status);
-            preparedStatement1.executeUpdate();
-
-            ResultSet generatedKeys = preparedStatement1.getGeneratedKeys();
-            if (generatedKeys.next()) {
-                idReso = generatedKeys.getInt(1);
-            } else {
-                throw new SQLException("Errore: Nessun ID reso generato.");
-            }
-
-            String query2 = "UPDATE ordine SET stato_ordine=?,data_aggiornamento_stato_ordine= NOW() WHERE id_ordine_paypal = ?";
-            PreparedStatement preparedStatement2 = connection.prepareStatement(query2);
-            preparedStatement2.setString(1,"REFUNDED");
-            preparedStatement2.setInt(2,idUtente);
-
-
-            preparedStatement2.executeUpdate();
-
-            connection.commit();
-            output = true;
-
-        } catch(SQLException e){
-            // Gestione errori e rollback in caso di fallimento
-            e.printStackTrace();
-            if (connection != null) {
-                try {
-                    connection.rollback();
-                } catch (SQLException rollbackEx) {
-                    rollbackEx.printStackTrace();
-                }
-            }
-            output = false;
-        } finally {
-            // Chiusura connessione e statement
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException closeEx) {
-                    closeEx.printStackTrace();
-                }
-            }
+        //parametri che servono per l'aggiornamento della tabella ordine.
+        Map<Integer, QueryFields<? extends Comparable<?>>> fields2 = new HashMap<>();
+        try{
+            fields2.put(0,new QueryFields<>("stato_ordine","REFUNDED",TipoVariabile.string));
+            fields2.put(1,new QueryFields<>("id_ordine_paypal",idOrdine,TipoVariabile.longNumber));
+        }catch(SQLException exception){
+            exception.printStackTrace();
+            return Optional.empty();
         }
 
-        PaypalPaymentRefunded paymentRefunded = new PaypalPaymentRefunded();
-        return Optional.of(paymentRefunded);
+        AtomicInteger idReso = new AtomicInteger();
+        boolean result = Database.executeTransaction(connection -> {
+            idReso.set(Database.insertElement(connection,"resi", fields1));
+            if(idReso.get() <= 0){
+                return false;
+            }
+            String query = "UPDATE ordine SET stato_ordine = ?,data_aggiornamento_stato_ordine = NOW() WHERE id_ordine_paypal = ?";
+            return Database.executeGenericUpdate(connection,query,fields2);
+        });
+
+        if(result){
+            PaypalPaymentRefunded paymentRefunded = new PaypalPaymentRefunded(idReso.get(),idOrdine,idUtente,new GregorianCalendar(),amount,refundId,currency,status);
+            return Optional.of(paymentRefunded);
+        }
+        return Optional.empty();
     }
 
     public static final class Builder{

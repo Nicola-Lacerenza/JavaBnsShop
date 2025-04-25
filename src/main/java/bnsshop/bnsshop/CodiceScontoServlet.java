@@ -9,8 +9,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import models.CodiceSconto;
 import org.json.JSONObject;
 import utility.GestioneServlet;
+import utility.QueryFields;
+import utility.TipoVariabile;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -107,18 +110,24 @@ public class CodiceScontoServlet extends HttpServlet{
         int minimoAcquisto = object.getInt("minimo_acquisto");
         int attivo= object.getInt("attivo");
 
-        Map<Integer, RegisterServlet.RegisterFields> request0= new HashMap<>();
-        request0.put(0,new RegisterServlet.RegisterFields("codice",codice));
-        request0.put(1, new RegisterServlet.RegisterFields("valore", String.valueOf(valore)));
-        request0.put(2,new RegisterServlet.RegisterFields("descrizione",descrizione));
-        request0.put(3,new RegisterServlet.RegisterFields("tipo",tipo));
-        request0.put(4,new RegisterServlet.RegisterFields("data_inizio",dataInizio));
-        request0.put(5,new RegisterServlet.RegisterFields("data_fine",dataFine));
-        request0.put(6,new RegisterServlet.RegisterFields("uso_massimo",String.valueOf(usoMassimo)));
-        request0.put(7,new RegisterServlet.RegisterFields("uso_per_utente",String.valueOf(usoPerUtente)));
-        request0.put(8,new RegisterServlet.RegisterFields("minimo_acquisto",String.valueOf(minimoAcquisto)));
-        request0.put(9,new RegisterServlet.RegisterFields("attivo",String.valueOf(attivo)));
-        request0.put(10,new RegisterServlet.RegisterFields("categoria",String.valueOf(idCategoria)));
+        Map<Integer,QueryFields<? extends Comparable<?>>> request0= new HashMap<>();
+        try{
+            request0.put(0,new QueryFields<>("codice",codice,TipoVariabile.string));
+            request0.put(1, new QueryFields<>("valore",valore,TipoVariabile.longNumber));
+            request0.put(2,new QueryFields<>("descrizione",descrizione,TipoVariabile.string));
+            request0.put(3,new QueryFields<>("tipo",tipo,TipoVariabile.string));
+            request0.put(4,new QueryFields<>("data_inizio",dataInizio,TipoVariabile.string));
+            request0.put(5,new QueryFields<>("data_fine",dataFine,TipoVariabile.string));
+            request0.put(6,new QueryFields<>("uso_massimo",usoMassimo,TipoVariabile.longNumber));
+            request0.put(7,new QueryFields<>("uso_per_utente",usoPerUtente,TipoVariabile.longNumber));
+            request0.put(8,new QueryFields<>("minimo_acquisto",minimoAcquisto,TipoVariabile.longNumber));
+            request0.put(9,new QueryFields<>("attivo",attivo,TipoVariabile.longNumber));
+            request0.put(10,new QueryFields<>("categoria",idCategoria,TipoVariabile.longNumber));
+        }catch(SQLException exception){
+            exception.printStackTrace();
+            GestioneServlet.inviaRisposta(response,500,"\"Internal server error.\"",false);
+            return;
+        }
         if (controller.insertObject(request0)) {
             String registrazione = "\"Registrazione effettuata correttamente.\"";
             GestioneServlet.inviaRisposta(response,201,registrazione,true);

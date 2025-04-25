@@ -10,6 +10,7 @@ import utility.GestioneFileTesto;
 import utility.QueryFields;
 import utility.TipoVariabile;
 import java.io.Serial;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Base64;
 import java.util.HashMap;
@@ -65,11 +66,11 @@ public final class CreateAPIToken extends PaypalAPIRequest<PaypalTokens>{
             return Optional.empty();
         }
 
-        System.out.println("TOKEN RICEVUTO DALLE API DI PAYPAL: " + rawPaypalToken.printJSONObject().toString(4));
-
+        //creation record in the database with the data arrived by PayPal.
+        Connection connection;
         Map<Integer, QueryFields<?extends Comparable<?>>> fields = new HashMap<>();
-
         try {
+            connection = Database.createConnection();
             fields.put(0,new QueryFields<>("access_token",jsonResponse.getString("access_token"), TipoVariabile.string));
             fields.put(1,new QueryFields<>("scope",jsonResponse.getString("scope"), TipoVariabile.string));
             fields.put(2,new QueryFields<>("token_type",jsonResponse.getString("token_type"), TipoVariabile.string));
@@ -80,9 +81,7 @@ public final class CreateAPIToken extends PaypalAPIRequest<PaypalTokens>{
             e.printStackTrace();
             return Optional.empty();
         }
-
-        //creation record in the database with the data arrived by PayPal.
-        int id = Database.insertElementExtractId(fields,"paypal_token");
+        int id = Database.insertElement(connection,"paypal_token",fields);
         if(id <= 0){
             System.err.println("Error inserting the token in the database.");
             return Optional.empty();

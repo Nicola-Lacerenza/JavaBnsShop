@@ -9,8 +9,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import models.Brand;
 import org.json.JSONObject;
 import utility.GestioneServlet;
+import utility.QueryFields;
+import utility.TipoVariabile;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -98,9 +101,16 @@ public class BrandServlet extends HttpServlet{
         JSONObject object = new JSONObject(json);
         String nome= object.getString("nome");
         String descrizione= object.getString("descrizione");
-        Map<Integer, RegisterServlet.RegisterFields> request0= new HashMap<>();
-        request0.put(0,new RegisterServlet.RegisterFields("nome",nome));
-        request0.put(1,new RegisterServlet.RegisterFields("descrizione",descrizione));
+        Map<Integer,QueryFields<? extends Comparable<?>>> request0= new HashMap<>();
+        try{
+            request0.put(0,new QueryFields<>("nome",nome,TipoVariabile.string));
+            request0.put(1,new QueryFields<>("descrizione",descrizione,TipoVariabile.string));
+        }catch(SQLException exception){
+            exception.printStackTrace();
+            String message = "\"Errore durante la registrazione.\"";
+            GestioneServlet.inviaRisposta(response,500,message,false);
+            return;
+        }
         if (controller.insertObject(request0)) {
             String registrazione = "\"Registrazione effettuata correttamente.\"";
             GestioneServlet.inviaRisposta(response,201,registrazione,true);
@@ -135,9 +145,16 @@ public class BrandServlet extends HttpServlet{
         }
         String json=builder.toString();
         JSONObject object = new JSONObject(json);
-        Map<Integer, RegisterServlet.RegisterFields> data = new HashMap<>();
-        data.put(0,new RegisterServlet.RegisterFields("nome","" + object.getString("nome")));
-        data.put(1,new RegisterServlet.RegisterFields("descrizione","" + object.getString("descrizione")));
+        Map<Integer,QueryFields<? extends Comparable<?>>> data = new HashMap<>();
+        try{
+            data.put(0,new QueryFields<>("nome",object.getString("nome"),TipoVariabile.string));
+            data.put(1,new QueryFields<>("descrizione",object.getString("descrizione"),TipoVariabile.string));
+        }catch(SQLException exception){
+            exception.printStackTrace();
+            String message = "\"Errore durante la registrazione.\"";
+            GestioneServlet.inviaRisposta(response,500,message,false);
+            return;
+        }
         if (controller.updateObject(id,data)){
             String message="\"Product Updated Correctly.\"";
             GestioneServlet.inviaRisposta(response,200,message,true);
