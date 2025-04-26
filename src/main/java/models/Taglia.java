@@ -59,4 +59,24 @@ public class Taglia implements Oggetti<Taglia>{
         output.put("taglia_Us",tagliaUs);
         return output.toString(4);
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == null){
+            return false;
+        }
+        if(this == obj){
+            return true;
+        }
+        if(!(obj instanceof Taglia)){
+            return false;
+        }
+        Taglia t = (Taglia) obj;
+        return id == t.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return id;
+    }
 }

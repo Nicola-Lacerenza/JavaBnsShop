@@ -9,7 +9,6 @@ public class Colore implements Oggetti<Colore> {
     private final int id;
     private final String nome;
 
-
     //costruttore di classe
     public Colore(int id, String nome) {
         this.id = id;
@@ -45,5 +44,25 @@ public class Colore implements Oggetti<Colore> {
         output.put("id",id);
         output.put("nome",nome);
         return output.toString(4);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == null){
+            return false;
+        }
+        if(this == obj){
+            return true;
+        }
+        if(!(obj instanceof Colore)){
+            return false;
+        }
+        Colore c = (Colore) obj;
+        return id == c.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return id;
     }
 }

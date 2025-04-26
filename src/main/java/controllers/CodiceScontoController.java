@@ -3,101 +3,64 @@ package controllers;
 import models.CodiceSconto;
 import utility.Database;
 import utility.QueryFields;
+import utility.TipoVariabile;
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class CodiceScontoController implements Controllers<CodiceSconto> {
     public CodiceScontoController(){}
 
     @Override
     public int insertObject(Map<Integer, QueryFields<? extends Comparable<?>>> request) {
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Driver JDBC non trovato", e);
+        //dati necessari per l'inserimento nella tabella codice_sconto.
+        Map<Integer,QueryFields<? extends Comparable<?>>> fields1 = new HashMap<>();
+        for(int i = 0;i <= 9;i++){
+            fields1.put(i,request.get(i).copy());
         }
 
-        Connection connection = null;
-        List<PreparedStatement> statementList = new LinkedList<>();
-
-        boolean output = false;
-        try {
-
-            // APERTURA CONNESSIONE
-
-            connection = DriverManager.getConnection(Database.getDatabaseUrl(), Database.getDatabaseUsername(), Database.getDatabasePassword());
-            connection.setAutoCommit(false); // Avvia transazione
-
-            //region INSERIMENTO PRODOTTO + ESTRAZIONE ID
-
-            String query1 = "INSERT INTO codice_sconto(codice,valore,descrizione,tipo,data_inizio,data_fine,uso_massimo,uso_per_utente,minimo_acquisto,attivo) " +
-                    "VALUES (?,?,?,?,?,?,?,?,?,?)";
-            PreparedStatement preparedStatement1 = connection.prepareStatement(query1, Statement.RETURN_GENERATED_KEYS);
-            preparedStatement1.setString(1, request.get(0).getValue());
-            preparedStatement1.setInt(2, Integer.parseInt(request.get(1).getValue()));
-            preparedStatement1.setString(3, request.get(2).getValue());
-            preparedStatement1.setString(4, request.get(3).getValue());
-            preparedStatement1.setString(5, request.get(4).getValue());
-            preparedStatement1.setString(6, request.get(5).getValue());
-            preparedStatement1.setInt(7, Integer.parseInt(request.get(6).getValue()));
-            preparedStatement1.setInt(8, Integer.parseInt(request.get(7).getValue()));
-            preparedStatement1.setInt(9, Integer.parseInt(request.get(8).getValue()));
-            preparedStatement1.setInt(10, Integer.parseInt(request.get(9).getValue()));
-            preparedStatement1.executeUpdate();
-
-            ResultSet generatedKeys = preparedStatement1.getGeneratedKeys();
-            int idCodiceSconto = -1;
-            if (generatedKeys.next()) {
-                idCodiceSconto = generatedKeys.getInt(1);
-            } else {
-                throw new SQLException("Errore: Nessun ID Codice Sconto generato.");
+        //transazione sul database.
+        AtomicInteger idCodiceSconto = new AtomicInteger();
+        boolean success = Database.executeTransaction(connection -> {
+            idCodiceSconto.set(Database.insertElement(connection,"codice_sconto",fields1));
+            if(idCodiceSconto.get() <= 0){
+                return false;
             }
-
-            String query2 = "INSERT INTO codice_sconto_has_categoria(id_categoria,id_codicesconto)VALUES (?,?)";
-            PreparedStatement preparedStatement2 = connection.prepareStatement(query2);
-            preparedStatement2.setInt(1, Integer.parseInt(request.get(10).getValue()));
-            preparedStatement2.setInt(2, idCodiceSconto);
-            preparedStatement2.executeUpdate();
-
-//endregion
-
-            connection.commit(); // Commit delle modifiche solo se tutte le query hanno successo
-            output = true;
-        } catch (SQLException e) {
-            // Gestione errori e rollback in caso di fallimento            e.printStackTrace();
-            if (connection != null) {
-                try {
-                    connection.rollback();
-                } catch (SQLException rollbackEx) {
-                    rollbackEx.printStackTrace();
-                }
+            Map<Integer,QueryFields<? extends Comparable<?>>> fields2 = new HashMap<>();
+            try{
+                fields2.put(0,new QueryFields<>("id_categoria",request.get(10).getFieldValue(),TipoVariabile.longNumber));
+                fields2.put(1,new QueryFields<>("id_codicesconto",idCodiceSconto.get(),TipoVariabile.longNumber));
+            }catch(SQLException exception){
+                exception.printStackTrace();
+                return false;
             }
-            output = false;
-        } finally {
-            // Chiusura connessione e statement
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException closeEx) {
-                    closeEx.printStackTrace();
-                }
-            }
+            int idCodiceScontoCategoria = Database.insertElement(connection,"codice_sconto_has_categoria",fields2);
+            return idCodiceScontoCategoria > 0;
+        });
+        if(success){
+            return idCodiceSconto.get();
         }
-        return output;
+        return -1;
     }
 
     @Override
     public boolean updateObject(int id,Map<Integer, QueryFields<? extends Comparable<?>>> request) {
-
-        return Database.updateElement(id,request, "codice_sconto");
+        if(id <= 0 || request == null){
+            return false;
+        }
+        boolean output;
+        try(Connection connection = Database.createConnection()){
+            output = Database.updateElement(connection, "codice_sconto", id, request);
+        }catch(SQLException exception){
+            exception.printStackTrace();
+            output = false;
+        }
+        return output;
     }
 
     @Override
@@ -105,62 +68,21 @@ public class CodiceScontoController implements Controllers<CodiceSconto> {
         if (objectid <= 0) {
             return false;
         }
-
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Driver JDBC non trovato", e);
-        }
-
-        Connection connection = null;
-        List<PreparedStatement> statementList = new LinkedList<>();
-        boolean output = false;
-        try {
-
-            // APERTURA CONNESSIONE
-
-            connection = DriverManager.getConnection(Database.getDatabaseUrl(), Database.getDatabaseUsername(), Database.getDatabasePassword());
-            connection.setAutoCommit(false); // Avvia transazione
-
-            // ELIMINA I RIFERIMENTI DALLA TABELLA CODICESCONTO_HAS_CATEGORIA
-
-            String query1 = "DELETE FROM `codice_sconto_has_categoria` WHERE id_codicesconto = ?";
-            PreparedStatement preparedStatement1 = connection.prepareStatement(query1);
-            preparedStatement1.setInt(1, objectid);
-            preparedStatement1.executeUpdate();
-
-            // ELIMINA I RIFERIMENTI DALLA TABELLA CODICESCONTO_HAS_CATEGORIA
-
-            String query2 = "DELETE FROM `codice_sconto` WHERE id = ?";
-            PreparedStatement preparedStatement2 = connection.prepareStatement(query2);
-            preparedStatement2.setInt(1, objectid);
-            preparedStatement2.executeUpdate();
-
-            connection.commit();
-            output = true;
-        } catch (SQLException e) {
-
-            // Gestione errori e rollback in caso di fallimento
-            e.printStackTrace();
-            if (connection != null) {
-                try {
-                    connection.rollback();
-                } catch (SQLException rollbackEx) {
-                    rollbackEx.printStackTrace();
-                }
+        return Database.executeTransaction(connection -> {
+            String query1 = "DELETE FROM codice_sconto_has_categoria WHERE id_codicesconto = ?";
+            Map<Integer,QueryFields<? extends Comparable<?>>> fields = new HashMap<>();
+            try{
+                fields.put(0,new QueryFields<>("id_codicesconto",objectid,TipoVariabile.longNumber));
+            }catch(SQLException exception){
+                exception.printStackTrace();
+                return false;
             }
-            output = false;
-        } finally {
-            // Chiusura connessione e statement
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException closeEx) {
-                    closeEx.printStackTrace();
-                }
+            boolean deleteResult = Database.executeGenericUpdate(connection,query1,fields);
+            if(!deleteResult){
+                return false;
             }
-        }
-        return output;
+            return Database.deleteElement(connection,"codice_sconto",objectid);
+        });
     }
 
 
@@ -169,12 +91,26 @@ public class CodiceScontoController implements Controllers<CodiceSconto> {
         if (objectid<=0){
             return Optional.empty();
         }
-        return Database.getElement(objectid,"codice_sconto",new CodiceSconto());
+        Optional<CodiceSconto> output;
+        try(Connection connection = Database.createConnection()){
+            output = Database.getElement(connection,"codice_sconto",objectid,new CodiceSconto());
+        }catch(SQLException exception){
+            exception.printStackTrace();
+            output = Optional.empty();
+        }
+        return output;
     }
 
     @Override
     public List<CodiceSconto> getAllObjects() {
-        return Database.getAllElements("codice_sconto",new CodiceSconto());
+        List<CodiceSconto> output;
+        try(Connection connection = Database.createConnection()){
+            output = Database.getAllElements(connection,"codice_sconto",new CodiceSconto());
+        }catch(SQLException exception){
+            exception.printStackTrace();
+            output = new LinkedList<>();
+        }
+        return output;
     }
 
     @Override

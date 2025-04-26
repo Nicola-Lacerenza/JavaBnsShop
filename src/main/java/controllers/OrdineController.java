@@ -4,12 +4,9 @@ import models.Ordine;
 import models.ProdottiFull;
 import utility.Database;
 import utility.QueryFields;
+import utility.TipoVariabile;
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -21,7 +18,7 @@ public class OrdineController implements Controllers<Ordine>{
 
     @Override
     public int insertObject(Map<Integer, QueryFields<? extends Comparable<?>>> request) {
-        return false;
+        return -1;
     }
 
     @Override
@@ -39,16 +36,7 @@ public class OrdineController implements Controllers<Ordine>{
         if (objectId <= 0) {
             return Optional.empty();
         }
-
-        // 1) Carica il driver (una tantum in init, ma va bene qui)
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Driver JDBC non trovato", e);
-        }
-
-        // 2) SQL con spazi finali in ogni riga
-        String sql =
+        String query =
                 "SELECT " +
                         "  o.*," +
                         "  d.id AS dettaglio_id," +
@@ -85,55 +73,45 @@ public class OrdineController implements Controllers<Ordine>{
                         "LEFT JOIN colore cl    ON chp.id_colore = cl.id " +
                         "WHERE o.id = ? " +
                         "ORDER BY d.id, m.id;";
-
-        // 3) Apertura connessione e statement in try-with-resources
-        try (Connection conn = DriverManager.getConnection(
-                Database.getDatabaseUrl(),
-                Database.getDatabaseUsername(),
-                Database.getDatabasePassword());
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setInt(1, objectId);
-
-            // 4) Se c'è almeno una riga, converti in Ordine
-            Ordine template = new Ordine();
-            List<Ordine> list = new LinkedList<>();
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Optional<Ordine> tmp = template.convertDBToJava(rs);
-                    tmp.ifPresent(list::add);
-                }
-            }
-
-            List<Ordine> output = new LinkedList<>();
-            for(Ordine ordine:list){
-                if(!output.contains(ordine)){
-                    output.add(ordine);
-                }
-                List<ProdottiFull> prodotti = ordine.getProdotti();
-                int ordinePresente = output.indexOf(ordine);
-                for(ProdottiFull prodotto:prodotti){
-                    if(!output.get(ordinePresente).getProdotti().contains(prodotto)){
-                        output.get(ordinePresente).getProdotti().add(prodotto);
-                    }
-                }
-            }
-            if(output.isEmpty()){
-                return Optional.empty();
-            }
-            return Optional.of(output.getFirst());
-
-        } catch (SQLException e) {
-            e.printStackTrace();
+        Map<Integer, QueryFields<? extends Comparable<?>>> fields = new HashMap<>();
+        try{
+            fields.put(0,new QueryFields<>("id",objectId,TipoVariabile.longNumber));
+        }catch(SQLException exception){
+            exception.printStackTrace();
             return Optional.empty();
         }
+        List<Ordine> ordini;
+        try(Connection connection = Database.createConnection()){
+            ordini = Database.executeGenericQuery(connection,query,fields,new Ordine());
+        }catch(SQLException exception){
+            exception.printStackTrace();
+            ordini = new LinkedList<>();
+        }
+        if(ordini.isEmpty()){
+            return Optional.empty();
+        }
+        List<Ordine> output = new LinkedList<>();
+        for(Ordine ordine:ordini){
+            if(!output.contains(ordine)){
+                output.add(ordine);
+            }
+            List<ProdottiFull> prodotti = ordine.getProdotti();
+            int ordinePresente = output.indexOf(ordine);
+            for(ProdottiFull prodotto:prodotti){
+                if(!output.get(ordinePresente).getProdotti().contains(prodotto)){
+                    output.get(ordinePresente).getProdotti().add(prodotto);
+                }
+            }
+        }
+        if(output.isEmpty()){
+            return Optional.empty();
+        }
+        return Optional.of(output.getFirst());
     }
-
-
 
     @Override
     public List<Ordine> getAllObjects() {
-        return null;
+        return new LinkedList<>();
     }
 
     @Override
@@ -141,18 +119,11 @@ public class OrdineController implements Controllers<Ordine>{
         return new LinkedList<>();
     }
 
-    public List<Ordine> getObjectByUserID(int userID) {
-        if (userID <= 0) {
-            return Collections.emptyList();
+    public List<Ordine> getObjectByUserID(int userId){
+        if(userId <= 0){
+            return new LinkedList<>();
         }
-
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Driver JDBC non trovato", e);
-        }
-
-        String sql =
+        String query =
                 "SELECT "
                         + "  o.*, "
                         + "  d.id AS dettaglio_id, "
@@ -189,47 +160,37 @@ public class OrdineController implements Controllers<Ordine>{
                         + "LEFT JOIN colore cl                  ON chp.id_colore = cl.id "
                         + "WHERE o.id_utente = ? "
                         + "ORDER BY o.id, d.id, m.id;";
-
-        Map<Integer,Ordine> ordini = new HashMap<>();
-
-        try (
-                Connection conn = DriverManager.getConnection(
-                        Database.getDatabaseUrl(),
-                        Database.getDatabaseUsername(),
-                        Database.getDatabasePassword()
-                );
-                PreparedStatement ps = conn.prepareStatement(sql)
-        ) {
-            ps.setInt(1, userID);
-            Ordine template = new Ordine();
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Optional<Ordine> ordine = template.convertDBToJava(rs);
-                    if(ordine.isPresent()){
-                        if(!ordini.containsKey(ordine.get().getId())){
-                            ordini.put(ordine.get().getId(),ordine.get());
-                        }
-                        List<ProdottiFull> prodotti = ordine.get().getProdotti();
-                        Ordine ordinePresente = ordini.get(ordine.get().getId());
-                        for(ProdottiFull prodotto:prodotti){
-                            if(!ordinePresente.getProdotti().contains(prodotto)){
-                                ordinePresente.getProdotti().add(prodotto);
-                            }
-                        }
-                    }
+        Map<Integer, QueryFields<? extends Comparable<?>>> fields = new HashMap<>();
+        try{
+            fields.put(0,new QueryFields<>("id_utente",userId,TipoVariabile.longNumber));
+        }catch(SQLException exception){
+            exception.printStackTrace();
+            return new LinkedList<>();
+        }
+        List<Ordine> ordini;
+        try(Connection connection = Database.createConnection()){
+            ordini = Database.executeGenericQuery(connection,query,fields,new Ordine());
+        }catch(SQLException exception){
+            exception.printStackTrace();
+            ordini = new LinkedList<>();
+        }
+        if(ordini.isEmpty()){
+            return new LinkedList<>();
+        }
+        List<Ordine> output = new LinkedList<>();
+        for(Ordine ordine:ordini){
+            if(!output.contains(ordine)){
+                output.add(ordine);
+            }
+            List<ProdottiFull> prodotti = ordine.getProdotti();
+            int index = output.indexOf(ordine);
+            Ordine ordinePresente = output.get(index);
+            for(ProdottiFull prodotto:prodotti){
+                if(!ordinePresente.getProdotti().contains(prodotto)){
+                    ordinePresente.getProdotti().add(prodotto);
                 }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            // in caso di errore restituisco lista vuota
-            ordini.clear();
         }
-
-        List<Ordine> output = new LinkedList<>();
-        for(int idOrdine:ordini.keySet()){
-            output.add(ordini.get(idOrdine));
-        }
-
         return output;
     }
 }

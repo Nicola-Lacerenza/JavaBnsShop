@@ -1,233 +1,181 @@
 package controllers;
 
 import bnsshop.bnsshop.RegisterServlet;
+import models.Colore;
+import models.Modello;
 import models.ProdottiFull;
+import models.Taglia;
 import utility.Database;
 import utility.QueryFields;
+import utility.TipoVariabile;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ProdottiController implements Controllers<ProdottiFull> {
     public ProdottiController(){}
 
     @Override
     public int insertObject(Map<Integer, QueryFields<? extends Comparable<?>>> request) {
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Driver JDBC non trovato", e);
+        //dati per estrarre il modello dal database.
+        Map<Integer,QueryFields<? extends Comparable<?>>> fields1 = new HashMap<>();
+        try{
+            fields1.put(0,new QueryFields<>("id_categoria",request.get(1).getFieldValue(), TipoVariabile.longNumber));
+            fields1.put(1,new QueryFields<>("id_brand",request.get(2).getFieldValue(), TipoVariabile.longNumber));
+            fields1.put(2,new QueryFields<>("nome",request.get(0).getFieldValue(), TipoVariabile.string));
+        }catch(SQLException exception){
+            exception.printStackTrace();
+            return -1;
         }
 
-        Connection connection = null;
-        List<PreparedStatement> statementList = new LinkedList<>();
+        //estrazione di tutti i colori dalla mappa che arriva dalla servlet.
+        List<Colore> colori = new LinkedList<>();
+        for(int index = 0;index < request.size();index++){
+            QueryFields<? extends Comparable<?>> field = request.get(index);
+            if(field.getFieldName().startsWith("colore_")){
+                int idColore = (Integer)(field.getFieldValue());
+                colori.add(new Colore(idColore,"unknown"));
+            }
+        }
 
-        boolean output = false;
-        try {
+        //estrazione di tutti le taglie dalla mappa che arriva dalla servlet.
+        List<Taglia> taglie = new LinkedList<>();
+        List<Integer> quantita = new LinkedList<>();
+        for(int index = 0;index < request.size();index++){
+            QueryFields<? extends Comparable<?>> field = request.get(index);
+            if(field.getFieldName().startsWith("taglia_")){
+                int idTaglia = (Integer)(field.getFieldValue());
+                taglie.add(new Taglia(idTaglia,"unknown","unknown","unknown"));
+            }
+            if(field.getFieldName().startsWith("quantita_")){
+                int value = (Integer)(field.getFieldValue());
+                quantita.add(value);
+            }
+        }
+        //a ogni taglia è associata una quantità quindi le liste hanno la stessa lunghezza.
+        if(taglie.size() != quantita.size()){
+            return -1;
+        }
 
-        // APERTURA CONNESSIONE
+        //estrazione di tutti gli url delle immagini dalla mappa che arriva dalla servlet.
+        List<String> urls = new LinkedList<>();
+        for(int index = 0;index < request.size();index++){
+            QueryFields<? extends Comparable<?>> field = request.get(index);
+            if(field.getFieldName().startsWith("url")){
+                urls.add(field.getFieldValue().toString());
+            }
+        }
 
-            connection = DriverManager.getConnection(Database.getDatabaseUrl(), Database.getDatabaseUsername(), Database.getDatabasePassword());
-            connection.setAutoCommit(false); // Avvia transazione
-
-    //region ESTRAZIONE ID MODELLO + INSERIMENTO/ESTRAZIONE MODELLO SE NON ESISTE
-
-            String query1 = "SELECT * FROM modello WHERE (id_categoria='" + request.get(1).getValue() + "' " +
-                    "&& id_brand='" + request.get(2).getValue() + "'&& nome='" + request.get(0).getValue() + "')";
-            PreparedStatement preparedStatement1 = connection.prepareStatement(query1);
-            ResultSet rs = preparedStatement1.executeQuery();
-
-            int idModello = -1;
-            if (rs.next()) {
-
+        AtomicInteger idProdotto = new AtomicInteger();
+        boolean success = Database.executeTransaction(connection -> {
+            String query1 = "SELECT * FROM modello WHERE id_categoria = ? AND id_brand = ? AND nome = ?";
+            List<Modello> modelli = Database.executeGenericQuery(connection,query1,fields1,new Modello());
+            int idModello;
+            if(modelli.isEmpty()){
+                try {
+                    fields1.put(3, new QueryFields<>("descrizione", request.get(3).getFieldValue(), TipoVariabile.string));
+                }catch(SQLException exception){
+                    exception.printStackTrace();
+                    return false;
+                }
+                idModello = Database.insertElement(connection,"modello",fields1);
+                if(idModello <= 0){
+                    return false;
+                }
+            }else{
+                idModello = modelli.getFirst().getId();
                 //https://chatgpt.com/c/67b8bff7-f8b0-800b-b73e-695511b0f04d
-                idModello = rs.getInt("id");
+            }
 
+            //dati per inserire il prodotto nella tabella prodotti
+            Map<Integer,QueryFields<? extends Comparable<?>>> fields2 = new HashMap<>();
+            try{
+                fields2.put(0,new QueryFields<>("id_modello",idModello,TipoVariabile.longNumber));
+                fields2.put(1,new QueryFields<>("prezzo",request.get(4).getFieldValue(),TipoVariabile.realNumber));
+                fields2.put(2,new QueryFields<>("stato_pubblicazione",request.get(5).getFieldValue(),TipoVariabile.string));
+            }catch(SQLException exception){
+                exception.printStackTrace();
+                return -1;
+            }
+            idProdotto.set(Database.insertElement(connection,"prodotti",fields2));
+            if(idProdotto.get() <= 0){
+                return false;
+            }
 
-            } else {
-
-        // INSERIMENTO MODELLO
-
-                String query2 = "INSERT INTO modello (id_categoria, id_brand, nome, descrizione) VALUES (?, ?, ?, ?)";
-                PreparedStatement preparedStatement2 = connection.prepareStatement(query2);
-                preparedStatement2.setString(1, request.get(1).getValue());
-                preparedStatement2.setString(2, request.get(2).getValue());
-                preparedStatement2.setString(3, request.get(0).getValue());
-                preparedStatement2.setString(4, request.get(3).getValue());
-                preparedStatement2.executeUpdate();
-
-
-                String query3 = "SELECT * FROM modello WHERE id_categoria = ? AND id_brand = ? AND nome = ? AND descrizione = ?";
-                PreparedStatement preparedStatement3 = connection.prepareStatement(query3);
-                preparedStatement3.setString(1, request.get(1).getValue());
-                preparedStatement3.setString(2, request.get(2).getValue());
-                preparedStatement3.setString(3, request.get(0).getValue());
-                preparedStatement3.setString(4, request.get(3).getValue());
-                ResultSet rs1 = preparedStatement3.executeQuery();
-
-
-                if (rs1.next()) {
-                    idModello = rs1.getInt("id");
-                } else {
-                    throw new SQLException("No image found for the provided URL");
+            //inserimento di tutti i colori nel database (associazione tra colore e prodotto).
+            for(Colore colore:colori){
+                Map<Integer,QueryFields<? extends Comparable<?>>> fields3 = new HashMap<>();
+                try{
+                    fields3.put(0,new QueryFields<>("id_colore",colore.getId(),TipoVariabile.longNumber));
+                    fields3.put(1,new QueryFields<>("id_prodotto",idProdotto.get(),TipoVariabile.longNumber));
+                }catch(SQLException exception){
+                    exception.printStackTrace();
+                    return false;
                 }
-            }
-//endregion
-
-    //region INSERIMENTO PRODOTTO + ESTRAZIONE ID
-
-            String query4 = "INSERT INTO prodotti (id_modello, prezzo, stato_pubblicazione) VALUES (?, ?, ?)";
-            PreparedStatement preparedStatement4 = connection.prepareStatement(query4, Statement.RETURN_GENERATED_KEYS);
-            preparedStatement4.setInt(1, idModello);
-            preparedStatement4.setDouble(2, Double.parseDouble(request.get(4).getValue()));  // Assumendo che sia un prezzo numerico
-            preparedStatement4.setString(3, request.get(5).getValue());
-            preparedStatement4.executeUpdate();
-
-            ResultSet generatedKeys = preparedStatement4.getGeneratedKeys();
-            int idProdotto = -1;
-            if (generatedKeys.next()) {
-                idProdotto = generatedKeys.getInt(1);
-            } else {
-                throw new SQLException("Errore: Nessun ID prodotto generato.");
-            }
-//endregion
-
-    //region INSERIMENTO COLORI
-
-            String query6 = "INSERT INTO colore_has_prodotti (id_colore, id_prodotto) VALUES (?, ?)";
-            PreparedStatement preparedStatement6 = connection.prepareStatement(query6);
-
-            int countColore = 0;
-            for (Map.Entry<Integer, RegisterServlet.RegisterFields> entry : request.entrySet()) {
-                if (entry.getKey() >= 6 && entry.getValue().getKey().startsWith("colore_")) {
-                    countColore++;
+                int idColoreProdotto = Database.insertElement(connection,"colore_has_prodotti",fields3));
+                if(idColoreProdotto <= 0){
+                    return false;
                 }
             }
 
-            // Itera su tutti i colori e inseriscili nella tabella `colore_has_modello`
-            for (int i = 6; i < countColore + 6; i++) {
-                int idColore = Integer.parseInt(request.get(i).getValue());  // Converti in Integer
-                preparedStatement6.setInt(1, idColore);
-                preparedStatement6.setInt(2, idProdotto);
-                preparedStatement6.addBatch();  // Aggiungi la query alla batch
-            }
-
-            // Esegui tutte le query in batch
-            preparedStatement6.executeBatch();
-//endregion
-
-    //region INSERIMENTO TAGLIA E QUANTITA
-
-            String query7 = "INSERT INTO taglie_has_prodotti (id_taglia, id_prodotto, quantita) VALUES (?, ?, ?)";
-            PreparedStatement preparedStatement7 = connection.prepareStatement(query7);
-            int startTaglie = -1;
-            int countTaglie = 0;
-
-            for (Map.Entry<Integer, RegisterServlet.RegisterFields> entry : request.entrySet()) {
-                String key = entry.getValue().getKey();
-
-                // Identifica il primo indice di `taglia_X`
-                if (key.startsWith("taglia_") && startTaglie == -1) {
-                    startTaglie = entry.getKey();
+            //inserimento di tutte le taglie con le rispettive quantità
+            for(int i = 0;i < taglie.size();i++){
+                Map<Integer,QueryFields<? extends Comparable<?>>> fields4 = new HashMap<>();
+                try{
+                    fields4.put(0,new QueryFields<>("id_taglia",taglie.get(i).getId(),TipoVariabile.longNumber));
+                    fields4.put(1,new QueryFields<>("id_prodotto",idProdotto.get(),TipoVariabile.longNumber));
+                    fields4.put(2,new QueryFields<>("quantita",quantita.get(i),TipoVariabile.longNumber));
+                }catch(SQLException exception){
+                    exception.printStackTrace();
+                    return false;
                 }
-
-                // Conta tutte le taglie
-                if (key.startsWith("taglia_")) {
-                    countTaglie++;
+                int tagliaProdotto = Database.insertElement(connection,"taglie_has_prodotti",fields4);
+                if(tagliaProdotto <= 0){
+                    return false;
                 }
             }
 
-            // Verifica che ci siano quantità corrispondenti
-            for (int i = startTaglie; i < startTaglie + countTaglie; i++) {
-                String quantitaKey = "quantita_" + (i - startTaglie);
-                if (!request.containsKey(i + countTaglie)) {
-                    throw new IllegalArgumentException("Quantità mancante per la taglia: " + quantitaKey);
+            for(String url:urls){
+                Map<Integer,QueryFields<? extends Comparable<?>>> fields5 = new HashMap<>();
+                try{
+                    fields5.put(0,new QueryFields<>("url",url,TipoVariabile.string));
+                }catch(SQLException exception){
+                    exception.printStackTrace();
+                    return false;
+                }
+                int idImmagine = Database.insertElement(connection,"immagini",fields5);
+                if(idImmagine <= 0){
+                    return false;
+                }
+                Map<Integer,QueryFields<? extends Comparable<?>>> fields6 = new HashMap<>();
+                try{
+                    fields6.put(0,new QueryFields<>("id_immagine",idImmagine,TipoVariabile.longNumber));
+                    fields6.put(1,new QueryFields<>("id_prodotto",idProdotto.get(),TipoVariabile.longNumber));
+                }catch(SQLException exception){
+                    exception.printStackTrace();
+                    return false;
+                }
+                int idImmagineProdotto = Database.insertElement(connection,"immagini_has_prodotti",fields6);
+                if(idImmagineProdotto <= 0){
+                    return false;
                 }
             }
+            return true;
+        });
 
-            // Ora puoi iterare per inserire nel database
-            for (int i = 0; i < countTaglie; i++) {
-                int idTaglia = Integer.parseInt(request.get(startTaglie + i).getValue());
-                int quantita = Integer.parseInt(request.get(startTaglie + countTaglie + i).getValue());
-
-                preparedStatement7.setInt(1, idTaglia);
-                preparedStatement7.setInt(2, idProdotto);
-                preparedStatement7.setInt(3, quantita);
-                preparedStatement7.addBatch();
-            }
-
-            preparedStatement7.executeBatch();
-//endregion
-
-    //region INSERIMENTO URL IMMAGINE
-
-            int countUrl = 0;
-            for (Map.Entry<Integer, RegisterServlet.RegisterFields> entry : request.entrySet()) {
-                if (entry.getKey() >= 6 && entry.getValue().getKey().startsWith("url")) {
-                    countUrl++;
-                }
-            }
-
-            // Prepara la query per l'inserimento dell'immagine utilizzando RETURN_GENERATED_KEYS
-            String query8 = "INSERT INTO immagini (url) VALUES (?)";
-            PreparedStatement preparedStatement8 = connection.prepareStatement(query8, Statement.RETURN_GENERATED_KEYS);
-
-            // Prepara la query per associare l'immagine al prodotto usando parametri
-            String query10 = "INSERT INTO immagini_has_prodotti (id_immagine, id_prodotto) VALUES (?, ?)";
-            PreparedStatement preparedStatement10 = connection.prepareStatement(query10);
-
-            for (int i = 6 + countColore; i < 6 + countColore + countUrl; i++) {
-                String combinedValue = request.get(i).getValue().replace("\\", "\\\\");
-                preparedStatement8.setString(1, combinedValue);
-                preparedStatement8.executeUpdate();
-
-                // Recupera il generated key dell'immagine inserita
-                ResultSet generatedKeys1 = preparedStatement8.getGeneratedKeys();
-                int idImmagine = -1;
-                if (generatedKeys1.next()) {
-                    idImmagine = generatedKeys1.getInt(1);
-                } else {
-                    throw new SQLException("No image found for the provided URL");
-                }
-
-                // Inserisci l'associazione tra l'immagine e il prodotto utilizzando i parametri
-                preparedStatement10.setInt(1, idImmagine);
-                preparedStatement10.setInt(2, idProdotto);
-                preparedStatement10.executeUpdate();
-            }
-//endregion
-
-            connection.commit(); // Commit delle modifiche solo se tutte le query hanno successo
-            output = true;
-        } catch (SQLException e) {
-            // Gestione errori e rollback in caso di fallimento
-            e.printStackTrace();
-            if (connection != null) {
-                try {
-                    connection.rollback();
-                } catch (SQLException rollbackEx) {
-                    rollbackEx.printStackTrace();
-                }
-            }
-            output = false;
-        } finally {
-            // Chiusura connessione e statement
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException closeEx) {
-                    closeEx.printStackTrace();
-                }
-            }
+        if(success){
+            return idProdotto.get();
         }
-        return output;
+        return -1;
     }
 
     @Override

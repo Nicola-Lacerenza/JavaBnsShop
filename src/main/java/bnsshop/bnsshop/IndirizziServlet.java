@@ -72,9 +72,9 @@ public class IndirizziServlet extends HttpServlet {
         String json=builder.toString();
         JSONObject object = new JSONObject(json);
         boolean isLogged = GestioneServlet.isLogged(request);
-        String id_utente;
+        int idUtente;
         if (!isLogged){
-            id_utente = "";
+            idUtente = -1;
         }else{
             UtentiController controllerUtenti = new UtentiController();
             String email = GestioneServlet.extractEmail(request);
@@ -84,7 +84,7 @@ public class IndirizziServlet extends HttpServlet {
                 GestioneServlet.inviaRisposta(response,500,message,false);
                 return;
             }
-            id_utente = String.valueOf(user.get().getId());
+            idUtente = user.get().getId();
         }
 
         String nome= object.getString("nome");
@@ -97,7 +97,7 @@ public class IndirizziServlet extends HttpServlet {
         String numero_telefono= object.getString("numero_telefono");
         Map<Integer,QueryFields<? extends Comparable<?>>> request0= new HashMap<>();
         try{
-            request0.put(0,new QueryFields<>("id_utente",id_utente,TipoVariabile.string));
+            request0.put(0,new QueryFields<>("id_utente",idUtente,TipoVariabile.longNumber));
             request0.put(1,new QueryFields<>("nome",nome,TipoVariabile.string));
             request0.put(2,new QueryFields<>("cognome",cognome,TipoVariabile.string));
             request0.put(3,new QueryFields<>("citta",citta,TipoVariabile.string));
