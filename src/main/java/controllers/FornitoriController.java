@@ -15,6 +15,9 @@ public class FornitoriController implements Controllers<Fornitori> {
 
     @Override
     public int insertObject(Map<Integer, QueryFields<? extends Comparable<?>>> request) {
+        if(request == null){
+            return -1;
+        }
         int output;
         try(Connection connection = Database.createConnection()){
             output = Database.insertElement(connection,"fornitori",request);
@@ -27,6 +30,9 @@ public class FornitoriController implements Controllers<Fornitori> {
 
     @Override
     public boolean updateObject(int id,Map<Integer,QueryFields<? extends Comparable<?>>> request) {
+        if(id <= 0 || request == null){
+            return false;
+        }
         boolean output;
         try(Connection connection = Database.createConnection()){
             output = Database.updateElement(connection, "fornitori", id, request);

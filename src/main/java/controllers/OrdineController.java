@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public class OrdineController implements Controllers<Ordine>{
-
+    public OrdineController(){}
 
     @Override
     public int insertObject(Map<Integer, QueryFields<? extends Comparable<?>>> request) {
@@ -138,7 +138,7 @@ public class OrdineController implements Controllers<Ordine>{
 
     @Override
     public List<Ordine> executeQuery(String query, Map<Integer, QueryFields<? extends Comparable<?>>> fields) {
-        return List.of();
+        return new LinkedList<>();
     }
 
     public List<Ordine> getObjectByUserID(int userID) {

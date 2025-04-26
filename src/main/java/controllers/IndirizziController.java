@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.Optional;
 
 public class IndirizziController  implements Controllers<Indirizzi>{
-
     private final String email;
 
     public IndirizziController(String email) {
@@ -140,6 +139,6 @@ public class IndirizziController  implements Controllers<Indirizzi>{
 
     @Override
     public List<Indirizzi> executeQuery(String query, Map<Integer, QueryFields<? extends Comparable<?>>> fields) {
-        return List.of();
+        return new LinkedList<>();
     }
 }

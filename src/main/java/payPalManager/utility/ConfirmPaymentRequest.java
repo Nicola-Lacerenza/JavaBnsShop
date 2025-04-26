@@ -96,7 +96,6 @@ public final class ConfirmPaymentRequest extends PaypalAPIRequest<PaypalPayments
         }
 
         //dati da aggiornare nella tabella ordine dopo il pagamento.
-        String query2 = "UPDATE ordine SET stato_ordine = ?,data_aggiornamento_stato_ordine = NOW() WHERE id_ordine_paypal = ?";
         Map<Integer,QueryFields<? extends Comparable<?>>> fields2 = new HashMap<>();
         try{
             fields2.put(0,new QueryFields<>("stato_ordine",rawPaypalPayment.getOrderStatus(),TipoVariabile.string));
@@ -113,6 +112,7 @@ public final class ConfirmPaymentRequest extends PaypalAPIRequest<PaypalPayments
             if(idPayPalPagamentoCreato.get() <= 0){
                 return false;
             }
+            String query2 = "UPDATE ordine SET stato_ordine = ?,data_aggiornamento_stato_ordine = NOW() WHERE id_ordine_paypal = ?";
             return Database.executeGenericUpdate(connection,query2,fields2);
         });
 

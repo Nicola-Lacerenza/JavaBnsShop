@@ -17,6 +17,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import utility.GestioneServlet;
+import utility.QueryFields;
+import utility.TipoVariabile;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
@@ -25,6 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -139,7 +142,8 @@ public class ProdottiServlet extends HttpServlet{
                 }
 
                 // Genera un nome univoco usando UUID e aggiungi l'estensione
-                String uniqueFileName = UUID.randomUUID().toString() + extension;
+                //chiamata al metodo toString() di UUID implicita effettuata da Java.
+                String uniqueFileName = UUID.randomUUID() + extension;
 
                 // Specifica la directory completa dove vuoi salvare le immagini
                 String directory = "C:\\Users\\nicol\\Documents\\PROGETTI\\BNS SHOP\\JAVA - INTELLIJ\\src\\main\\webapp\\images";
@@ -212,7 +216,7 @@ public class ProdottiServlet extends HttpServlet{
             List<Integer> coloriTrovati = listColore.stream()
                     .filter(colore1 -> colore1.getNome().equalsIgnoreCase(coloreTrimmed)) // Usa equalsIgnoreCase per un confronto più robusto
                     .map(Colore::getId)
-                    .collect(Collectors.toList());
+                    .toList();
 
             if (!coloriTrovati.isEmpty()) {
                 idColori.addAll(coloriTrovati); // Aggiungi tutti gli ID trovati
@@ -231,38 +235,46 @@ public class ProdottiServlet extends HttpServlet{
         }
 
         // Preparazione dei dati per l'inserimento
-        Map<Integer, RegisterServlet.RegisterFields> request0 = new HashMap<>();
-        request0.put(0,new RegisterServlet.RegisterFields("nome",nome));
-        request0.put(1,new RegisterServlet.RegisterFields("id_categoria",idCategoria));
-        request0.put(2,new RegisterServlet.RegisterFields("id_brand",idBrand));
-        request0.put(3,new RegisterServlet.RegisterFields("descrizione",descrizione));
-        request0.put(4,new RegisterServlet.RegisterFields("prezzo", "" + prezzo));
-        request0.put(5,new RegisterServlet.RegisterFields("stato_pubblicazione", "" + statoPubblicazioneInt));
+        Map<Integer,QueryFields<? extends Comparable<?>>> request0 = new HashMap<>();
+        try{
+            request0.put(0,new QueryFields<>("nome",nome,TipoVariabile.string));
+            request0.put(1,new QueryFields<>("id_categoria",Integer.parseInt(idCategoria),TipoVariabile.longNumber));
+            request0.put(2,new QueryFields<>("id_brand",Integer.parseInt(idBrand),TipoVariabile.longNumber));
+            request0.put(3,new QueryFields<>("descrizione",descrizione,TipoVariabile.string));
+            request0.put(4,new QueryFields<>("prezzo",prezzo,TipoVariabile.longNumber));
+            request0.put(5,new QueryFields<>("stato_pubblicazione",statoPubblicazioneInt,TipoVariabile.longNumber));
 
-        // Inserisci tutti i colori nella mappa
-        int index = 6; // Punto di partenza dell'indice
-        for (int i = 0; i < idColori.size(); i++) {
-            request0.put(index++, new RegisterServlet.RegisterFields("colore_" + (i + 1), String.valueOf(idColori.get(i))));
-        }
+            // Inserisci tutti i colori nella mappa
+            int index = 6; // Punto di partenza dell'indice
+            for (int i = 0; i < idColori.size(); i++) {
+                request0.put(index++, new QueryFields<>("colore_" + (i + 1),idColori.get(i),TipoVariabile.longNumber));
+            }
 
-        // Inserisci tutti gli url nella mappa
-        for (int j = 0; j < urls.size(); j++) {
-            request0.put(index++, new RegisterServlet.RegisterFields("url" + j, urls.get(j)));
-        }
+            // Inserisci tutti gli url nella mappa
+            for (int j = 0; j < urls.size(); j++) {
+                request0.put(index++, new QueryFields<>("url" + j,urls.get(j),TipoVariabile.string));
+            }
 
-        // Inserisci tutti gli url nella mappa
-        for (int j = 0; j < idTaglie.size(); j++) {
-            request0.put(index++, new RegisterServlet.RegisterFields("taglia_" + j, ""+idTaglie.get(j)));
-        }
+            // Inserisci tutti gli url nella mappa
+            for (int j = 0; j < idTaglie.size(); j++) {
+                request0.put(index++, new QueryFields<>("taglia_" + j,idTaglie.get(j),TipoVariabile.longNumber));
+            }
 
-        for (int j = 0; j < taglie1.length(); j++) {
-            JSONObject tmp = (JSONObject) taglie1.get(j);
-            request0.put(index++, new RegisterServlet.RegisterFields("quantita_" + j, ""+tmp.getInt("quantita")));
+            for (int j = 0; j < taglie1.length(); j++) {
+                JSONObject tmp = (JSONObject) taglie1.get(j);
+                request0.put(index++, new QueryFields<>("quantita_" + j,tmp.getInt("quantita"),TipoVariabile.longNumber));
+            }
+        }catch (SQLException | JSONException | NumberFormatException exception){
+            exception.printStackTrace();
+            String message = "\"Errore durante la registrazione.\"";
+            GestioneServlet.inviaRisposta(response, 500, message, false);
+            return;
         }
 
 
         // Inserimento nel database
-        if (controller.insertObject(request0)) {
+        int idProdotto = controller.insertObject(request0);
+        if (idProdotto > 0) {
             String registrazione = "\"Registrazione effettuata correttamente.\"";
             GestioneServlet.inviaRisposta(response, 201, registrazione, true);
         } else {
@@ -270,7 +282,9 @@ public class ProdottiServlet extends HttpServlet{
             GestioneServlet.inviaRisposta(response, 500, message, false);
             for (String url : urls){
                 File file = new File(url);
-                file.delete();
+                if(file.delete()){
+                    System.out.println("Temporary file \"" + url + "\" deleted correctly.");
+                }
             }
 
         }
@@ -337,7 +351,7 @@ public class ProdottiServlet extends HttpServlet{
             List<Integer> coloriTrovati = listColore.stream()
                     .filter(colore1 -> colore1.getNome().equalsIgnoreCase(coloreTrimmed)) // Usa equalsIgnoreCase per un confronto più robusto
                     .map(Colore::getId)
-                    .collect(Collectors.toList());
+                    .toList();
 
             if (!coloriTrovati.isEmpty()) {
                 idColori.addAll(coloriTrovati); // Aggiungi tutti gli ID trovati
@@ -356,33 +370,40 @@ public class ProdottiServlet extends HttpServlet{
         }
 
         // Preparazione dei dati per l'inserimento
-        Map<Integer, RegisterServlet.RegisterFields> request0 = new HashMap<>();
-        request0.put(0,new RegisterServlet.RegisterFields("nome",nome));
-        request0.put(1,new RegisterServlet.RegisterFields("id_categoria",idCategoria));
-        request0.put(2,new RegisterServlet.RegisterFields("id_brand",idBrand));
-        request0.put(3,new RegisterServlet.RegisterFields("descrizione",descrizione));
-        request0.put(4,new RegisterServlet.RegisterFields("prezzo", "" + prezzo));
-        request0.put(5,new RegisterServlet.RegisterFields("stato_pubblicazione", "" + statoPubblicazioneInt));
+        Map<Integer,QueryFields<? extends Comparable<?>>> request0 = new HashMap<>();
+        try{
+            request0.put(0,new QueryFields<>("nome",nome,TipoVariabile.string));
+            request0.put(1,new QueryFields<>("id_categoria",Integer.parseInt(idCategoria),TipoVariabile.longNumber));
+            request0.put(2,new QueryFields<>("id_brand",Integer.parseInt(idBrand),TipoVariabile.longNumber));
+            request0.put(3,new QueryFields<>("descrizione",descrizione,TipoVariabile.string));
+            request0.put(4,new QueryFields<>("prezzo",prezzo,TipoVariabile.longNumber));
+            request0.put(5,new QueryFields<>("stato_pubblicazione",statoPubblicazioneInt,TipoVariabile.longNumber));
 
-        // Inserisci tutti i colori nella mappa
-        int index = 6; // Punto di partenza dell'indice
-        for (int i = 0; i < idColori.size(); i++) {
-            request0.put(index++, new RegisterServlet.RegisterFields("colore_" + (i + 1), String.valueOf(idColori.get(i))));
-        }
+            // Inserisci tutti i colori nella mappa
+            int index = 6; // Punto di partenza dell'indice
+            for (int i = 0; i < idColori.size(); i++) {
+                request0.put(index++, new QueryFields<>("colore_" + (i + 1),idColori.get(i),TipoVariabile.longNumber));
+            }
 
-        // Inserisci tutti gli url nella mappa
-        for (int j = 0; j < imageUrls.length(); j++) {
-            request0.put(index++, new RegisterServlet.RegisterFields("url" + j, (String)imageUrls.get(j)));
-        }
+            // Inserisci tutti gli url nella mappa
+            for (int j = 0; j < imageUrls.length(); j++) {
+                request0.put(index++, new QueryFields<>("url" + j,imageUrls.getString(j),TipoVariabile.string));
+            }
 
-        // Inserisci tutti gli url nella mappa
-        for (int j = 0; j < idTaglie.size(); j++) {
-            request0.put(index++, new RegisterServlet.RegisterFields("taglia_" + j, ""+idTaglie.get(j)));
-        }
+            // Inserisci tutti gli url nella mappa
+            for (int j = 0; j < idTaglie.size(); j++) {
+                request0.put(index++, new QueryFields<>("taglia_" + j,idTaglie.get(j),TipoVariabile.longNumber));
+            }
 
-        for (int j = 0; j < taglie1.length(); j++) {
-            JSONObject tmp = (JSONObject) taglie1.get(j);
-            request0.put(index++, new RegisterServlet.RegisterFields("quantita_" + j, ""+tmp.getInt("quantita")));
+            for (int j = 0; j < taglie1.length(); j++) {
+                JSONObject tmp = (JSONObject) taglie1.get(j);
+                request0.put(index++, new QueryFields<>("quantita_" + j,tmp.getInt("quantita"),TipoVariabile.longNumber));
+            }
+        }catch (SQLException | JSONException | NumberFormatException exception){
+            exception.printStackTrace();
+            String message = "\"Errore durante la registrazione.\"";
+            GestioneServlet.inviaRisposta(response, 500, message, false);
+            return;
         }
 
 
@@ -398,8 +419,7 @@ public class ProdottiServlet extends HttpServlet{
 
     @Override
     public void doDelete(HttpServletRequest request,HttpServletResponse response) throws ServletException,IOException{
-
-        int id= Integer.parseInt((String) request.getParameter("id"));
+        int id= Integer.parseInt(request.getParameter("id"));
         if (this.controller.deleteObject(id)){
             String message = "\"Product deleted Correctly.\"";
             GestioneServlet.inviaRisposta(response,200,message,true);
@@ -437,28 +457,5 @@ public class ProdottiServlet extends HttpServlet{
             }
         }
         return formData;
-    }
-
-    private List<String> processFileParts(HttpServletRequest request) throws IOException, ServletException {
-        List<String> urls = new LinkedList<>();
-        for (Part part : request.getParts()) {
-            if (part.getContentType() != null) {
-                String fileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
-                // Specifica la directory dove salvare le immagini
-                String directory = "C:\\Users\\nicol\\Documents\\PROGETTI\\BNS SHOP\\JAVA - INTELLIJ\\src\\main\\webapp\\images";
-                File file = new File(directory + "\\" + fileName);
-                if (!file.exists()) {
-                    Path dirPath = Paths.get(directory);
-                    if (!Files.exists(dirPath)) {
-                        Files.createDirectories(dirPath);
-                    }
-                    Path filePath = Paths.get(directory, fileName);
-                    Files.copy(part.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-                    // Aggiunge l'URL relativo alla lista
-                    urls.add("images/" + fileName);
-                }
-            }
-        }
-        return urls;
     }
 }

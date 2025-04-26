@@ -15,10 +15,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public class CodiceScontoController implements Controllers<CodiceSconto> {
-
-    public CodiceScontoController(){
-
-    }
+    public CodiceScontoController(){}
 
     @Override
     public int insertObject(Map<Integer, QueryFields<? extends Comparable<?>>> request) {
@@ -182,6 +179,6 @@ public class CodiceScontoController implements Controllers<CodiceSconto> {
 
     @Override
     public List<CodiceSconto> executeQuery(String query, Map<Integer, QueryFields<? extends Comparable<?>>> fields) {
-        return List.of();
+        return new LinkedList<>();
     }
 }

@@ -16,9 +16,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public class ProdottiController implements Controllers<ProdottiFull> {
-
-    public ProdottiController() {
-    }
+    public ProdottiController(){}
 
     @Override
     public int insertObject(Map<Integer, QueryFields<? extends Comparable<?>>> request) {
@@ -713,6 +711,6 @@ public class ProdottiController implements Controllers<ProdottiFull> {
 
     @Override
     public List<ProdottiFull> executeQuery(String query, Map<Integer, QueryFields<? extends Comparable<?>>> fields) {
-        return List.of();
+        return new LinkedList<>();
     }
 }
