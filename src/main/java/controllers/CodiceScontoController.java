@@ -33,7 +33,7 @@ public class CodiceScontoController implements Controllers<CodiceSconto> {
             }
             Map<Integer,QueryFields<? extends Comparable<?>>> fields2 = new HashMap<>();
             try{
-                fields2.put(0,new QueryFields<>("id_categoria",request.get(10).getFieldValue(),TipoVariabile.longNumber));
+                fields2.put(0,new QueryFields<>("id_categoria",(Integer) request.get(10).getFieldValue(),TipoVariabile.longNumber));
                 fields2.put(1,new QueryFields<>("id_codicesconto",idCodiceSconto.get(),TipoVariabile.longNumber));
             }catch(SQLException exception){
                 exception.printStackTrace();
