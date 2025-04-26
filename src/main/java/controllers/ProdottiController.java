@@ -100,7 +100,7 @@ public class ProdottiController implements Controllers<ProdottiFull> {
             try{
                 fields2.put(0,new QueryFields<>("id_modello",idModello,TipoVariabile.longNumber));
                 fields2.put(1,new QueryFields<>("prezzo",(Double)  request.get(4).getFieldValue(),TipoVariabile.realNumber));
-                fields2.put(2,new QueryFields<>("stato_pubblicazione",(String) request.get(5).getFieldValue(),TipoVariabile.string));
+                fields2.put(2,new QueryFields<>("stato_pubblicazione",(Integer) request.get(5).getFieldValue(),TipoVariabile.longNumber));
             }catch(SQLException exception){
                 exception.printStackTrace();
                 return false;
@@ -386,7 +386,7 @@ public class ProdottiController implements Controllers<ProdottiFull> {
 
         Map<Integer,QueryFields<? extends Comparable<?>>> fields1 = new HashMap<>();
         try{
-            fields1.put(0,new QueryFields<>("id_prodotto",objectid, TipoVariabile.longNumber));
+            fields1.put(1,new QueryFields<>("id_prodotto",objectid, TipoVariabile.longNumber));
          }catch(SQLException exception){
             exception.printStackTrace();
             return false;

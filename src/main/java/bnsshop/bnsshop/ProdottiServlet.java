@@ -171,7 +171,7 @@ public class ProdottiServlet extends HttpServlet{
         String colori= formData.get("colori");
         String nome= formData.get("nome");
         String descrizione= formData.get("descrizione");
-        int prezzo = Integer.parseInt(formData.get("prezzo"));
+        double prezzo = Double.parseDouble(formData.get("prezzo"));
         boolean statoPubblicazione = Boolean.parseBoolean(formData.get("stato_pubblicazione"));
         int statoPubblicazioneInt = statoPubblicazione ? 1 : 0;
         String taglie = formData.get("taglie");
@@ -241,7 +241,7 @@ public class ProdottiServlet extends HttpServlet{
             request0.put(1,new QueryFields<>("id_categoria",Integer.parseInt(idCategoria),TipoVariabile.longNumber));
             request0.put(2,new QueryFields<>("id_brand",Integer.parseInt(idBrand),TipoVariabile.longNumber));
             request0.put(3,new QueryFields<>("descrizione",descrizione,TipoVariabile.string));
-            request0.put(4,new QueryFields<>("prezzo",prezzo,TipoVariabile.longNumber));
+            request0.put(4,new QueryFields<>("prezzo",prezzo,TipoVariabile.realNumber));
             request0.put(5,new QueryFields<>("stato_pubblicazione",statoPubblicazioneInt,TipoVariabile.longNumber));
 
             // Inserisci tutti i colori nella mappa
