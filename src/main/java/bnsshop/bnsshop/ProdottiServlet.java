@@ -146,8 +146,8 @@ public class ProdottiServlet extends HttpServlet{
                 String uniqueFileName = UUID.randomUUID() + extension;
 
                 // Specifica la directory completa dove vuoi salvare le immagini
-                String directory = calcolaPercorso(request).developmentPath;
-
+                //String directory = calcolaPercorso(request).developmentPath;
+                String directory = "C:\\Users\\nicol\\Documents\\PROGETTI\\BNS SHOP\\JAVA - INTELLIJ\\src\\main\\webapp\\images";
                 // Assicurati che la directory esista
                 Path dirPath = Paths.get(directory);
                 if (!Files.exists(dirPath)) {
@@ -459,7 +459,7 @@ public class ProdottiServlet extends HttpServlet{
     }
 
     private ServerPaths calcolaPercorso(HttpServletRequest request){
-        String servletPath = request.getServletContext().getRealPath("/");
+        String servletPath = request.getServletContext().getRealPath("bnsshop");
         String[] details = servletPath.split("\\\\");
         int number = details.length;
         int number1 = number - 2;

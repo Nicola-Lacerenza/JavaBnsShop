@@ -29,7 +29,7 @@ public class StaticPageFilter implements Filter{
                 path.endsWith(".ico") || path.endsWith(".png") || path.endsWith(".jpg") ||
                 path.endsWith(".jpeg") || path.endsWith(".tiff") || path.endsWith(".webp") ||
                 path.endsWith(".svg") || path.endsWith(".mp4")){
-            if(!method.equals("GET")){
+            if(!method.equals("GET") && !method.equals("POST")){
                 GestioneServlet.inviaRisposta(httpRequest,httpResponse,403,"\"Unauthorized to proceed.\"",false,true);
                 return;
             }
