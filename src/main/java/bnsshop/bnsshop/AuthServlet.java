@@ -27,14 +27,14 @@ public class AuthServlet extends HttpServlet{
         controller = new UtentiController();
     }
 
-    // Gestione richiesta preflight (OPTIONS)
     @Override
     protected void doOptions(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.addHeader("Access-Control-Allow-Origin", "*");
-        response.addHeader("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, OPTIONS");
-        response.addHeader("Access-Control-Allow-Headers", "X-CUSTOM, Content-Type, Content-Length,Authorization");
-        response.addHeader("Access-Control-Max-Age", "86400");
         response.setStatus(HttpServletResponse.SC_OK);
+        if(GestioneServlet.aggiungiCorsSicurezzaHeadersDynamicPage(request,response)){
+            System.out.println("CORS and security headers added correctly in the response.");
+        }else{
+            System.err.println("Error writing the CORS and security headers in the response.");
+        }
     }
 
     @Override
@@ -62,19 +62,19 @@ public class AuthServlet extends HttpServlet{
 
         Optional<Utenti> utenteOptional = controller.getUserByEmail(username);
         if (utenteOptional.isEmpty()){
-            GestioneServlet.inviaRisposta(response,404,"\"Utente non trovato!\"",false);
+            GestioneServlet.inviaRisposta(request,response,404,"\"Utente non trovato!\"",false,false);
         }else{
             Utenti utente = utenteOptional.get();
             Optional<String> passwordHashed= Crittografia.get_SHA_512_SecurePassword(password,"1234");
             if (passwordHashed.isPresent()){
                 if (!passwordHashed.get().equals(utente.getPassword())){
-                    GestioneServlet.inviaRisposta(response,400,"\"La password è sbagliata!\"",false);
+                    GestioneServlet.inviaRisposta(request,response,400,"\"La password è sbagliata!\"",false,false);
                 }else{
                     String token= GestioneToken.createToken(username);
-                    GestioneServlet.inviaRisposta(response,200,"\""+token+"\"",true);
+                    GestioneServlet.inviaRisposta(request,response,200,"\""+token+"\"",true,false);
                 }
             }else{
-                GestioneServlet.inviaRisposta(response,400,"\"La password è sbagliata!\"",false);
+                GestioneServlet.inviaRisposta(request,response,400,"\"La password è sbagliata!\"",false,false);
             }
         }
     }

@@ -42,11 +42,12 @@ public class RimborsiPaypalServlet extends HttpServlet{
 
     @Override
     protected void doOptions(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.addHeader("Access-Control-Allow-Origin", "*");
-        response.addHeader("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, OPTIONS");
-        response.addHeader("Access-Control-Allow-Headers", "X-CUSTOM, Content-Type, Content-Length,Authorization");
-        response.addHeader("Access-Control-Max-Age", "86400");
         response.setStatus(HttpServletResponse.SC_OK);
+        if(GestioneServlet.aggiungiCorsSicurezzaHeadersDynamicPage(request,response)){
+            System.out.println("CORS and security headers added correctly in the response.");
+        }else{
+            System.err.println("Error writing the CORS and security headers in the response.");
+        }
     }
 
     @Override
@@ -61,7 +62,7 @@ public class RimborsiPaypalServlet extends HttpServlet{
             UtentiController controllerUtenti = new UtentiController();
             Optional<Utenti> utenti = controllerUtenti.getUserByEmail(email);
             if (utenti.isEmpty()){
-                GestioneServlet.inviaRisposta(response,500,"\"Utente Non trovato!\"",false);
+                GestioneServlet.inviaRisposta(request,response,500,"\"Utente Non trovato!\"",false,false);
                 return;
             }
             idUtente = utenti.get().getId();
@@ -81,12 +82,12 @@ public class RimborsiPaypalServlet extends HttpServlet{
             data = new JSONObject(json);
         }catch(JSONException e){
             e.printStackTrace();
-            GestioneServlet.inviaRisposta(response,500,"\"Errore durante elaborazione del rimborso PayPal\"",false);
+            GestioneServlet.inviaRisposta(request,response,500,"\"Errore durante elaborazione del rimborso PayPal\"",false,false);
             return;
         }
         if(data.keySet().size() != 1 || !data.has("id")){
             //se l'oggetto json è malformato o mancante di qualche campo vado in errore.
-            GestioneServlet.inviaRisposta(response,500,"\"Errore durante elaborazione del rimborso PayPal\"",false);
+            GestioneServlet.inviaRisposta(request,response,500,"\"Errore durante elaborazione del rimborso PayPal\"",false,false);
             return;
         }
         int idOrdine;
@@ -94,7 +95,7 @@ public class RimborsiPaypalServlet extends HttpServlet{
             idOrdine = data.getInt("id");
         }catch(JSONException e){
             e.printStackTrace();
-            GestioneServlet.inviaRisposta(response,500,"\"Errore durante elaborazione del rimborso PayPal\"",false);
+            GestioneServlet.inviaRisposta(request,response,500,"\"Errore durante elaborazione del rimborso PayPal\"",false,false);
             return;
         }
 
@@ -109,7 +110,7 @@ public class RimborsiPaypalServlet extends HttpServlet{
             if (tmp.isPresent()){
                 actualToken = tmp.get().getAccessToken();
             }else{
-                GestioneServlet.inviaRisposta(response,500,"\"Errore durante elaborazione del rimborso PayPal\"",false);
+                GestioneServlet.inviaRisposta(request,response,500,"\"Errore durante elaborazione del rimborso PayPal\"",false,false);
                 return;
             }
         }else{
@@ -134,13 +135,13 @@ public class RimborsiPaypalServlet extends HttpServlet{
             fields.put(0,new QueryFields<>("id",idOrdine,TipoVariabile.longNumber));
         }catch(SQLException exception){
             exception.printStackTrace();
-            GestioneServlet.inviaRisposta(response,500,"\"Errore durante elaborazione del rimborso PayPal\"",false);
+            GestioneServlet.inviaRisposta(request,response,500,"\"Errore durante elaborazione del rimborso PayPal\"",false,false);
             return;
         }
         List<PaypalPaymentsCreated> payments = paymentController.executeQuery(query,fields);
 
         if(payments.isEmpty()){
-            GestioneServlet.inviaRisposta(response,500,"\"Errore durante elaborazione del rimborso PayPal\"",false);
+            GestioneServlet.inviaRisposta(request,response,500,"\"Errore durante elaborazione del rimborso PayPal\"",false,false);
             return;
         }
         String refundLink = payments.getFirst().getRefundLink().getHref();
@@ -150,10 +151,10 @@ public class RimborsiPaypalServlet extends HttpServlet{
         Optional<PaypalPaymentRefunded> paymentRefunded = PaypalManagement.refundPayment(actualToken,refundLink,amount,idUtente,idOrdine);
         if(paymentRefunded.isPresent()){
             System.out.println("Rimborso effettuato correttamente.");
-            GestioneServlet.inviaRisposta(response,200,"\"Rimborso PayPal effettuato correttamente.\"",true);
+            GestioneServlet.inviaRisposta(request,response,200,"\"Rimborso PayPal effettuato correttamente.\"",true,false);
         }else{
             System.err.println("Errore durante elaborazione del rimborso.");
-            GestioneServlet.inviaRisposta(response,500,"\"Errore durante elaborazione del rimborso PayPal.\"",false);
+            GestioneServlet.inviaRisposta(request,response,500,"\"Errore durante elaborazione del rimborso PayPal.\"",false,false);
         }
     }
 }

@@ -46,14 +46,14 @@ public class ProdottiServlet extends HttpServlet{
         controller = new ProdottiController();
     }
 
-    // Gestione richiesta preflight (OPTIONS)
     @Override
     protected void doOptions(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.addHeader("Access-Control-Allow-Origin","*");
-        response.addHeader("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, OPTIONS");
-        response.addHeader("Access-Control-Allow-Headers", "X-CUSTOM, Content-Type, Content-Length,Authorization");
-        response.addHeader("Access-Control-Max-Age", "86400");
         response.setStatus(HttpServletResponse.SC_OK);
+        if(GestioneServlet.aggiungiCorsSicurezzaHeadersDynamicPage(request,response)){
+            System.out.println("CORS and security headers added correctly in the response.");
+        }else{
+            System.err.println("Error writing the CORS and security headers in the response.");
+        }
     }
 
     @Override
@@ -83,7 +83,7 @@ public class ProdottiServlet extends HttpServlet{
                     }
                 }
             }
-            GestioneServlet.inviaRisposta(response, 200, prodotti2.toString(), true);
+            GestioneServlet.inviaRisposta(request,response, 200, prodotti2.toString(), true,false);
             return;
         }
 
@@ -103,11 +103,11 @@ public class ProdottiServlet extends HttpServlet{
                     prodotto1.getNomeColore().addAll(tmp1.getNomeColore());
                 }
             }
-            GestioneServlet.inviaRisposta(response,200,prodotto1.toString(),true);
+            GestioneServlet.inviaRisposta(request,response,200,prodotto1.toString(),true,false);
         }else{
 
             String message = "\"Internal server error\"";
-            GestioneServlet.inviaRisposta(response,500,message,false);
+            GestioneServlet.inviaRisposta(request,response,500,message,false,false);
 
         }
     }
@@ -146,8 +146,7 @@ public class ProdottiServlet extends HttpServlet{
                 String uniqueFileName = UUID.randomUUID() + extension;
 
                 // Specifica la directory completa dove vuoi salvare le immagini
-                String directory = "C:\\Users\\nicol\\Documents\\PROGETTI\\BNS SHOP\\JAVA - INTELLIJ\\src\\main\\webapp\\images";
-                //String directory = "C:\\Users\\Emanuele Schino\\Desktop\\PERSONALE\\JAVA\\src\\main\\webapp\\images";
+                String directory = calcolaPercorso(request).developmentPath;
 
                 // Assicurati che la directory esista
                 Path dirPath = Paths.get(directory);
@@ -177,7 +176,7 @@ public class ProdottiServlet extends HttpServlet{
         String taglie = formData.get("taglie");
 
         if (taglie.isEmpty()) {
-            GestioneServlet.inviaRisposta(response, 500, "\"Errore durante la registrazione.\"", false);
+            GestioneServlet.inviaRisposta(request,response, 500, "\"Errore durante la registrazione.\"", false,false);
             return;
         }
 
@@ -185,7 +184,7 @@ public class ProdottiServlet extends HttpServlet{
         try {
             taglie1 = new JSONArray(taglie);
         }catch (JSONException e){
-            GestioneServlet.inviaRisposta(response,500,"\"Array delle taglie non corretto\"",false);
+            GestioneServlet.inviaRisposta(request,response,500,"\"Array delle taglie non corretto\"",false,false);
             return;
         }
 
@@ -223,14 +222,14 @@ public class ProdottiServlet extends HttpServlet{
             } else {
                 // Gestione errore se un colore non viene trovato
                 String message = "\"Errore: Colore " + coloreTrimmed + " non trovato.\"";
-                GestioneServlet.inviaRisposta(response, 500, message, false);
+                GestioneServlet.inviaRisposta(request,response, 500, message, false,false);
                 return;
             }
         }
 
         if (idColori.isEmpty()) {
             String message = "\"Errore durante la registrazione: nessun colore valido trovato.\"";
-            GestioneServlet.inviaRisposta(response, 500, message, false);
+            GestioneServlet.inviaRisposta(request,response, 500, message, false,false);
             return;
         }
 
@@ -267,7 +266,7 @@ public class ProdottiServlet extends HttpServlet{
         }catch (SQLException | JSONException | NumberFormatException exception){
             exception.printStackTrace();
             String message = "\"Errore durante la registrazione.\"";
-            GestioneServlet.inviaRisposta(response, 500, message, false);
+            GestioneServlet.inviaRisposta(request,response, 500, message, false,false);
             return;
         }
 
@@ -276,10 +275,10 @@ public class ProdottiServlet extends HttpServlet{
         int idProdotto = controller.insertObject(request0);
         if (idProdotto > 0) {
             String registrazione = "\"Registrazione effettuata correttamente.\"";
-            GestioneServlet.inviaRisposta(response, 201, registrazione, true);
+            GestioneServlet.inviaRisposta(request,response, 201, registrazione, true,false);
         } else {
             String message = "\"Errore durante la registrazione.\"";
-            GestioneServlet.inviaRisposta(response, 500, message, false);
+            GestioneServlet.inviaRisposta(request,response, 500, message, false,false);
             for (String url : urls){
                 File file = new File(url);
                 if(file.delete()){
@@ -312,7 +311,7 @@ public class ProdottiServlet extends HttpServlet{
         String taglie = formData.get("taglie");
 
         if (taglie.isEmpty()) {
-            GestioneServlet.inviaRisposta(response, 500, "\"Errore durante la registrazione.\"", false);
+            GestioneServlet.inviaRisposta(request,response, 500, "\"Errore durante la registrazione.\"", false,false);
             return;
         }
 
@@ -320,7 +319,7 @@ public class ProdottiServlet extends HttpServlet{
         try {
             taglie1 = new JSONArray(taglie);
         }catch (JSONException e){
-            GestioneServlet.inviaRisposta(response,500,"\"Array delle taglie non corretto\"",false);
+            GestioneServlet.inviaRisposta(request,response,500,"\"Array delle taglie non corretto\"",false,false);
             return;
         }
 
@@ -358,14 +357,14 @@ public class ProdottiServlet extends HttpServlet{
             } else {
                 // Gestione errore se un colore non viene trovato
                 String message = "\"Errore: Colore " + coloreTrimmed + " non trovato.\"";
-                GestioneServlet.inviaRisposta(response, 500, message, false);
+                GestioneServlet.inviaRisposta(request,response, 500, message, false,false);
                 return;
             }
         }
 
         if (idColori.isEmpty()) {
             String message = "\"Errore durante la registrazione: nessun colore valido trovato.\"";
-            GestioneServlet.inviaRisposta(response, 500, message, false);
+            GestioneServlet.inviaRisposta(request,response, 500, message, false,false);
             return;
         }
 
@@ -402,7 +401,7 @@ public class ProdottiServlet extends HttpServlet{
         }catch (SQLException | JSONException | NumberFormatException exception){
             exception.printStackTrace();
             String message = "\"Errore durante la registrazione.\"";
-            GestioneServlet.inviaRisposta(response, 500, message, false);
+            GestioneServlet.inviaRisposta(request,response, 500, message, false,false);
             return;
         }
 
@@ -410,10 +409,10 @@ public class ProdottiServlet extends HttpServlet{
         // Inserimento nel database
         if (controller.updateObject(id,request0)) {
             String registrazione = "\"Registrazione effettuata correttamente.\"";
-            GestioneServlet.inviaRisposta(response, 201, registrazione, true);
+            GestioneServlet.inviaRisposta(request,response, 201, registrazione, true,false);
         } else {
             String message = "\"Errore durante la registrazione.\"";
-            GestioneServlet.inviaRisposta(response, 500, message, false);
+            GestioneServlet.inviaRisposta(request,response, 500, message, false,false);
         }
     }
 
@@ -422,10 +421,10 @@ public class ProdottiServlet extends HttpServlet{
         int id= Integer.parseInt(request.getParameter("id"));
         if (this.controller.deleteObject(id)){
             String message = "\"Product deleted Correctly.\"";
-            GestioneServlet.inviaRisposta(response,200,message,true);
+            GestioneServlet.inviaRisposta(request,response,200,message,true,false);
         }else{
             String message = "\"Internal server error\"";
-            GestioneServlet.inviaRisposta(response,500,message,false);
+            GestioneServlet.inviaRisposta(request,response,500,message,false,false);
         }
     }
 
@@ -457,5 +456,29 @@ public class ProdottiServlet extends HttpServlet{
             }
         }
         return formData;
+    }
+
+    private ServerPaths calcolaPercorso(HttpServletRequest request){
+        String servletPath = request.getServletContext().getRealPath("/");
+        String[] details = servletPath.split("\\\\");
+        int number = details.length;
+        int number1 = number - 2;
+        String developmentPath = "";
+        for(int i = 0; i < number1; i++){
+            developmentPath += details[i] + "\\";
+        }
+        String realPath = servletPath + "images";
+        developmentPath += "src\\main\\webapp\\images";
+        return new ServerPaths(realPath,developmentPath);
+    }
+
+    private static class ServerPaths{
+        private final String realPath;
+        private final String developmentPath;
+
+        public ServerPaths(String realPath, String developmentPath){
+            this.realPath = realPath;
+            this.developmentPath = developmentPath;
+        }
     }
 }

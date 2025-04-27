@@ -1,6 +1,7 @@
 package models;
 
 import org.json.JSONObject;
+import utility.DateManagement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Calendar;
@@ -123,8 +124,8 @@ public class CodiceSconto implements Oggetti<CodiceSconto>{
         output.put("valore",valore);
         output.put("descrizione",descrizione);
         output.put("tipo",tipo);
-        output.put("data_inizio",dataInizio);
-        output.put("data_fine",dataFine);
+        output.put("data_inizio",DateManagement.printJSONCalendar(dataInizio));
+        output.put("data_fine",DateManagement.printJSONCalendar(dataFine));
         output.put("uso_massimo",usoMassimo);
         output.put("uso_per_utente",usoPerUtente);
         output.put("minimo_acquisto",minimoAcquisto);

@@ -34,11 +34,12 @@ public class IndirizziServlet extends HttpServlet {
 
     @Override
     protected void doOptions(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.addHeader("Access-Control-Allow-Origin", "*");
-        response.addHeader("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, OPTIONS");
-        response.addHeader("Access-Control-Allow-Headers", "X-CUSTOM, Content-Type, Content-Length,Authorization");
-        response.addHeader("Access-Control-Max-Age", "86400");
         response.setStatus(HttpServletResponse.SC_OK);
+        if(GestioneServlet.aggiungiCorsSicurezzaHeadersDynamicPage(request,response)){
+            System.out.println("CORS and security headers added correctly in the response.");
+        }else{
+            System.err.println("Error writing the CORS and security headers in the response.");
+        }
     }
 
     @Override
@@ -46,13 +47,13 @@ public class IndirizziServlet extends HttpServlet {
 
         boolean logged = GestioneServlet.isLogged(request);
         if (!logged) {
-            GestioneServlet.inviaRisposta(response,200,"[]",true);
+            GestioneServlet.inviaRisposta(request,response,200,"[]",true,false);
             return;
         }
         String email = GestioneServlet.validaToken(request,response);
         controller = new IndirizziController(email);
         List<Indirizzi> indirizzi = controller.getAllObjects();
-        GestioneServlet.inviaRisposta(response,200,indirizzi.toString(),true);
+        GestioneServlet.inviaRisposta(request,response,200,indirizzi.toString(),true,false);
     }
 
     @Override
@@ -81,7 +82,7 @@ public class IndirizziServlet extends HttpServlet {
             Optional<Utenti> user = controllerUtenti.getUserByEmail(email);
             if (user.isEmpty()){
                 String message = "\"Errore durante la registrazione.\"";
-                GestioneServlet.inviaRisposta(response,500,message,false);
+                GestioneServlet.inviaRisposta(request,response,500,message,false,false);
                 return;
             }
             idUtente = user.get().getId();
@@ -109,17 +110,17 @@ public class IndirizziServlet extends HttpServlet {
         }catch(SQLException exception){
             exception.printStackTrace();
             String message = "\"Errore durante la registrazione.\"";
-            GestioneServlet.inviaRisposta(response,500,message,false);
+            GestioneServlet.inviaRisposta(request,response,500,message,false,false);
             return;
         }
 
         int idIndirizzo = controller.insertObject(request0);
         if (idIndirizzo > 0) {
             String registrazione = "\"Registrazione effettuata correttamente.\"";
-            GestioneServlet.inviaRisposta(response,201,registrazione,true);
+            GestioneServlet.inviaRisposta(request,response,201,registrazione,true,false);
         }else{
             String message = "\"Errore durante la registrazione.\"";
-            GestioneServlet.inviaRisposta(response,500,message,false);
+            GestioneServlet.inviaRisposta(request,response,500,message,false,false);
         }
     }
 
@@ -153,15 +154,15 @@ public class IndirizziServlet extends HttpServlet {
         }catch(SQLException exception){
             exception.printStackTrace();
             String message = "\"Errore durante la registrazione.\"";
-            GestioneServlet.inviaRisposta(response,500,message,false);
+            GestioneServlet.inviaRisposta(request,response,500,message,false,false);
             return;
         }
         if (controller.updateObject(id,data)){
             String message="\"Product Updated Correctly.\"";
-            GestioneServlet.inviaRisposta(response,200,message,true);
+            GestioneServlet.inviaRisposta(request,response,200,message,true,false);
         }else{
             String message = "\"Internal server error\"";
-            GestioneServlet.inviaRisposta(response,500,message,false);
+            GestioneServlet.inviaRisposta(request,response,500,message,false,false);
         }
     }
 
@@ -173,16 +174,16 @@ public class IndirizziServlet extends HttpServlet {
         }
         String ruolo = GestioneServlet.controllaRuolo(email);
         if(!ruolo.equals("admin")){
-            GestioneServlet.inviaRisposta(response,403,"\"Ruolo non corretto!\"",false);
+            GestioneServlet.inviaRisposta(request,response,403,"\"Ruolo non corretto!\"",false,false);
             return;
         }
         int id = Integer.parseInt(request.getParameter("id"));
         if (this.controller.deleteObject(id)){
             String message = "\"Product deleted Correctly.\"";
-            GestioneServlet.inviaRisposta(response,200,message,true);
+            GestioneServlet.inviaRisposta(request,response,200,message,true,false);
         }else{
             String message = "\"Internal server error\"";
-            GestioneServlet.inviaRisposta(response,500,message,false);
+            GestioneServlet.inviaRisposta(request,response,500,message,false,false);
         }
     }
 

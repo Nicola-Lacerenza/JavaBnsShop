@@ -30,11 +30,12 @@ public class ConfermaPagamentoServlet extends HttpServlet {
 
     @Override
     protected void doOptions(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.addHeader("Access-Control-Allow-Origin", "*");
-        response.addHeader("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, OPTIONS");
-        response.addHeader("Access-Control-Allow-Headers", "X-CUSTOM, Content-Type, Content-Length,Authorization");
-        response.addHeader("Access-Control-Max-Age", "86400");
         response.setStatus(HttpServletResponse.SC_OK);
+        if(GestioneServlet.aggiungiCorsSicurezzaHeadersDynamicPage(request,response)){
+            System.out.println("CORS and security headers added correctly in the response.");
+        }else{
+            System.err.println("Error writing the CORS and security headers in the response.");
+        }
     }
 
     @Override
@@ -53,12 +54,12 @@ public class ConfermaPagamentoServlet extends HttpServlet {
             data = new JSONObject(json);
         }catch(JSONException e){
             e.printStackTrace();
-            GestioneServlet.inviaRisposta(response,500,"\"Errore durante la conferma del pagamento PayPal\"",false);
+            GestioneServlet.inviaRisposta(request,response,500,"\"Errore durante la conferma del pagamento PayPal\"",false,false);
             return;
         }
         if(data.keySet().size() != 2 || !data.has("token") || !data.has("payerId")){
             //se l'oggetto json è malformato o mancante di qualche campo vado in errore.
-            GestioneServlet.inviaRisposta(response,500,"\"Errore durante la conferma del pagamento PayPal\"",false);
+            GestioneServlet.inviaRisposta(request,response,500,"\"Errore durante la conferma del pagamento PayPal\"",false,false);
             return;
         }
 
@@ -70,7 +71,7 @@ public class ConfermaPagamentoServlet extends HttpServlet {
             payerId = data.getString("payerId"); //estrazione dall'oggetto json
         }catch(JSONException e){
             e.printStackTrace();
-            GestioneServlet.inviaRisposta(response,500,"\"Errore durante la conferma del pagamento PayPal\"",false);
+            GestioneServlet.inviaRisposta(request,response,500,"\"Errore durante la conferma del pagamento PayPal\"",false,false);
             return;
         }
         String baseUrl = "https://api-m.sandbox.paypal.com"; //url delle api di paypal
@@ -83,7 +84,7 @@ public class ConfermaPagamentoServlet extends HttpServlet {
             if (tmp.isPresent()){
                 actualToken = tmp.get().getAccessToken();
             }else{
-                GestioneServlet.inviaRisposta(response,500,"\"Errore durante la conferma del pagamento PayPal\"",false);
+                GestioneServlet.inviaRisposta(request,response,500,"\"Errore durante la conferma del pagamento PayPal\"",false,false);
                 return;
             }
         }else{
@@ -93,10 +94,10 @@ public class ConfermaPagamentoServlet extends HttpServlet {
         //esecuzione della conferma del pagamento e invio della risposta al client.
         Optional<PaypalPaymentsCreated> pagamentoCreato = PaypalManagement.confirmPayment(actualToken,baseUrl,orderId,payerId);
         if(pagamentoCreato.isEmpty()){
-            GestioneServlet.inviaRisposta(response,500,"\"Errore durante la conferma del pagamento PayPal\"",false);
+            GestioneServlet.inviaRisposta(request,response,500,"\"Errore durante la conferma del pagamento PayPal\"",false,false);
         }else{
             System.out.println("Pagamento \"" + pagamentoCreato.get().getPaypalPayment().getPaymentId() + "\" confermato correttamente.");
-            GestioneServlet.inviaRisposta(response,200,"\"Pagamento andato a buon fine.\"",true);
+            GestioneServlet.inviaRisposta(request,response,200,"\"Pagamento andato a buon fine.\"",true,false);
         }
     }
 }

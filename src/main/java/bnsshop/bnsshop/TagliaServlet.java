@@ -30,14 +30,14 @@ public class TagliaServlet extends HttpServlet{
         controller = new TagliaController();
     }
 
-    // Gestione richiesta preflight (OPTIONS)
     @Override
     protected void doOptions(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.addHeader("Access-Control-Allow-Origin", "*");
-        response.addHeader("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, OPTIONS");
-        response.addHeader("Access-Control-Allow-Headers", "X-CUSTOM, Content-Type, Content-Length,Authorization");
-        response.addHeader("Access-Control-Max-Age", "86400");
         response.setStatus(HttpServletResponse.SC_OK);
+        if(GestioneServlet.aggiungiCorsSicurezzaHeadersDynamicPage(request,response)){
+            System.out.println("CORS and security headers added correctly in the response.");
+        }else{
+            System.err.println("Error writing the CORS and security headers in the response.");
+        }
     }
 
     @Override
@@ -59,13 +59,13 @@ public class TagliaServlet extends HttpServlet{
 
         if (taglia.isPresent() || taglie!=null){
             if (taglia.isPresent()){
-                GestioneServlet.inviaRisposta(response,200,taglia.get().toString(),true);
+                GestioneServlet.inviaRisposta(request,response,200,taglia.get().toString(),true,false);
             }else{
-                GestioneServlet.inviaRisposta(response,200,taglie.toString(),true);
+                GestioneServlet.inviaRisposta(request,response,200,taglie.toString(),true,false);
             }
         }else{
             String message = "\"Internal server error\"";
-            GestioneServlet.inviaRisposta(response,500,message,false);
+            GestioneServlet.inviaRisposta(request,response,500,message,false,false);
         }
     }
 
@@ -77,7 +77,7 @@ public class TagliaServlet extends HttpServlet{
         }
         String ruolo = GestioneServlet.controllaRuolo(email);
         if(!ruolo.equals("admin")){
-            GestioneServlet.inviaRisposta(response,403,"\"Ruolo non corretto!\"",false);
+            GestioneServlet.inviaRisposta(request,response,403,"\"Ruolo non corretto!\"",false,false);
             return;
         }
         BufferedReader reader=request.getReader();
@@ -104,7 +104,7 @@ public class TagliaServlet extends HttpServlet{
         }
         String ruolo = GestioneServlet.controllaRuolo(email);
         if(!ruolo.equals("admin")){
-            GestioneServlet.inviaRisposta(response,403,"\"Ruolo non corretto!\"",false);
+            GestioneServlet.inviaRisposta(request,response,403,"\"Ruolo non corretto!\"",false,false);
             return;
         }
         int id= Integer.parseInt(request.getParameter("id"));
@@ -128,13 +128,13 @@ public class TagliaServlet extends HttpServlet{
             data.put(2,new QueryFields<>("tagliaUs",object.getString("tagliaUs"),TipoVariabile.string));
         }catch(SQLException exception){
             exception.printStackTrace();
-            GestioneServlet.inviaRisposta(response,500,"\"Internal server error.\"",false);
+            GestioneServlet.inviaRisposta(request,response,500,"\"Internal server error.\"",false,false);
             return;
         }
         if (controller.updateObject(id,data)){
-            GestioneServlet.inviaRisposta(response,200,"\"Product updated correctly.\"",true);
+            GestioneServlet.inviaRisposta(request,response,200,"\"Product updated correctly.\"",true,false);
         }else{
-            GestioneServlet.inviaRisposta(response,500,"\"Internal server error.\"",false);
+            GestioneServlet.inviaRisposta(request,response,500,"\"Internal server error.\"",false,false);
         }
     }
 
@@ -146,14 +146,14 @@ public class TagliaServlet extends HttpServlet{
         }
         String ruolo = GestioneServlet.controllaRuolo(email);
         if(!ruolo.equals("admin")){
-            GestioneServlet.inviaRisposta(response,403,"\"Ruolo non corretto!\"",false);
+            GestioneServlet.inviaRisposta(request,response,403,"\"Ruolo non corretto!\"",false,false);
             return;
         }
         int idTaglia= Integer.parseInt((String) request.getAttribute("idtaglia"));
         if (this.controller.deleteObject(idTaglia)){
-            GestioneServlet.inviaRisposta(response,200,"\"Product deleted correctly.\"",true);
+            GestioneServlet.inviaRisposta(request,response,200,"\"Product deleted correctly.\"",true,false);
         }else{
-            GestioneServlet.inviaRisposta(response,500,"\"Internal server error.\"",false);
+            GestioneServlet.inviaRisposta(request,response,500,"\"Internal server error.\"",false,false);
         }
     }
 

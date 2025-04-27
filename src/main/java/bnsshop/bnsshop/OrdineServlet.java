@@ -26,14 +26,14 @@ public class OrdineServlet extends HttpServlet {
         controller = new OrdineController();
     }
 
-    // Gestione richiesta preflight (OPTIONS)
     @Override
     protected void doOptions(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.addHeader("Access-Control-Allow-Origin","*");
-        response.addHeader("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, OPTIONS");
-        response.addHeader("Access-Control-Allow-Headers", "X-CUSTOM, Content-Type, Content-Length,Authorization");
-        response.addHeader("Access-Control-Max-Age", "86400");
         response.setStatus(HttpServletResponse.SC_OK);
+        if(GestioneServlet.aggiungiCorsSicurezzaHeadersDynamicPage(request,response)){
+            System.out.println("CORS and security headers added correctly in the response.");
+        }else{
+            System.err.println("Error writing the CORS and security headers in the response.");
+        }
     }
 
     @Override
@@ -49,7 +49,7 @@ public class OrdineServlet extends HttpServlet {
         UtentiController controllerUtenti = new UtentiController();
         Optional<Utenti> utenti = controllerUtenti.getUserByEmail(email);
         if (utenti.isEmpty()) {
-            GestioneServlet.inviaRisposta(response, 500, "{\"error\":\"Utente non trovato!\"}", false);
+            GestioneServlet.inviaRisposta(request,response, 500, "{\"error\":\"Utente non trovato!\"}", false,false);
             return;
         }
         int idUtente = utenti.get().getId();
@@ -57,7 +57,7 @@ public class OrdineServlet extends HttpServlet {
         if (id == -2) {
             OrdineController ordineCtrl = (OrdineController) controller;
             List<Ordine> ordini = ordineCtrl.getObjectByUserID(idUtente);
-            GestioneServlet.inviaRisposta(response, 200, ordini.toString(), true);
+            GestioneServlet.inviaRisposta(request,response, 200, ordini.toString(), true,false);
             return;
         }
 
@@ -65,22 +65,20 @@ public class OrdineServlet extends HttpServlet {
             Optional<Ordine> tmp = controller.getObject(id);
 
             if (tmp.isEmpty()) {
-                GestioneServlet.inviaRisposta(response, 404, "{\"error\":\"Ordine con id=" + id + " non trovato\"}", true);
+                GestioneServlet.inviaRisposta(request,response, 404, "{\"error\":\"Ordine con id=" + id + " non trovato\"}", true,false);
                 return;
             }
 
             Ordine ordine = tmp.get();
             if (ordine.getIdUtente() != idUtente) {
-                GestioneServlet.inviaRisposta(response, 403, "{\"error\":\"Accesso negato\"}", true);
+                GestioneServlet.inviaRisposta(request,response, 403, "{\"error\":\"Accesso negato\"}", true,false);
                 return;
             }
-
             String jsonOrdine = ordine.toString();
-            System.out.println("JSON inviato al client: " + jsonOrdine);
-            GestioneServlet.inviaRisposta(response, 200, jsonOrdine, true);
+            GestioneServlet.inviaRisposta(request,response, 200, jsonOrdine, true,false);
             return;
         }
-        GestioneServlet.inviaRisposta(response, 400, "{\"error\":\"Parametro id non valido\"}", true);
+        GestioneServlet.inviaRisposta(request,response, 400, "{\"error\":\"Parametro id non valido\"}", true,false);
     }
 
 

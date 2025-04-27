@@ -39,11 +39,12 @@ public class CreaPagamentoServlet extends HttpServlet {
 
     @Override
     protected void doOptions(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.addHeader("Access-Control-Allow-Origin", "*");
-        response.addHeader("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, OPTIONS");
-        response.addHeader("Access-Control-Allow-Headers", "X-CUSTOM, Content-Type, Content-Length,Authorization");
-        response.addHeader("Access-Control-Max-Age", "86400");
         response.setStatus(HttpServletResponse.SC_OK);
+        if(GestioneServlet.aggiungiCorsSicurezzaHeadersDynamicPage(request,response)){
+            System.out.println("CORS and security headers added correctly in the response.");
+        }else{
+            System.err.println("Error writing the CORS and security headers in the response.");
+        }
     }
 
     @Override
@@ -58,7 +59,7 @@ public class CreaPagamentoServlet extends HttpServlet {
             UtentiController controllerUtenti = new UtentiController();
             Optional<Utenti> utenti = controllerUtenti.getUserByEmail(email);
             if (utenti.isEmpty()){
-                GestioneServlet.inviaRisposta(response,500,"\"Utente Non trovato!\"",false);
+                GestioneServlet.inviaRisposta(request,response,500,"\"Utente Non trovato!\"",false,false);
                 return;
             }
             idUtente = utenti.get().getId();
@@ -120,7 +121,7 @@ public class CreaPagamentoServlet extends HttpServlet {
 
         for (CartItem cartItem : cartItemsList){
             if (!verificaProdotto(cartItem)){
-                GestioneServlet.inviaRisposta(response,500,"\"Errore durante la creazione dell'ordine PayPal\"",false);
+                GestioneServlet.inviaRisposta(request,response,500,"\"Errore durante la creazione dell'ordine PayPal\"",false,false);
                 return;
             }
         }
@@ -134,7 +135,7 @@ public class CreaPagamentoServlet extends HttpServlet {
             if (tmp.isPresent()){
                 actualToken = tmp.get().getAccessToken();
             }else{
-                GestioneServlet.inviaRisposta(response,500,"\"Errore durante la creazione dell'ordine PayPal\"",false);
+                GestioneServlet.inviaRisposta(request,response,500,"\"Errore durante la creazione dell'ordine PayPal\"",false,false);
                 return;
             }
         }else{
@@ -143,16 +144,16 @@ public class CreaPagamentoServlet extends HttpServlet {
 
         Optional<PaypalOrdersCreated> ordineCreato = PaypalManagement.createOrder(actualToken,idUtente,baseUrl,"EUR",prezzoTotale,"it-IT",returnUrl,cancelUrl,cartItemsList);
         if (ordineCreato.isEmpty()){
-            GestioneServlet.inviaRisposta(response,500,"\"Errore durante la creazione dell'ordine PayPal\"",false);
+            GestioneServlet.inviaRisposta(request,response,500,"\"Errore durante la creazione dell'ordine PayPal\"",false,false);
         }else{
             System.out.println("Ordine con Id :" + ordineCreato.get().getPaypalOrder().getOrderId() + " crato correttamente da PayPal!");
             List<LinksOrderCreated> links = ordineCreato.get().getLinks();
             List<LinksOrderCreated> linkFiltrato = links.stream().filter(link -> link.getRel().equals("payer-action")).toList();
             if (linkFiltrato.isEmpty()){
-                GestioneServlet.inviaRisposta(response,500,"\"Errore durante la creazione dell'ordine PayPal\"",false);
+                GestioneServlet.inviaRisposta(request,response,500,"\"Errore durante la creazione dell'ordine PayPal\"",false,false);
                 return;
             }
-            GestioneServlet.inviaRisposta(response,200,"\""+linkFiltrato.getFirst().getHref()+"\"",true);
+            GestioneServlet.inviaRisposta(request,response,200,"\""+linkFiltrato.getFirst().getHref()+"\"",true,false);
         }
 
     }

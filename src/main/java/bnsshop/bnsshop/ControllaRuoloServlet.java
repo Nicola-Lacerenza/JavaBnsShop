@@ -20,14 +20,14 @@ public class ControllaRuoloServlet extends HttpServlet{
         super.init();
     }
 
-    // Gestione richiesta preflight (OPTIONS)
     @Override
     protected void doOptions(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.addHeader("Access-Control-Allow-Origin", "*");
-        response.addHeader("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, OPTIONS");
-        response.addHeader("Access-Control-Allow-Headers", "X-CUSTOM, Content-Type, Content-Length,Authorization");
-        response.addHeader("Access-Control-Max-Age", "86400");
         response.setStatus(HttpServletResponse.SC_OK);
+        if(GestioneServlet.aggiungiCorsSicurezzaHeadersDynamicPage(request,response)){
+            System.out.println("CORS and security headers added correctly in the response.");
+        }else{
+            System.err.println("Error writing the CORS and security headers in the response.");
+        }
     }
 
     @Override
@@ -53,9 +53,9 @@ public class ControllaRuoloServlet extends HttpServlet{
         }
         String ruolo = GestioneServlet.controllaRuolo(email);
         if(!ruolo.equals("admin")){
-            GestioneServlet.inviaRisposta(response,403,"\"Ruolo non corretto!\"",false);
+            GestioneServlet.inviaRisposta(request,response,403,"\"Ruolo non corretto!\"",false,false);
         }else{
-            GestioneServlet.inviaRisposta(response,200,"\""+ruolo+"\"",true);
+            GestioneServlet.inviaRisposta(request,response,200,"\""+ruolo+"\"",true,false);
         }
     }
 }

@@ -1,18 +1,17 @@
 package controllers;
 
-import bnsshop.bnsshop.RegisterServlet;
-import models.*;
+import models.Colore;
+import models.ImmaginiProdotti;
+import models.Modello;
+import models.Oggetti;
+import models.ProdottiFull;
+import models.Taglia;
 import utility.Database;
 import utility.QueryFields;
 import utility.TipoVariabile;
-
-import java.awt.font.NumericShaper;
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -386,14 +385,14 @@ public class ProdottiController implements Controllers<ProdottiFull> {
 
         Map<Integer,QueryFields<? extends Comparable<?>>> fields1 = new HashMap<>();
         try{
-            fields1.put(1,new QueryFields<>("id_prodotto",objectid, TipoVariabile.longNumber));
+            fields1.put(0,new QueryFields<>("id_prodotto",objectid, TipoVariabile.longNumber));
          }catch(SQLException exception){
             exception.printStackTrace();
             return false;
         }
 
         return Database.executeTransaction(connection -> {
-            String query1 = "SELECT id_immagine FROM immagini_has_prodotti WHERE id_prodotto = ?";
+            String query1 = "SELECT * FROM immagini_has_prodotti WHERE id_prodotto = ?";
             List<ImmaginiProdotti> immaginiProdotti = Database.executeGenericQuery(connection,query1,fields1,new ImmaginiProdotti());
             if (immaginiProdotti.isEmpty()){
                 return false;

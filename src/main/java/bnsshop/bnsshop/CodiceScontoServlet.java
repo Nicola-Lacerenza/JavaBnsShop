@@ -30,14 +30,14 @@ public class CodiceScontoServlet extends HttpServlet{
         controller = new CodiceScontoController();
     }
 
-    // Gestione richiesta preflight (OPTIONS)
     @Override
     protected void doOptions(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.addHeader("Access-Control-Allow-Origin", "*");
-        response.addHeader("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, OPTIONS");
-        response.addHeader("Access-Control-Allow-Headers", "X-CUSTOM, Content-Type, Content-Length,Authorization");
-        response.addHeader("Access-Control-Max-Age", "86400");
         response.setStatus(HttpServletResponse.SC_OK);
+        if(GestioneServlet.aggiungiCorsSicurezzaHeadersDynamicPage(request,response)){
+            System.out.println("CORS and security headers added correctly in the response.");
+        }else{
+            System.err.println("Error writing the CORS and security headers in the response.");
+        }
     }
 
     @Override
@@ -64,13 +64,13 @@ public class CodiceScontoServlet extends HttpServlet{
 
         if (codiceSconto.isPresent() || codiciSconto!=null){
             if (codiceSconto.isPresent()){
-                GestioneServlet.inviaRisposta(response,200,codiceSconto.get().toString(),true);
+                GestioneServlet.inviaRisposta(request,response,200,codiceSconto.get().toString(),true,false);
             }else{
-                GestioneServlet.inviaRisposta(response,200,codiciSconto.toString(),true);
+                GestioneServlet.inviaRisposta(request,response,200,codiciSconto.toString(),true,false);
             }
         }else{
             String message = "\"Internal server error\"";
-            GestioneServlet.inviaRisposta(response,500,message,false);
+            GestioneServlet.inviaRisposta(request,response,500,message,false,false);
         }
     }
 
@@ -82,7 +82,7 @@ public class CodiceScontoServlet extends HttpServlet{
         }
         String ruolo = GestioneServlet.controllaRuolo(email);
         if(!ruolo.equals("admin")){
-            GestioneServlet.inviaRisposta(response,403,"\"Ruolo non corretto!\"",false);
+            GestioneServlet.inviaRisposta(request,response,403,"\"Ruolo non corretto!\"",false,false);
             return;
         }
         BufferedReader reader=request.getReader();
@@ -125,16 +125,16 @@ public class CodiceScontoServlet extends HttpServlet{
             request0.put(10,new QueryFields<>("categoria",idCategoria,TipoVariabile.longNumber));
         }catch(SQLException exception){
             exception.printStackTrace();
-            GestioneServlet.inviaRisposta(response,500,"\"Internal server error.\"",false);
+            GestioneServlet.inviaRisposta(request,response,500,"\"Internal server error.\"",false,false);
             return;
         }
         int idCodiceSconto = controller.insertObject(request0);
         if (idCodiceSconto > 0) {
             String registrazione = "\"Registrazione effettuata correttamente.\"";
-            GestioneServlet.inviaRisposta(response,201,registrazione,true);
+            GestioneServlet.inviaRisposta(request,response,201,registrazione,true,false);
         }else{
             String message = "\"Errore durante la registrazione.\"";
-            GestioneServlet.inviaRisposta(response,500,message,false);
+            GestioneServlet.inviaRisposta(request,response,500,message,false,false);
         }
     }
 
@@ -146,7 +146,7 @@ public class CodiceScontoServlet extends HttpServlet{
         }
         String ruolo = GestioneServlet.controllaRuolo(email);
         if(!ruolo.equals("admin")){
-            GestioneServlet.inviaRisposta(response,403,"\"Ruolo non corretto!\"",false);
+            GestioneServlet.inviaRisposta(request,response,403,"\"Ruolo non corretto!\"",false,false);
             return;
         }
         int id= Integer.parseInt(request.getParameter("id"));
@@ -179,15 +179,15 @@ public class CodiceScontoServlet extends HttpServlet{
         }catch (SQLException exception){
             exception.printStackTrace();
             String message = "\"Internal server error\"";
-            GestioneServlet.inviaRisposta(response,500,message,false);
+            GestioneServlet.inviaRisposta(request,response,500,message,false,false);
             return;
         }
         if (controller.updateObject(id,data)){
             String message="\"Product Updated Correctly.\"";
-            GestioneServlet.inviaRisposta(response,200,message,true);
+            GestioneServlet.inviaRisposta(request,response,200,message,true,false);
         }else{
             String message = "\"Internal server error\"";
-            GestioneServlet.inviaRisposta(response,500,message,false);
+            GestioneServlet.inviaRisposta(request,response,500,message,false,false);
         }
     }
 
@@ -199,16 +199,16 @@ public class CodiceScontoServlet extends HttpServlet{
         }
         String ruolo = GestioneServlet.controllaRuolo(email);
         if(!ruolo.equals("admin")){
-            GestioneServlet.inviaRisposta(response,403,"\"Ruolo non corretto!\"",false);
+            GestioneServlet.inviaRisposta(request,response,403,"\"Ruolo non corretto!\"",false,false);
             return;
         }
         int id = Integer.parseInt(request.getParameter("id"));
         if (this.controller.deleteObject(id)){
             String message = "\"Product deleted Correctly.\"";
-            GestioneServlet.inviaRisposta(response,200,message,true);
+            GestioneServlet.inviaRisposta(request,response,200,message,true,false);
         }else{
             String message = "\"Internal server error\"";
-            GestioneServlet.inviaRisposta(response,500,message,false);
+            GestioneServlet.inviaRisposta(request,response,500,message,false,false);
         }
     }
 }

@@ -5,7 +5,6 @@ import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import utility.GestioneServlet;
-
 import java.io.IOException;
 
 //@WebFilter("/ProdottiServlet")
@@ -28,11 +27,11 @@ public class AuthFilter implements Filter {
 
         String email = GestioneServlet.validaToken(httpRequest, httpResponse);
         if (email.isEmpty()) {
-            GestioneServlet.inviaRisposta(httpResponse,401,"\"Email non valida!\"",false);
+            GestioneServlet.inviaRisposta(httpRequest,httpResponse,401,"\"Email non valida!\"",false,false);
             return;
         }
         if (!controllaRuolo(httpRequest,email)){
-            GestioneServlet.inviaRisposta(httpResponse, 403, "\"Ruolo non corretto!\"", false);
+            GestioneServlet.inviaRisposta(httpRequest,httpResponse, 403, "\"Ruolo non corretto!\"", false,false);
             return;
         }
         chain.doFilter(request,response);

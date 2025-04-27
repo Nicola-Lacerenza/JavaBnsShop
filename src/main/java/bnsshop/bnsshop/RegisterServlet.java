@@ -31,14 +31,14 @@ public class RegisterServlet extends HttpServlet{
         controller = new UtentiController();
     }
 
-    // Gestione richiesta preflight (OPTIONS)
     @Override
     protected void doOptions(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.addHeader("Access-Control-Allow-Origin", "*");
-        response.addHeader("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, OPTIONS");
-        response.addHeader("Access-Control-Allow-Headers", "X-CUSTOM, Content-Type, Content-Length,Authorization");
-        response.addHeader("Access-Control-Max-Age", "86400");
         response.setStatus(HttpServletResponse.SC_OK);
+        if(GestioneServlet.aggiungiCorsSicurezzaHeadersDynamicPage(request,response)){
+            System.out.println("CORS and security headers added correctly in the response.");
+        }else{
+            System.err.println("Error writing the CORS and security headers in the response.");
+        }
     }
 
     @Override
@@ -74,7 +74,7 @@ public class RegisterServlet extends HttpServlet{
         Optional<String> passwordHashed= Crittografia.get_SHA_512_SecurePassword(password,"1234");
         if(controller.checkEmail(email)){
             String registrazione = "\"L'email esiste!\"";
-            GestioneServlet.inviaRisposta(response,400,registrazione,false);
+            GestioneServlet.inviaRisposta(request,response,400,registrazione,false,false);
             return;
         }
         if(passwordHashed.isPresent()){
@@ -94,20 +94,20 @@ public class RegisterServlet extends HttpServlet{
             }catch(SQLException exception){
                 exception.printStackTrace();
                 String message = "\"Errore durante la registrazione.\"";
-                GestioneServlet.inviaRisposta(response,500,message,false);
+                GestioneServlet.inviaRisposta(request,response,500,message,false,false);
                 return;
             }
             int idRegistrazione = controller.insertObject(request0);
             if (idRegistrazione > 0) {
                 String registrazione = "\"Registrazione effettuata correttamente.\"";
-                GestioneServlet.inviaRisposta(response,201,registrazione,true);
+                GestioneServlet.inviaRisposta(request,response,201,registrazione,true,false);
             }else{
                 String message = "\"Errore durante la registrazione.\"";
-                GestioneServlet.inviaRisposta(response,500,message,false);
+                GestioneServlet.inviaRisposta(request,response,500,message,false,false);
             }
         }else{
             String message = "{\"message\":\"Errore durante la registrazione.\",\"check\":false}";
-            GestioneServlet.inviaRisposta(response,500,message,false);
+            GestioneServlet.inviaRisposta(request,response,500,message,false,false);
         }
     }
 
