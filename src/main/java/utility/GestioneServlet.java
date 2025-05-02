@@ -133,7 +133,7 @@ public class GestioneServlet{
         response.setHeader("X-Content-Type-Options","nosniff");
         response.addHeader("Referrer-Policy","strict-origin-when-cross-origin");
         response.addHeader("Permissions-Policy","geolocation=(), microphone=(), camera=()");
-        response.addHeader("Cross-Origin-Resource-Policy","cross-origin");
+        response.addHeader("Cross-Origin-Resource-Policy","same-origin");
         if(origin.contains(".stripe.com")){
             response.addHeader("Cross-Origin-Opener-Policy","same-origin-allow-popups");
         }else{
