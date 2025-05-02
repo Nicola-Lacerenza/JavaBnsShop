@@ -55,12 +55,13 @@ public final class PaypalManagement{
         return creationOrder.execute();
     }
 
-    public static Optional<PaypalPaymentsCreated> confirmPayment(String accessToken, String apiBaseURL, String orderId, String payerId){
+    public static Optional<PaypalPaymentsCreated> confirmPayment(String accessToken, String apiBaseURL, String orderId, String payerId,List<CartItem> cartItems){
         PaypalAPIRequest<PaypalPaymentsCreated> confirmPayment = new ConfirmPaymentRequest.Builder()
                 .setApiBaseURL(apiBaseURL)
                 .setAccessToken(accessToken)
                 .setOrderId(orderId)
                 .setPayerId(payerId)
+                .setCartItem(cartItems)
                 .build();
         return confirmPayment.execute();
     }

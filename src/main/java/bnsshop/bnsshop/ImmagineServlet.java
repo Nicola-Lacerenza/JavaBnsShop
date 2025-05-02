@@ -75,12 +75,13 @@ public class ImmagineServlet extends HttpServlet {
         if (tipoFile== null || tipoFile.isEmpty()){
             return false;
         }
-        return tipoFile.equals("image/png") ||
-                tipoFile.equals("image/jpg") ||
-                tipoFile.equals("image/jpeg") ||
-                tipoFile.equals("image/mp4") ||
-                tipoFile.equals("image/tiff") ||
-                tipoFile.equals("image/webp") ||
-                tipoFile.equals("image/svg");
+        return tipoFile.equals("image/png")
+                || tipoFile.equals("image/jpeg")
+                || tipoFile.equals("image/jpg")
+                || tipoFile.equals("image/tiff")
+                || tipoFile.equals("image/webp")
+                || tipoFile.equals("image/avif")
+                || tipoFile.equals("image/svg+xml")
+                || tipoFile.equals("video/mp4");
     }
 }

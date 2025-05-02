@@ -1,7 +1,10 @@
 package payPalManager.utility;
 
 import exceptions.ParserException;
+import models.Taglia;
+import models.TaglieProdotti;
 import org.json.JSONObject;
+import payPalManager.CartItem;
 import payPalManager.models.LinksOrderCreated;
 import payPalManager.models.PaypalPayments;
 import payPalManager.models.PaypalPaymentsCreated;
@@ -11,10 +14,7 @@ import utility.QueryFields;
 import utility.TipoVariabile;
 import java.io.Serial;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public final class ConfirmPaymentRequest extends PaypalAPIRequest<PaypalPaymentsCreated>{
@@ -22,11 +22,13 @@ public final class ConfirmPaymentRequest extends PaypalAPIRequest<PaypalPayments
     private static final long serialVersionUID = 1L;
     private final String orderId;
     private final String payerId;
+    private final List<CartItem> cartItems;
 
     private ConfirmPaymentRequest(Builder builder){
         super(builder.apiBaseURL,builder.accessToken);
         this.orderId = builder.orderId;
         this.payerId = builder.payerId;
+        this.cartItems = builder.cartItems;
     }
 
     @Override
@@ -113,7 +115,54 @@ public final class ConfirmPaymentRequest extends PaypalAPIRequest<PaypalPayments
                 return false;
             }
             String query2 = "UPDATE ordine SET stato_ordine = ?,data_aggiornamento_stato_ordine = NOW() WHERE id_ordine_paypal = ?";
-            return Database.executeGenericUpdate(connection,query2,fields2);
+            boolean result2 = Database.executeGenericUpdate(connection,query2,fields2);
+            if (!result2){
+                return false;
+            }
+            for (CartItem item : cartItems){
+                Map<Integer, QueryFields<? extends Comparable<?>>> fields3 = new HashMap<>();
+                try{
+                    fields3.put(0,new QueryFields<>("taglia_Eu",item.getTagliaScelta(), TipoVariabile.string));
+                }catch (SQLException e){
+                    e.printStackTrace();
+                    return false;
+                }
+                String query3 = "SELECT * FROM taglia WHERE taglia_Eu=?";
+                List<Taglia> taglie = Database.executeGenericQuery(connection,query3,fields3,new Taglia());
+                if (taglie.isEmpty()){
+                    return false;
+                }
+                Map<Integer, QueryFields<? extends Comparable<?>>> fields4 = new HashMap<>();
+                try{
+                    fields4.put(0,new QueryFields<>("id_prodotto",item.getProdottiFull().getId(), TipoVariabile.longNumber));
+                    fields4.put(1,new QueryFields<>("id_taglia",taglie.getFirst().getId(), TipoVariabile.longNumber));
+                }catch (SQLException e){
+                    e.printStackTrace();
+                    return false;
+                }
+                String query4 = "SELECT * FROM taglie_has_prodotti WHERE id_prodotto = ? AND id_taglia = ?";
+                List<TaglieProdotti> taglieProdotti = Database.executeGenericQuery(connection,query4,fields4,new TaglieProdotti());
+                if (taglieProdotti.isEmpty()){
+                    return false;
+                }
+                //dati per aggiornare la quantita.
+                Map<Integer,QueryFields<? extends Comparable<?>>> fields5 = new HashMap<>();
+                try{
+                    fields5.put(0,new QueryFields<>("quantita",taglieProdotti.getFirst().getQuantita()-item.getQuantity(),TipoVariabile.longNumber));
+                    fields5.put(1,new QueryFields<>("id_prodotto",item.getProdottiFull().getId(),TipoVariabile.longNumber));
+                    fields5.put(2,new QueryFields<>("id_taglia",taglie.getFirst().getId(),TipoVariabile.longNumber));
+                }catch (SQLException e){
+                    e.printStackTrace();
+                    return false;
+                }
+
+                String query5 = "UPDATE taglie_has_prodotti SET quantita = ? WHERE id_prodotto=? AND id_taglia=?";
+                boolean result5 = Database.executeGenericUpdate(connection,query5,fields5);
+                if (!result5){
+                    return false;
+                }
+            }
+            return true;
         });
 
         //creation output object and exit to the method.
@@ -139,12 +188,14 @@ public final class ConfirmPaymentRequest extends PaypalAPIRequest<PaypalPayments
         private String accessToken;
         private String orderId;
         private String payerId;
+        private List<CartItem> cartItems;
 
         public Builder(){
             apiBaseURL = "";
             accessToken = "";
             orderId = "";
             payerId = "";
+            cartItems = new LinkedList<>();
         }
 
         public Builder setApiBaseURL(String apiBaseURL){
@@ -164,6 +215,10 @@ public final class ConfirmPaymentRequest extends PaypalAPIRequest<PaypalPayments
 
         public Builder setPayerId(String payerId){
             this.payerId = payerId;
+            return this;
+        }
+        public Builder setCartItem(List<CartItem> cartItem){
+            this.cartItems = cartItem;
             return this;
         }
 

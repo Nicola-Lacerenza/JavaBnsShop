@@ -155,12 +155,11 @@ public class ProdottiServlet extends HttpServlet{
                 }
 
                 // Salva il file nella directory specificata
-                Path filePath = Paths.get(directory, uniqueFileName );
+                Path filePath = Paths.get(directory, uniqueFileName);
                 Files.copy(part.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
                 // Aggiungi l'URL del file alla lista
-                String fileUrl = "images/" + uniqueFileName;  // Path relativo o URL come preferisci gestirlo
-                urls.add(fileUrl);
+                urls.add(uniqueFileName);
             }
         }
 

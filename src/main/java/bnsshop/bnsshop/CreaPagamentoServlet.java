@@ -4,6 +4,8 @@ import controllers.Controllers;
 import controllers.ProdottiController;
 import controllers.UtentiController;
 import models.ProdottiFull;
+import models.Taglia;
+import models.TaglieProdotti;
 import models.Utenti;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -18,12 +20,14 @@ import payPalManager.models.LinksOrderCreated;
 import payPalManager.models.PaypalOrdersCreated;
 import payPalManager.models.PaypalTokens;
 import payPalManager.utility.PaypalManagement;
+import utility.Database;
 import utility.GestioneServlet;
+import utility.QueryFields;
+import utility.TipoVariabile;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.sql.SQLException;
+import java.util.*;
 
 @WebServlet(name = "CreaPagamento", value = "/CreaPagamento")
 public class CreaPagamentoServlet extends HttpServlet {
@@ -159,12 +163,43 @@ public class CreaPagamentoServlet extends HttpServlet {
     }
 
     private boolean verificaProdotto(CartItem cartItem){
-        Optional<ProdottiFull> controlloEsistenzaProdotto = prodottiControllers.getObject(cartItem.getProdottiFull().getId());
-        if (controlloEsistenzaProdotto.isEmpty()){
+        ProdottiController specific = (ProdottiController) prodottiControllers;
+        List<ProdottiFull> prodotto = specific.getFullObject(cartItem.getProdottiFull().getId());
+        if (prodotto.isEmpty()){
             return false;
         }
 
-        return true;
+        return Database.executeTransaction(connection -> {
+            Map<Integer, QueryFields<? extends Comparable<?>>> fields1 = new HashMap<>();
+            try{
+                fields1.put(0,new QueryFields<>("taglia_Eu",cartItem.getTagliaScelta(), TipoVariabile.string));
+            }catch (SQLException e){
+                e.printStackTrace();
+                return false;
+            }
+            String query1 = "SELECT * FROM taglia WHERE taglia_Eu=?";
+            List<Taglia> taglie = Database.executeGenericQuery(connection,query1,fields1,new Taglia());
+            if (taglie.isEmpty()){
+                return false;
+            }
+            Map<Integer, QueryFields<? extends Comparable<?>>> fields2 = new HashMap<>();
+            try{
+                fields2.put(0,new QueryFields<>("id_prodotto",cartItem.getProdottiFull().getId(), TipoVariabile.longNumber));
+                fields2.put(1,new QueryFields<>("id_taglia",taglie.getFirst().getId(), TipoVariabile.longNumber));
+            }catch (SQLException e){
+                e.printStackTrace();
+                return false;
+            }
+            String query2 = "SELECT * FROM taglie_has_prodotti WHERE id_prodotto = ? AND id_taglia = ?";
+            List<TaglieProdotti> taglieProdotti = Database.executeGenericQuery(connection,query2,fields2,new TaglieProdotti());
+            if (taglieProdotti.isEmpty()){
+                return false;
+            }
+            if (taglieProdotti.getFirst().getQuantita()< cartItem.getQuantity()){
+                return false;
+            }
+            return true;
+        });
     }
 
 }

@@ -26,9 +26,7 @@ public class StaticPageFilter implements Filter{
             return;
         }
         if(path.endsWith(".jsp") || path.endsWith(".js") || path.endsWith(".css") ||
-                path.endsWith(".ico") || path.endsWith(".png") || path.endsWith(".jpg") ||
-                path.endsWith(".jpeg") || path.endsWith(".tiff") || path.endsWith(".webp") ||
-                path.endsWith(".svg") || path.endsWith(".mp4")){
+                path.endsWith(".ico")){
             if(!method.equals("GET") && !method.equals("POST")){
                 GestioneServlet.inviaRisposta(httpRequest,httpResponse,403,"\"Unauthorized to proceed.\"",false,true);
                 return;

@@ -1,0 +1,7 @@
+png
+jpeg
+mp4
+jpg
+avif
+webp
+BAT
