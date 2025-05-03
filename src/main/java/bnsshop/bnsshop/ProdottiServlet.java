@@ -90,8 +90,10 @@ public class ProdottiServlet extends HttpServlet{
 
         if (id>0) {
             List<ProdottiFull> tmp = this.controller.getFullObject(id);
-            ProdottiFull prodotto1 = new ProdottiFull(tmp.getFirst().getId(),tmp.getFirst().getIdModello(), tmp.getFirst().getNomeModello(), tmp.getFirst().getDescrizioneModello(), tmp.getFirst().getIdCategoria(),tmp.getFirst().getNomeCategoria(),tmp.getFirst().getTarget(), tmp.getFirst().getIdBrand()
-                    ,tmp.getFirst().getNomeBrand(), tmp.getFirst().getDescrizioneBrand(), tmp.getFirst().getStatoPubblicazione(), tmp.getFirst().getPrezzo(), new LinkedList<>(), new LinkedList<>(), new LinkedList<>());
+            ProdottiFull prodotto1 = new ProdottiFull(tmp.getFirst().getId(),tmp.getFirst().getIdModello(), tmp.getFirst().getNomeModello(),
+                    tmp.getFirst().getDescrizioneModello(), tmp.getFirst().getIdCategoria(),tmp.getFirst().getNomeCategoria(),
+                    tmp.getFirst().getTarget(), tmp.getFirst().getIdBrand(),tmp.getFirst().getNomeBrand(), tmp.getFirst().getDescrizioneBrand(),
+                    tmp.getFirst().getStatoPubblicazione(), tmp.getFirst().getPrezzo(), new LinkedList<>(), new LinkedList<>(), new LinkedList<>());
             for (ProdottiFull tmp1 : tmp) {
                 if (!prodotto1.getTaglieProdotto().containsAll(tmp1.getTaglieProdotto())){
                     prodotto1.getTaglieProdotto().addAll(tmp1.getTaglieProdotto());
