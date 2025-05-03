@@ -23,7 +23,7 @@ public class Resi implements Oggetti<Resi>{
         this.idOrdine = idOrdine;
         this.dataRichiesta = dataRichiesta;
         this.motivo = motivo;
-        DataRimborso = dataRimborso;
+        this.DataRimborso = dataRimborso;
         this.importo = importo;
         this.refundId = refundId;
         this.valuta = valuta;

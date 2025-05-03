@@ -9,13 +9,15 @@ public class ResiProdotti implements Oggetti<ResiProdotti>{
     private final int id;
     private final int idReso;
     private final int idProdotto;
+    private final int idTaglia;
     private final int quantita;
     private final double prezzoUnitario;
 
-    public ResiProdotti(int id, int idReso, int idProdotto, int quantita, double prezzoUnitario) {
+    public ResiProdotti(int id, int idReso, int idProdotto,int idTaglia, int quantita, double prezzoUnitario) {
         this.id = id;
         this.idReso = idReso;
         this.idProdotto = idProdotto;
+        this.idTaglia = idTaglia;
         this.quantita = quantita;
         this.prezzoUnitario = prezzoUnitario;
     }

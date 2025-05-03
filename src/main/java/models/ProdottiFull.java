@@ -51,6 +51,7 @@ public class ProdottiFull implements Oggetti<ProdottiFull>{
     public int getId() {
         return id;
     }
+
     public int getIdModello() { return idModello;}
 
     public String getNomeModello() {

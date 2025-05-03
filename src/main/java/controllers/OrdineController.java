@@ -58,8 +58,8 @@ public class OrdineController implements Controllers<Ordine>{
                         "  tg.taglia_Uk," +
                         "  tg.taglia_Us," +
                         "  i.url AS url," +
-                        "  cl.nome AS nome_colore " +          // ← spazio qui
-                        "FROM ordine o " +                    // ← spazio qui
+                        "  cl.nome AS nome_colore " +
+                        "FROM ordine o " +
                         "JOIN dettagli_ordine d ON o.id = d.id_ordine " +
                         "JOIN prodotti p        ON d.id_prodotto = p.id " +
                         "JOIN modello m         ON p.id_modello = m.id " +
@@ -102,6 +102,16 @@ public class OrdineController implements Controllers<Ordine>{
                     output.get(ordinePresente).getProdotti().add(prodotto);
                 }
             }
+            /*List<ProdottiFull> lista = new LinkedList<>();
+            for (ProdottiFull prod : prodotti) {
+                String key = prod.getIdProdotto() + "-" + prod.getTagliaEu();
+                if (lista.stream()
+                        .map(p -> p.getIdProdotto() + "-" + p.getTagliaEu())
+                        .noneMatch(k -> k.equals(key))) {
+                    lista.add(prod);
+                }
+            }
+            ordine.setProdotti(lista);*/
         }
         if(output.isEmpty()){
             return Optional.empty();
