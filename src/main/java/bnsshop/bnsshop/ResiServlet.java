@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import models.ResiProdotti;
 import models.Utenti;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import utility.GestioneServlet;
 import utility.QueryFields;
@@ -100,32 +101,38 @@ public class ResiServlet extends HttpServlet {
         for (String line:rows){
             builder.append(line);
         }
+
         JSONObject object = new JSONObject(builder.toString());
-        int idOrdine = object.getInt("id_ordine");
-        int idProdotto = object.getInt("id_prodotto");
-        int idTaglia = object.getInt("id_taglia");
-        int quantita = object.getInt("quantita");
-        double prezzoUnitario = object.getDouble("prezzo_unitario");
-        String motivo = object.getString("motivo");
-        double importo = object.getDouble("importo");
-        String valuta = object.getString("valuta");
-        Map<Integer, QueryFields<? extends Comparable<?>>> request0= new HashMap<>();
-        try{
-            request0.put(0,new QueryFields<>("id_ordine",idOrdine, TipoVariabile.longNumber));
-            request0.put(1,new QueryFields<>("id_utente",idUtente, TipoVariabile.longNumber));
-            request0.put(2,new QueryFields<>("id_prodotto",idProdotto,TipoVariabile.longNumber));
-            request0.put(3,new QueryFields<>("id_taglia",idTaglia,TipoVariabile.longNumber));
-            request0.put(4,new QueryFields<>("quantita",quantita,TipoVariabile.longNumber));
-            request0.put(5,new QueryFields<>("prezzo_unitario",prezzoUnitario,TipoVariabile.realNumber));
-            request0.put(6,new QueryFields<>("motivo",motivo,TipoVariabile.string));
-            request0.put(7,new QueryFields<>("importo",importo,TipoVariabile.realNumber));
-            request0.put(8,new QueryFields<>("valuta",valuta,TipoVariabile.string));
-        }catch(SQLException exception){
-            exception.printStackTrace();
-            String message = "\"Errore durante la registrazione.\"";
-            GestioneServlet.inviaRisposta(request,response,500,message,false,false);
-            return;
+        JSONArray jsonArray = object.getJSONArray("body");
+        List<Map<Integer, QueryFields<? extends Comparable<?>>> > request0 = new LinkedList<>();
+        for (int i = 0;i<jsonArray.length();i++){
+            JSONObject resoProdotto = jsonArray.getJSONObject(i);
+            int idOrdine = resoProdotto.getInt("id_ordine");
+            int idProdotto = resoProdotto.getInt("id_prodotto");
+            String numeroTaglia = resoProdotto.getString("numero_taglia");
+            String motivo = resoProdotto.getString("motivo");
+            double prezzoUnitario = resoProdotto.getDouble("prezzo_unitario");
+            int quantita = resoProdotto.getInt("quantita");
+            String valuta = resoProdotto.getString("valuta");
+            Map<Integer, QueryFields<? extends Comparable<?>>> mappaSingoloReso = new HashMap<>();
+            try{
+                mappaSingoloReso.put(0,new QueryFields<>("id_ordine",idOrdine, TipoVariabile.longNumber));
+                mappaSingoloReso.put(1,new QueryFields<>("id_utente",idUtente, TipoVariabile.longNumber));
+                mappaSingoloReso.put(2,new QueryFields<>("id_prodotto",idProdotto,TipoVariabile.longNumber));
+                mappaSingoloReso.put(3,new QueryFields<>("numero_taglia",numeroTaglia,TipoVariabile.string));
+                mappaSingoloReso.put(4,new QueryFields<>("quantita",quantita,TipoVariabile.longNumber));
+                mappaSingoloReso.put(5,new QueryFields<>("prezzo_unitario",prezzoUnitario,TipoVariabile.realNumber));
+                mappaSingoloReso.put(6,new QueryFields<>("motivo",motivo,TipoVariabile.string));
+                mappaSingoloReso.put(7,new QueryFields<>("valuta",valuta,TipoVariabile.string));
+            }catch(SQLException exception){
+                exception.printStackTrace();
+                String message = "\"Errore durante la registrazione.\"";
+                GestioneServlet.inviaRisposta(request,response,500,message,false,false);
+                return;
+            }
+            request0.add(mappaSingoloReso);
         }
+
         int idReso = controller.insertObject(request0);
         if (idReso > 0) {
             String registrazione = "\"Registrazione effettuata correttamente.\"";
@@ -134,6 +141,7 @@ public class ResiServlet extends HttpServlet {
             String message = "\"Errore durante la registrazione.\"";
             GestioneServlet.inviaRisposta(request,response,500,message,false,false);
         }
+        GestioneServlet.inviaRisposta(request,response,500,"\"message\"",false,false);
 
     }
 

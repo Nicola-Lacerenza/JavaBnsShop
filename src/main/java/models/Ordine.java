@@ -4,10 +4,7 @@ import org.json.JSONObject;
 import utility.DateManagement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Calendar;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class Ordine implements Oggetti<Ordine>{
     private final int id;
@@ -23,7 +20,8 @@ public class Ordine implements Oggetti<Ordine>{
     private final List<ProdottiFull> prodotti;
 
 
-    public Ordine(int id, int idUtente, int idPagamento, int idIndirizzo, String statoOrdine, Calendar dataCreazioneOrdine,Calendar dataAggiornamentoStatoOrdine,double importo,String valuta,String localeUtente,List<ProdottiFull> listProdotti) {
+    public Ordine(int id, int idUtente, int idPagamento, int idIndirizzo, String statoOrdine, Calendar dataCreazioneOrdine,
+                  Calendar dataAggiornamentoStatoOrdine,double importo,String valuta,String localeUtente,List<ProdottiFull> listProdotti) {
         this.id = id;
         this.idUtente = idUtente;
         this.idPagamento = idPagamento;
@@ -38,7 +36,8 @@ public class Ordine implements Oggetti<Ordine>{
     }
 
     public Ordine(){
-        this(0,0,0,0,"",Calendar.getInstance(),Calendar.getInstance(),0.0,"","",new LinkedList<>());
+        this(0,0,0,0,"",Calendar.getInstance(),
+                Calendar.getInstance(),0.0,"","",new LinkedList<>());
     }
 
     public int getId() {
@@ -87,7 +86,7 @@ public class Ordine implements Oggetti<Ordine>{
     @Override
     public Optional<Ordine> convertDBToJava(ResultSet rs) {
         try {
-            // ——— 1) Campi dell’ordine —————————————————————
+            // 1) Leggi i campi fissi dell’ordine (dalla prima riga)
             int orderId       = rs.getInt("id");
             int idUtente      = rs.getInt("id_utente");
             int idPagamento   = rs.getInt("id_pagamento");
@@ -99,30 +98,56 @@ public class Ordine implements Oggetti<Ordine>{
             String valuta     = rs.getString("valuta");
             String locale     = rs.getString("locale_utente");
 
-            // ——— 2) Map per raggruppare i ProdottiFull by id_prodotto ———
+            // 2) Map composite-key → ProdottiFull, per avere un'istanza separata per ogni taglia
+            //    chiave = idProdotto + "-" + tagliaEu (o qualsiasi taglia univoca)
+            Map<String, ProdottiFull> prodottiMap = new LinkedHashMap<>();
 
-            // ——— 3) Ciclo su tutte le righe dell’ordine —————————
+            // 3) Itera su tutte le righe
+            do {
                 int idProdotto = rs.getInt("id_prodotto");
+                String tagEu   = rs.getString("taglia_Eu");
+                String tagUk   = rs.getString("taglia_Uk");
+                String tagUs   = rs.getString("taglia_Us");
+                int quantita   = rs.getInt("quantita");
+                String key     = idProdotto + "-" + tagEu;  // differenzia le istanze
 
                 ProdottiFull p;
-                    int modelloId        = rs.getInt("id_modello");
-                    String nomeModello   = rs.getString("nome_modello");
-                    String descModello   = rs.getString("descrizione_modello");
-                    int catId            = rs.getInt("id_categoria");
-                    String nomeCat       = rs.getString("nome_categoria");
-                    String target        = rs.getString("target");
-                    int brandId          = rs.getInt("id_brand");
-                    String nomeBrand     = rs.getString("nome_brand");
-                    String descBrand     = rs.getString("descrizione_brand");
-                    int statoPub         = rs.getInt("stato_pubblicazione");
-                    double prezzo        = rs.getDouble("prezzo");
+                if (prodottiMap.containsKey(key)) {
+                    p = prodottiMap.get(key);
+                } else {
+                    // Estrai gli altri campi del prodotto
+                    int modelloId     = rs.getInt("id_modello");
+                    String nomeMod   = rs.getString("nome_modello");
+                    String descMod   = rs.getString("descrizione_modello");
+                    int catId        = rs.getInt("id_categoria");
+                    String nomeCat   = rs.getString("nome_categoria");
+                    String target    = rs.getString("target");
+                    int brandId      = rs.getInt("id_brand");
+                    String nomeBrand = rs.getString("nome_brand");
+                    String descBrand = rs.getString("descrizione_brand");
+                    int statoPub     = rs.getInt("stato_pubblicazione");
+                    double prezzo    = rs.getDouble("prezzo");
 
-                    // istanzio con liste vuote
+                    // Crea una nuova istanza con UNA SOLA taglia in lista
+                    List<ProdottiFull.ProdottiTaglieEstratte> taglieList = new LinkedList<>();
+                    taglieList.add(new ProdottiFull.ProdottiTaglieEstratte(
+                            new Taglia(0, tagEu, tagUk, tagUs),
+                            new TaglieProdotti(0, 0, idProdotto, quantita)
+                    ));
+
+                    // URL e colore
+                    List<String> urls    = new LinkedList<>();
+                    List<String> colori  = new LinkedList<>();
+                    String url   = rs.getString("url");
+                    if (url != null)   urls.add(url);
+                    String col  = rs.getString("nome_colore");
+                    if (col != null)   colori.add(col);
+
                     p = new ProdottiFull(
                             idProdotto,
                             modelloId,
-                            nomeModello,
-                            descModello,
+                            nomeMod,
+                            descMod,
                             catId,
                             nomeCat,
                             target,
@@ -131,34 +156,32 @@ public class Ordine implements Oggetti<Ordine>{
                             descBrand,
                             statoPub,
                             prezzo,
-                            new LinkedList<>(),
-                            new LinkedList<>(),
-                            new LinkedList<>()
+                            taglieList,
+                            urls,
+                            colori
                     );
+                    prodottiMap.put(key, p);
+                }
 
-                // ——— 3a) Estrai la singola “combinazione” e aggiungila alle liste ———
-                String tagEu = rs.getString("taglia_Eu");
-                String tagUk = rs.getString("taglia_Uk");
-                String tagUs = rs.getString("taglia_Us");
-                int quantita = rs.getInt("quantita");
-                p.getTaglieProdotto().add(new ProdottiFull.ProdottiTaglieEstratte(
-                        new Taglia(0, tagEu, tagUk, tagUs),
-                        new TaglieProdotti(0, 0, idProdotto, quantita)
-                ));
+                // NOTA: qui **non** sommiamo altre taglie all’istanza, perché vogliamo 1 sola per oggetto.
 
-                String url    = rs.getString("url");
-                if (url != null) p.getUrl().add(url);
+            } while (rs.next());
 
-                String colore = rs.getString("nome_colore");
-                if (colore != null) p.getNomeColore().add(colore);
+            // 4) Crea la lista finale (ogni key corrisponde a un prodotto con la sua unica taglia)
+            List<ProdottiFull> listaProdotti = new LinkedList<>(prodottiMap.values());
 
-            // ——— 4) Costruisci l’Ordine completo ————————————————
-            List<ProdottiFull> listaProdotti = new LinkedList<>();
-            listaProdotti.add(p);
+            // 5) Costruisci e restituisci l’Ordine
             Ordine ordine = new Ordine(
-                    orderId, idUtente, idPagamento, idIndirizzo,
-                    stato, crea, aggiorna,
-                    importo, valuta, locale,
+                    orderId,
+                    idUtente,
+                    idPagamento,
+                    idIndirizzo,
+                    stato,
+                    crea,
+                    aggiorna,
+                    importo,
+                    valuta,
+                    locale,
                     listaProdotti
             );
             return Optional.of(ordine);
@@ -168,6 +191,7 @@ public class Ordine implements Oggetti<Ordine>{
             return Optional.empty();
         }
     }
+
 
     @Override
     public String toString() {
