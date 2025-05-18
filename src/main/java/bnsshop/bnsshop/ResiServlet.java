@@ -1,5 +1,6 @@
 package bnsshop.bnsshop;
 
+import controllers.ResiController;
 import controllers.ResiProdottiController;
 import controllers.UtentiController;
 import jakarta.servlet.ServletException;
@@ -7,6 +8,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import models.Resi;
 import models.ResiProdotti;
 import models.Utenti;
 import org.json.JSONArray;
@@ -23,12 +25,14 @@ import java.util.*;
 @WebServlet(name = "ResiServlet", value = "/ResiServlet")
 public class ResiServlet extends HttpServlet {
 
-    ResiProdottiController controller;
+    ResiProdottiController resiProdottiController;
+    ResiController resiController;
 
     @Override
     public void init() throws ServletException {
         super.init();
-        controller = new ResiProdottiController();
+        resiProdottiController = new ResiProdottiController();
+        resiController = new ResiController();
     }
 
     @Override
@@ -55,12 +59,12 @@ public class ResiServlet extends HttpServlet {
             id=-1;
         }
         Optional<ResiProdotti> resoProdotto=Optional.empty();
-        List<ResiProdotti> resiProdotti=null;
+        List<Resi> resiProdotti=null;
 
         if (id!=-1){
-            resoProdotto = this.controller.getObject(id);
+            resoProdotto = this.resiProdottiController.getObject(id);
         }else{
-            resiProdotti = this.controller.getAllObjects();
+            resiProdotti = this.resiController.getAllObjects();
         }
 
         if (resoProdotto.isPresent() || resiProdotti!=null){
@@ -133,7 +137,7 @@ public class ResiServlet extends HttpServlet {
             request0.add(mappaSingoloReso);
         }
 
-        int idReso = controller.insertObject(request0);
+        int idReso = resiProdottiController.insertObject(request0);
         if (idReso > 0) {
             String registrazione = "\"Registrazione effettuata correttamente.\"";
             GestioneServlet.inviaRisposta(request,response,201,registrazione,true,false);
@@ -183,7 +187,7 @@ public class ResiServlet extends HttpServlet {
             return;
         }
         int id = Integer.parseInt((String) request.getAttribute("id"));
-        if (this.controller.deleteObject(id)){
+        if (this.resiProdottiController.deleteObject(id)){
             String message = "\"Product deleted Correctly.\"";
             GestioneServlet.inviaRisposta(request,response,200,message,true,false);
         }else{

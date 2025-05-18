@@ -72,7 +72,7 @@ public class OrdineController implements Controllers<Ordine>{
                         "LEFT JOIN immagini i   ON ihp.id_immagine = i.id " +
                         "LEFT JOIN colore_has_prodotti chp ON p.id = chp.id_prodotto " +
                         "LEFT JOIN colore cl    ON chp.id_colore = cl.id " +
-                        "WHERE o.id = ? " +
+                        "WHERE o.id = ? AND d.reso_effettuabile = TRUE " +
                         "ORDER BY d.id, m.id;";
         Map<Integer, QueryFields<? extends Comparable<?>>> fields = new HashMap<>();
         try{
@@ -179,7 +179,7 @@ public class OrdineController implements Controllers<Ordine>{
                         + "LEFT JOIN immagini i                ON ihp.id_immagine = i.id "
                         + "LEFT JOIN colore_has_prodotti chp   ON p.id = chp.id_prodotto "
                         + "LEFT JOIN colore cl                 ON chp.id_colore = cl.id "
-                        + "WHERE o.id_utente = ? "
+                        + "WHERE o.id_utente = ? AND d.reso_effettuabile = TRUE "
                         + "ORDER BY o.id, d.id, tg.taglia_Eu;";
 
         List<Ordine> result = new LinkedList<>();
