@@ -13,8 +13,11 @@ public abstract class GmailAPIRequest <T extends Oggetti<T>> extends RichiesteAP
     @Serial
     private static final long serialVersionUID = 1L;
 
-    public GmailAPIRequest(String accessToken) {
-        super("https://gmail.googleapis.com/gmail/v1",accessToken);
+    public GmailAPIRequest(String accessToken){
+        super("",accessToken);
+    }
+    public GmailAPIRequest(String apiBaseURL,String accessToken) {
+        super(apiBaseURL,accessToken);
     }
 
 
