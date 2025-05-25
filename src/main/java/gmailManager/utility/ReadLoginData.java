@@ -5,7 +5,7 @@ import gmailManager.controllers.GmailTokenController;
 import gmailManager.models.GmailToken;
 import gmailManager.models.LoginData;
 import org.json.JSONObject;
-import utility.GestioneFileTesto;
+import utility.GestioneFile;
 
 import java.util.Collections;
 import java.util.GregorianCalendar;
@@ -21,7 +21,7 @@ public class ReadLoginData {
     }
 
     public static LoginData readData() {
-        JSONObject object = GestioneFileTesto.leggiFileJSON("GmailKeys.json");
+        JSONObject object = GestioneFile.leggiFileJSON("GmailKeys.json");
         LoginData empty = new LoginData();
         return empty.parseObjectFromJSON(object);
     }

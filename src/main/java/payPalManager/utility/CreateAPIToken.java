@@ -6,7 +6,7 @@ import org.json.JSONObject;
 import payPalManager.models.PaypalTokens;
 import payPalManager.models.RawPaypalTokensReceived;
 import utility.Database;
-import utility.GestioneFileTesto;
+import utility.GestioneFile;
 import utility.QueryFields;
 import utility.TipoVariabile;
 import java.io.Serial;
@@ -118,7 +118,7 @@ public final class CreateAPIToken extends PaypalAPIRequest<PaypalTokens>{
     }
 
     private static Optional<Map<String,String>> readPaypalKeys(){
-        Map<String,String> keysList = GestioneFileTesto.leggiFile("PaypalKeys.txt");
+        Map<String,String> keysList = GestioneFile.leggiFile("PaypalKeys.txt");
         if(keysList.isEmpty()){
             return Optional.empty();
         }

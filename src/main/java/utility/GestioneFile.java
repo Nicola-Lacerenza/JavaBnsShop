@@ -1,22 +1,14 @@
 package utility;
 
-import com.google.gson.JsonArray;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStreamReader;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-public class GestioneFileTesto {
+public class GestioneFile {
 
-    private GestioneFileTesto(){}
+    private GestioneFile(){}
 
     public static Map<String,String> leggiFile(String nomeFile){
         Map<String,String> output = new HashMap<>();
@@ -106,5 +98,31 @@ public class GestioneFileTesto {
             }
         }
         return output;
+    }
+
+    public static String leggiFilePDF(String nomeFile) {
+        File file = new File(nomeFile);
+        FileInputStream fis;
+        try {
+            fis = new FileInputStream(file);
+        }catch (FileNotFoundException e){
+            e.printStackTrace();
+            return "";
+        }
+
+        byte[] filebytes = new byte[(int)file.length()];
+        try {
+            fis.read(filebytes);
+        }catch (IOException e){
+            e.printStackTrace();
+            filebytes=new byte[0];
+        }finally {
+            try {
+                fis.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return Base64.getEncoder().encodeToString(filebytes);
     }
 }

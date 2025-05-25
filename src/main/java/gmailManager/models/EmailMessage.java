@@ -21,13 +21,14 @@ public class EmailMessage implements Oggetti<EmailMessage> {
     private final String destinatario;
     private final String oggetto;
     private final String testo;
+    private final String nomeFileAllegato;
     private final Calendar dataOraInvio;
 
     public EmailMessage() {
-        this(0,"","","","","","",new GregorianCalendar());
+        this(0,"","","","","","","",new GregorianCalendar());
     }
 
-    public EmailMessage(int id, String googleId, String threadId, String mittente, String destinatario, String oggetto, String testo, Calendar dataOraInvio) {
+    public EmailMessage(int id, String googleId, String threadId, String mittente, String destinatario, String oggetto, String testo, String nomeFileAllegato,Calendar dataOraInvio) {
         this.id = id;
         this.googleId = googleId;
         this.threadId = threadId;
@@ -35,6 +36,7 @@ public class EmailMessage implements Oggetti<EmailMessage> {
         this.destinatario = destinatario;
         this.oggetto = oggetto;
         this.testo = testo;
+        this.nomeFileAllegato = nomeFileAllegato;
         this.dataOraInvio = dataOraInvio;
     }
 
@@ -64,6 +66,10 @@ public class EmailMessage implements Oggetti<EmailMessage> {
 
     public String getTesto() {
         return testo;
+    }
+
+    public String getNomeFileAllegato() {
+        return nomeFileAllegato;
     }
 
     public Calendar getDataOraInvio() {
@@ -98,6 +104,7 @@ public class EmailMessage implements Oggetti<EmailMessage> {
         output.put("destinatario",destinatario);
         output.put("oggetto",oggetto);
         output.put("testo",testo);
+        output.put("nome_file_allegato",nomeFileAllegato);
         output.put("data_ora_invio", DateManagement.printJSONCalendar(dataOraInvio));
         return output.toString(4);
     }

@@ -4,6 +4,7 @@ import controllers.Controllers;
 import gmailManager.controllers.EmailMessageController;
 import gmailManager.models.EmailMessage;
 import org.json.JSONObject;
+import utility.GestioneFile;
 import utility.QueryFields;
 import utility.TipoVariabile;
 
@@ -21,12 +22,15 @@ public class SendEmailRequest extends GmailAPIRequest<EmailMessage>{
 
     private final String testo;
 
-    public SendEmailRequest(String accessToken,String mittente,String destinatario,String oggetto,String testo) {
+    private final String nomeFileAllegato;
+
+    public SendEmailRequest(String accessToken,String mittente,String destinatario,String oggetto,String testo,String nomeFileAllegato) {
         super("https://gmail.googleapis.com/gmail/v1",accessToken);
         this.mittente=mittente;
         this.destinatario=destinatario;
         this.oggetto=oggetto;
         this.testo=testo;
+        this.nomeFileAllegato=nomeFileAllegato;
     }
 
     @Override
@@ -49,14 +53,26 @@ public class SendEmailRequest extends GmailAPIRequest<EmailMessage>{
 
     @Override
     public String getBody() {
+        String allegato = GestioneFile.leggiFilePDF(nomeFileAllegato);
         String mimeMessage =
                 "MIME-Version: 1.0\r\n" +
-                        "Content-Type: text/plain; charset=utf-8\r\n" +
+                        "Content-Type: multipart/mixed; boundary=\"foo_bar_baz\"\r\n" +
                         "From: " + mittente + "\r\n" +
                         "To: " + destinatario + "\r\n" +
                         "Subject: " + oggetto + "\r\n" +
-                        "\r\n" + testo;
-        String rawEncoded = Base64.getUrlEncoder()
+                        "foo_bar_baz\r\n" +
+                        "Content-Type: text/plain; charset=utf-8\r\n" +
+                        "\r\n" + testo +
+                        "\r\n" +
+                        "--foo_bar_baz\r\n" +
+                        "Content-Type: application/pdf\r\n" +
+                        "Content-Disposition: attachment; filename="+nomeFileAllegato+"\r\n" +
+                        "Content-Transfer-Encoding: base64\r\n" +
+                        "\r\n" +
+                        allegato +
+                        "\r\n" +
+                        "--foo_bar_baz--";                ;
+                        String rawEncoded = Base64.getUrlEncoder()
                 .withoutPadding()
                 .encodeToString(mimeMessage.getBytes(StandardCharsets.UTF_8));
         JSONObject json = new JSONObject();
@@ -73,7 +89,8 @@ public class SendEmailRequest extends GmailAPIRequest<EmailMessage>{
             fields.put(2,new QueryFields<>("mittente",mittente, TipoVariabile.string));
             fields.put(3,new QueryFields<>("destinatario",destinatario, TipoVariabile.string));
             fields.put(4,new QueryFields<>("oggetto",oggetto, TipoVariabile.string));
-            fields.put(5,new QueryFields<>("testo",testo, TipoVariabile.string));
+            fields.put(5,new QueryFields<>("nome_file_allegato",nomeFileAllegato, TipoVariabile.string));
+            fields.put(6,new QueryFields<>("testo",testo, TipoVariabile.string));
         }catch (SQLException e){
             e.printStackTrace();
             return Optional.empty();
@@ -83,7 +100,7 @@ public class SendEmailRequest extends GmailAPIRequest<EmailMessage>{
         if (databaseid<=0){
             return Optional.empty();
         }
-        EmailMessage output = new EmailMessage(databaseid,jsonResponse.getString("id"),jsonResponse.getString("threadId"),mittente,destinatario,oggetto,testo,new GregorianCalendar());
+        EmailMessage output = new EmailMessage(databaseid,jsonResponse.getString("id"),jsonResponse.getString("threadId"),mittente,destinatario,oggetto,testo,nomeFileAllegato,new GregorianCalendar());
         return Optional.of(output);
     }
 }
