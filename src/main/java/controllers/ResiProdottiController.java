@@ -90,7 +90,7 @@ public class ResiProdottiController implements Controllers<ResiProdotti>{
                     return false;
                 }
 
-                String query3 = "UPDATE dettagli_ordine SET reso_effettuabile = FALSE WHERE id_ordine = ? AND id_prodotto = ?";
+                String query3 = "UPDATE dettagli_ordine SET stato_reso_prodotto = 'RESO_RICHIESTO' WHERE id_ordine = ? AND id_prodotto = ?";
                 Map<Integer, QueryFields<? extends Comparable<?>>> fields4 = new HashMap<>();
                 try{
                     fields4.put(0,new QueryFields<>("id_ordine", (Integer) campiFrontEnd.get(0).getFieldValue(), TipoVariabile.longNumber));

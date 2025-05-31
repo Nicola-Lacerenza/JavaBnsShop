@@ -56,7 +56,7 @@ public class CreaPagamentoServlet extends HttpServlet {
 
         int idUtente;
         boolean logged = GestioneServlet.isLogged(request);
-        if (!logged) {
+        if (!logged){
             idUtente=-1;
         }else{
             String email = GestioneServlet.validaToken(request,response);

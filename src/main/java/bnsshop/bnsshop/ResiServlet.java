@@ -111,7 +111,8 @@ public class ResiServlet extends HttpServlet {
         List<Map<Integer, QueryFields<? extends Comparable<?>>> > request0 = new LinkedList<>();
         for (int i = 0;i<jsonArray.length();i++){
             JSONObject resoProdotto = jsonArray.getJSONObject(i);
-            int idOrdine = resoProdotto.getInt("id_ordine");
+            JSONObject ordine = resoProdotto.getJSONObject("ordine");
+            int idOrdine = ordine.getInt("id");
             int idProdotto = resoProdotto.getInt("id_prodotto");
             String numeroTaglia = resoProdotto.getString("numero_taglia");
             String motivo = resoProdotto.getString("motivo");

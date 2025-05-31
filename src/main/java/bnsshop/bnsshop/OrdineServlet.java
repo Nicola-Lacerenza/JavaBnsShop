@@ -53,6 +53,8 @@ public class OrdineServlet extends HttpServlet {
             return;
         }
         int idUtente = utenti.get().getId();
+        String ruolo = utenti.get().getRuolo();
+
 
         if (id == -2) {
             OrdineController ordineCtrl = (OrdineController) controller;
@@ -62,7 +64,14 @@ public class OrdineServlet extends HttpServlet {
         }
 
         if (id > 0) {
-            Optional<Ordine> tmp = controller.getObject(id);
+
+            Optional<Ordine> tmp;
+            if (ruolo.equals("admin")){
+                OrdineController specific = (OrdineController)(controller);
+                tmp = specific.getObjectForAdmin(id);
+            }else {
+                tmp = controller.getObject(id);
+            }
 
             if (tmp.isEmpty()) {
                 GestioneServlet.inviaRisposta(request,response, 404, "{\"error\":\"Ordine con id=" + id + " non trovato\"}", true,false);
