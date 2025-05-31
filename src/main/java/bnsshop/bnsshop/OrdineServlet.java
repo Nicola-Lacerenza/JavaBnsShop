@@ -79,9 +79,11 @@ public class OrdineServlet extends HttpServlet {
             }
 
             Ordine ordine = tmp.get();
-            if (ordine.getIdUtente() != idUtente) {
-                GestioneServlet.inviaRisposta(request,response, 403, "{\"error\":\"Accesso negato\"}", true,false);
-                return;
+            if(!ruolo.equals("admin")){
+                if (ordine.getIdUtente() != idUtente) {
+                    GestioneServlet.inviaRisposta(request,response, 403, "{\"error\":\"Accesso negato\"}", true,false);
+                    return;
+                }
             }
             String jsonOrdine = ordine.toString();
             GestioneServlet.inviaRisposta(request,response, 200, jsonOrdine, true,false);
