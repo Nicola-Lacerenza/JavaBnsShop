@@ -26,7 +26,7 @@ public final class ExperienceContext implements Cloneable,Serializable,Comparabl
         this.locale = locale;
         this.returnUrl = returnUrl;
         this.cancelUrl = cancelUrl;
-        this.brandName = "Antonio Tassone";
+        this.brandName = "BNS Shop";
         this.landingPage = "LOGIN";
         this.userAction = "PAY_NOW";
     }
