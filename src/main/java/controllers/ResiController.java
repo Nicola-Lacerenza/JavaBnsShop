@@ -35,7 +35,14 @@ public class ResiController implements Controllers<Resi>{
 
     @Override
     public Optional<Resi> getObject(int objectid) {
-        return Optional.empty();
+        Optional<Resi> output;
+        try(Connection connection = Database.createConnection()){
+            output = Database.getElement(connection,"resi",objectid,new Resi());
+        }catch (SQLException e){
+            e.printStackTrace();
+            output= Optional.empty();
+        }
+        return output;
     }
 
     @Override

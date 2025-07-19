@@ -23,13 +23,11 @@ import java.util.Optional;
 @WebServlet(name = "FornitoriServlet", value = "/FornitoriServlet")
 public class FornitoriServlet extends HttpServlet{
     FornitoriController controller;
-
     @Override
     public void init() throws ServletException{
         super.init();
         controller = new FornitoriController();
     }
-
     @Override
     protected void doOptions(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setStatus(HttpServletResponse.SC_OK);
@@ -39,7 +37,6 @@ public class FornitoriServlet extends HttpServlet{
             System.err.println("Error writing the CORS and security headers in the response.");
         }
     }
-
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException,IOException{
         int id;
@@ -55,13 +52,11 @@ public class FornitoriServlet extends HttpServlet{
         }
         Optional<Fornitori> fornitore=Optional.empty();
         List<Fornitori> fornitori=null;
-
         if (id!=-1){
             fornitore = this.controller.getObject(id);
         }else{
             fornitori = this.controller.getAllObjects();
         }
-
         if (fornitore.isPresent() || fornitori!=null){
             if (fornitore.isPresent()){
                 GestioneServlet.inviaRisposta(request,response,200,fornitore.get().toString(),true,false);

@@ -44,21 +44,31 @@ public class AuthServlet extends HttpServlet{
 
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException,IOException{
-        BufferedReader reader=request.getReader();
-        String row=reader.readLine();
-        List<String> rows = new LinkedList<>();
-        while (row!=null){
-            rows.add(row);
-            row=reader.readLine();
+        Object usernameRegistrazione = request.getAttribute("username_registrazione");
+        Object passwordregistrazione = request.getAttribute("password_registrazione");
+        String username;
+        String password;
+
+        if (usernameRegistrazione== null || passwordregistrazione == null) {
+            BufferedReader reader = request.getReader();
+            String row = reader.readLine();
+            List<String> rows = new LinkedList<>();
+            while (row != null) {
+                rows.add(row);
+                row = reader.readLine();
+            }
+            StringBuilder builder = new StringBuilder();
+            for (String line : rows) {
+                builder.append(line);
+            }
+            String json = builder.toString();
+            JSONObject object = new JSONObject(json);
+            username = object.getString("username");
+            password = object.getString("password");
+        } else{
+            username = (String) usernameRegistrazione;
+            password = (String) passwordregistrazione;
         }
-        StringBuilder builder= new StringBuilder();
-        for (String line:rows){
-            builder.append(line);
-        }
-        String json=builder.toString();
-        JSONObject object = new JSONObject(json);
-        String username= object.getString("username");
-        String password= object.getString("password");
 
         Optional<Utenti> utenteOptional = controller.getUserByEmail(username);
         if (utenteOptional.isEmpty()){

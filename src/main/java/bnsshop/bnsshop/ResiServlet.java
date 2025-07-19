@@ -58,11 +58,11 @@ public class ResiServlet extends HttpServlet {
         }catch(NumberFormatException exception){
             id=-1;
         }
-        Optional<ResiProdotti> resoProdotto=Optional.empty();
+        Optional<Resi> resoProdotto=Optional.empty();
         List<Resi> resiProdotti=null;
 
         if (id!=-1){
-            resoProdotto = this.resiProdottiController.getObject(id);
+            resoProdotto = this.resiController.getObject(id);
         }else{
             resiProdotti = this.resiController.getAllObjects();
         }

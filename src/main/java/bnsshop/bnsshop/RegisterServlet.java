@@ -1,6 +1,7 @@
 package bnsshop.bnsshop;
 
 import controllers.UtentiController;
+import io.jsonwebtoken.security.Request;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -99,8 +100,11 @@ public class RegisterServlet extends HttpServlet{
             }
             int idRegistrazione = controller.insertObject(request0);
             if (idRegistrazione > 0) {
-                String registrazione = "\"Registrazione effettuata correttamente.\"";
-                GestioneServlet.inviaRisposta(request,response,201,registrazione,true,false);
+                //String registrazione = "\"Registrazione effettuata correttamente.\"";
+                //GestioneServlet.inviaRisposta(request,response,201,registrazione,true,false);
+                request.setAttribute("username_registrazione",email);
+                request.setAttribute("password_registrazione",password);
+                request.getServletContext().getRequestDispatcher("/LoginServlet").forward(request,response);
             }else{
                 String message = "\"Errore durante la registrazione.\"";
                 GestioneServlet.inviaRisposta(request,response,500,message,false,false);
